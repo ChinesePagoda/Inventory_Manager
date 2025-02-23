@@ -2157,7 +2157,7 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(connectors_BroadCast, block => block.IsConnected == false && GetValue_from_CustomData(block, "Connector_Tag", "ForAutoParking") != "No" && block.IsSameConstructAs(Me));
 
             if (connectors_BroadCast.Count == 0) return;
-
+            
             StringBuilder sb = new StringBuilder();
 
             sb.Clear();
@@ -2237,6 +2237,8 @@ namespace IngameScript
         public void CheckEachRefinery(string nextStage)
         {
             stage_Key = nextStage;
+
+            if (refineries.Count < 1) return;
 
             for (int index_Int = 1; index_Int <= 2; index_Int++)
             {
