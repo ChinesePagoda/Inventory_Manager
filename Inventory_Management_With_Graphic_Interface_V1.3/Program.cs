@@ -2423,8 +2423,11 @@ namespace IngameScript
 
         public void Argument_Handler(string argument)
         {
-
-            if (argument == "CO_ON")
+            if(argument == "CLS")
+            {
+                AssemblerCLS();
+            }
+            else if (argument == "CO_ON")
             {
                 AssemblerCO_ON();
             }
@@ -2451,6 +2454,11 @@ namespace IngameScript
                     }
                 }
             }
+        }
+
+        public void AssemblerCLS()
+        {
+            foreach (var assembler in assemblers) assembler.ClearQueue();
         }
 
         public void AssemblerCO_ON()
