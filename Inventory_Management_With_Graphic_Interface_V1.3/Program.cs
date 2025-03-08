@@ -524,8 +524,8 @@ namespace IngameScript
             MySpriteDrawFrame frame = panel.DrawFrame();
 
             float x = 512 / 2, y1 = 205 + Convert.ToSingle(counter_Logo) / 360f;
-            DrawLogo(frame, x, y1, 200);
-            PanelWriteText(frame, "Inventory_Management\nWith_Graphic_Interface_V1.3\nby Hi.James", x, y1 + 110 + Convert.ToSingle(counter_Logo / 360), 1f, TextAlignment.CENTER);
+            DrawLogo(ref frame, x, y1, 200);
+            PanelWriteText(ref frame, "Inventory_Management\nWith_Graphic_Interface_V1.3\nby Hi.James", x, y1 + 110 + Convert.ToSingle(counter_Logo / 360), 1f, TextAlignment.CENTER);
 
             frame.Dispose();
 
@@ -555,40 +555,40 @@ namespace IngameScript
 
                 MySpriteDrawFrame frame = panel.DrawFrame();
 
-                DrawContentBox(panel, frame);
+                DrawContentBox(panel, ref frame);
 
                 frame.Dispose();
             }
         }
 
-        public void DrawContentBox(IMyTextPanel panel, MySpriteDrawFrame frame)
+        public void DrawContentBox(IMyTextPanel panel, ref MySpriteDrawFrame frame)
         {
             float x_Left = itemBox_ColumnInterval_Float / 2 + 1.5f, x_Right = itemBox_ColumnInterval_Float + 2 + (512 - itemBox_ColumnInterval_Float - 4) / 2, x_Title = 70, y_Title = itemBox_ColumnInterval_Float + 2 + Convert.ToSingle(panel.CustomData);
             float progressBar_YCorrect = 0f, progressBarWidth = 512 - itemBox_ColumnInterval_Float - 6, progressBarHeight = itemBox_ColumnInterval_Float - 3;
             float fontsize_ProgressBar_Float = 1.2f;
 
             //  Title
-            DrawBox(frame, x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
-            DrawBox(frame, 512 - x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
-            DrawBox(frame, 512 / 2, x_Left + Convert.ToSingle(panel.CustomData), 512 - itemBox_ColumnInterval_Float * 2 - 4, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
-            PanelWriteText(frame, panels_Overall[0].GetOwnerFactionTag(), 512 / 2, 2 + Convert.ToSingle(panel.CustomData), 2.3f, TextAlignment.CENTER);
+            DrawBox(ref frame, x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
+            DrawBox(ref frame, 512 - x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
+            DrawBox(ref frame, 512 / 2, x_Left + Convert.ToSingle(panel.CustomData), 512 - itemBox_ColumnInterval_Float * 2 - 4, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
+            PanelWriteText(ref frame, panels_Overall[0].GetOwnerFactionTag(), 512 / 2, 2 + Convert.ToSingle(panel.CustomData), 2.3f, TextAlignment.CENTER);
 
-            DrawLogo(frame, x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float);
-            DrawLogo(frame, 512 - x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float);
+            DrawLogo(ref frame, x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float);
+            DrawLogo(ref frame, 512 - x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float);
 
             for (int i = 1; i <= 5; i++)
             {
                 float y = i * itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2f + 1.5f + Convert.ToSingle(panel.CustomData);
 
-                DrawBox(frame, x_Left, y, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
-                DrawBox(frame, x_Right, y, (512 - itemBox_ColumnInterval_Float - 4), itemBox_ColumnInterval_Float, card_Background_Color_Overall);
+                DrawBox(ref frame, x_Left, y, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
+                DrawBox(ref frame, x_Right, y, (512 - itemBox_ColumnInterval_Float - 4), itemBox_ColumnInterval_Float, card_Background_Color_Overall);
             }
 
             for (int i = 1; i <= 7; i++)
             {
                 float y = 6f * itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2f + 1.5f + Convert.ToSingle(panel.CustomData);
                 float x = x_Left + itemBox_ColumnInterval_Float * (i - 1);
-                DrawBox(frame, x, y, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
+                DrawBox(ref frame, x, y, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
 
             }
 
@@ -606,9 +606,9 @@ namespace IngameScript
             string percentage_String, finalValue_String;
             CalculateAll(out percentage_String, out finalValue_String);
             ProgressBar(frame, x_Right, y1 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
-            PanelWriteText(frame, cargoContainers.Count.ToString(), x_Title, y_Title, 0.55f, TextAlignment.RIGHT);
-            PanelWriteText(frame, percentage_String, x_Right, y_Title, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-            PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
+            PanelWriteText(ref frame, cargoContainers.Count.ToString(), x_Title, y_Title, 0.55f, TextAlignment.RIGHT);
+            PanelWriteText(ref frame, percentage_String, x_Right, y_Title, fontsize_ProgressBar_Float, TextAlignment.CENTER);
+            PanelWriteText(ref frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
 
             //  H2
             float y2 = y1 + itemBox_ColumnInterval_Float;
@@ -622,10 +622,10 @@ namespace IngameScript
             };
             frame.Add(sprite);
             CalcualateGasTank(hydrogenTanks, out percentage_String, out finalValue_String);
-            PanelWriteText(frame, hydrogenTanks.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float, 0.55f, TextAlignment.RIGHT);
+            PanelWriteText(ref frame, hydrogenTanks.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float, 0.55f, TextAlignment.RIGHT);
             ProgressBar(frame, x_Right, y2 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
-            PanelWriteText(frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-            PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
+            PanelWriteText(ref frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float, fontsize_ProgressBar_Float, TextAlignment.CENTER);
+            PanelWriteText(ref frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
 
             //  O2
             float y3 = y2 + itemBox_ColumnInterval_Float;
@@ -639,10 +639,10 @@ namespace IngameScript
             };
             frame.Add(sprite);
             CalcualateGasTank(oxygenTanks, out percentage_String, out finalValue_String);
-            PanelWriteText(frame, oxygenTanks.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 2, 0.55f, TextAlignment.RIGHT);
+            PanelWriteText(ref frame, oxygenTanks.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 2, 0.55f, TextAlignment.RIGHT);
             ProgressBar(frame, x_Right, y3 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
-            PanelWriteText(frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-            PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 2 + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
+            PanelWriteText(ref frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
+            PanelWriteText(ref frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 2 + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
 
             //  Power
             float y4 = y3 + itemBox_ColumnInterval_Float;
@@ -656,10 +656,10 @@ namespace IngameScript
             };
             frame.Add(sprite);
             CalculatePowerProducer(out percentage_String, out finalValue_String);
-            PanelWriteText(frame, powerProducers.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 3, 0.55f, TextAlignment.RIGHT);
+            PanelWriteText(ref frame, powerProducers.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 3, 0.55f, TextAlignment.RIGHT);
             ProgressBar(frame, x_Right, y4 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
-            PanelWriteText(frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 3, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-            PanelWriteText(frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 3 + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
+            PanelWriteText(ref frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 3, fontsize_ProgressBar_Float, TextAlignment.CENTER);
+            PanelWriteText(ref frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 3 + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
 
             //  IGC
             float y_6thRow_Float = 5f * itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2f + 1.5f + Convert.ToSingle(panel.CustomData);
@@ -668,60 +668,60 @@ namespace IngameScript
             float y_IGCTag2_Float = y_6thRow_Float + 2f;
             string igcTag_String = GetValue_from_CustomData(information_Section, "IGCTAG");
 
-            IGCSignifier(frame, x_Left, y_6thRow_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
-            PanelWriteText(frame, "IGCTAG:", x_IGCTag_Float, y_IGCTag_Float, fontsize_ProgressBar_Float, TextAlignment.LEFT);
-            PanelWriteText(frame, igcTag_String, x_IGCTag_Float, y_IGCTag2_Float, fontsize_ProgressBar_Float, TextAlignment.LEFT);
+            IGCSignifier(ref frame, x_Left, y_6thRow_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
+            PanelWriteText(ref frame, "IGCTAG:", x_IGCTag_Float, y_IGCTag_Float, fontsize_ProgressBar_Float, TextAlignment.LEFT);
+            PanelWriteText(ref frame, igcTag_String, x_IGCTag_Float, y_IGCTag2_Float, fontsize_ProgressBar_Float, TextAlignment.LEFT);
 
             //  Facility
             float y_7thRow_Float = 6f * itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2f + 1.5f + Convert.ToSingle(panel.CustomData);
 
-            FacilitySignifier(frame, x_Left, y_7thRow_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
+            FacilitySignifier(ref frame, x_Left, y_7thRow_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
 
             //  Inventory
             float x_7thRow_2ndColumn_Float = x_Left + itemBox_ColumnInterval_Float * 1f;
-            InventorySignifier(frame, x_7thRow_2ndColumn_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
+            InventorySignifier(ref frame, x_7thRow_2ndColumn_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
 
             //  Cargo Residues
             float x_Residues_Float = x_Left + itemBox_ColumnInterval_Float * 2f;
             float x_PercentageSign_Float = x_Residues_Float + itemBox_ColumnInterval_Float / 2f - 3f;
             float y_PercentageSign_Float = y_7thRow_Float - itemBox_ColumnInterval_Float / 2f - 1f;
-            DrawIcon(frame, "Textures\\FactionLogo\\Builders\\BuilderIcon_1.dds", x_Residues_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
-            PanelWriteText(frame, "%", x_PercentageSign_Float, y_PercentageSign_Float, 0.95f, TextAlignment.RIGHT);
+            DrawIcon(ref frame, "Textures\\FactionLogo\\Builders\\BuilderIcon_1.dds", x_Residues_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
+            PanelWriteText(ref frame, "%", x_PercentageSign_Float, y_PercentageSign_Float, 0.95f, TextAlignment.RIGHT);
 
             //  Refresh Rate
             float x_RefreshRate_Float = x_Left + itemBox_ColumnInterval_Float * 3f;
-            RefreshRateSignifier(frame, x_RefreshRate_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, 3f, font_Color_Overall, card_Background_Color_Overall);
+            RefreshRateSignifier(ref frame, x_RefreshRate_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, 3f, font_Color_Overall, card_Background_Color_Overall);
 
             //  Combined_Refining
             //  MyObjectBuilder_Ore/Stone
             float x_Combined_Refining_Float = x_Left + itemBox_ColumnInterval_Float * 4f;
             float x_Combined_Refining_Mode_Float = x_PercentageSign_Float + itemBox_ColumnInterval_Float * 2f;
             string combined_Refining_Mode_String = GetValue_from_CustomData(ore_Section, combinedMode_Key);
-            DrawIcon(frame, "MyObjectBuilder_Ore/Stone", x_Combined_Refining_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
-            PanelWriteText(frame, combined_Refining_Mode_String, x_Combined_Refining_Mode_Float, y_PercentageSign_Float, 0.95f, TextAlignment.RIGHT);
+            DrawIcon(ref frame, "MyObjectBuilder_Ore/Stone", x_Combined_Refining_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
+            PanelWriteText(ref frame, combined_Refining_Mode_String, x_Combined_Refining_Mode_Float, y_PercentageSign_Float, 0.95f, TextAlignment.RIGHT);
 
 
             //  FunctionalSign
             float width_DangerSign_Float = itemBox_ColumnInterval_Float * 0.7f;
             if (function_ShowItems_Bool == false)
             {
-                DrawIcon(frame, "Danger", x_Left, y1, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
+                DrawIcon(ref frame, "Danger", x_Left, y1, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
             }
             if (function_ShowFacilities_Bool == false)
             {
-                DrawIcon(frame, "Danger", x_Left, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
+                DrawIcon(ref frame, "Danger", x_Left, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
             }
             if (function_InventoryManagement_Bool == false)
             {
-                DrawIcon(frame, "Danger", x_7thRow_2ndColumn_Float, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
+                DrawIcon(ref frame, "Danger", x_7thRow_2ndColumn_Float, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
             }
             if (function_BroadCastConnectorGPS_Bool == false)
             {
-                DrawIcon(frame, "Danger", x_Left, y_6thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
+                DrawIcon(ref frame, "Danger", x_Left, y_6thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
             }
             if (function_ShowCargoContainerRatio_Bool == false)
             {
-                DrawIcon(frame, "Danger", x_Residues_Float, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
+                DrawIcon(ref frame, "Danger", x_Residues_Float, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
             }
         }
 
@@ -734,10 +734,10 @@ namespace IngameScript
 
             if (ratio_Float == 0) return;
 
-            DrawBox(frame, currentX, y, currentWidth, height, progressbar_Color);
+            DrawBox(ref frame, currentX, y, currentWidth, height, progressbar_Color);
         }
 
-        public void DrawLogo(MySpriteDrawFrame frame, float x, float y, float width)
+        public void DrawLogo(ref MySpriteDrawFrame frame, float x, float y, float width)
         {
             MySprite sprite = new MySprite()
             {
@@ -859,7 +859,7 @@ namespace IngameScript
             return result;
         }
 
-        public void DrawBox(MySpriteDrawFrame frame, float x, float y, float width, float height, Color border_Color, Color background_Color)
+        public void DrawBox(ref MySpriteDrawFrame frame, float x, float y, float width, float height, Color border_Color, Color background_Color)
         {
             //Echo($"width={width} | height={height}");
 
@@ -875,7 +875,7 @@ namespace IngameScript
             frame.Add(sprite);
         }
 
-        public void DrawBox(MySpriteDrawFrame frame, float x, float y, float width, float height, Color background_Color)
+        public void DrawBox(ref MySpriteDrawFrame frame, float x, float y, float width, float height, Color background_Color)
         {
             MySprite sprite;
             sprite = MySprite.CreateSprite("SquareSimple", new Vector2(x, y), new Vector2(width - 2, height - 2));
@@ -883,7 +883,7 @@ namespace IngameScript
             frame.Add(sprite);
         }
 
-        public void PanelWriteText(MySpriteDrawFrame frame, string text, float x, float y, float fontSize, TextAlignment alignment)
+        public void PanelWriteText(ref MySpriteDrawFrame frame, string text, float x, float y, float fontSize, TextAlignment alignment)
         {
             MySprite sprite = new MySprite()
             {
@@ -899,7 +899,7 @@ namespace IngameScript
             frame.Add(sprite);
         }
 
-        public void PanelWriteText(MySpriteDrawFrame frame, string text, float x, float y, float width_Float, float height_Float, float fontSize, TextAlignment alignment)
+        public void PanelWriteText(ref MySpriteDrawFrame frame, string text, float x, float y, float width_Float, float height_Float, float fontSize, TextAlignment alignment)
         {
 
             float x_Clip_Float = x,
@@ -937,7 +937,7 @@ namespace IngameScript
             }
         }
 
-        public void PanelWriteText(MySpriteDrawFrame frame, string text, float x, float y, float fontSize, TextAlignment alignment, Color co)
+        public void PanelWriteText(ref MySpriteDrawFrame frame, string text, float x, float y, float fontSize, TextAlignment alignment, Color co)
         {
             MySprite sprite = new MySprite()
             {
@@ -952,7 +952,7 @@ namespace IngameScript
             frame.Add(sprite);
         }
 
-        public void IGCSignifier(MySpriteDrawFrame frame, float x, float y, float width, Color co)
+        public void IGCSignifier(ref MySpriteDrawFrame frame, float x, float y, float width, Color co)
         {
 
             float x1_Float = x - width / 4f;
@@ -963,16 +963,16 @@ namespace IngameScript
             float height1_Float = width * 0.7f, height2_Float = height1_Float - heightInterval_Float, height3_Float = height2_Float - heightInterval_Float;
             float y_Bar1_Float = y + heightInterval_Float / 2f, y_Bar2_Float = y + heightInterval_Float;
 
-            DrawIcon(frame, "Triangle", x1_Float, y_Triangle_Float, width_Triangle_Float, width_Triangle_Float, co, 180f);
-            DrawIcon(frame, "SquareSimple", x1_Float, y, border_Float, height1_Float, co);
-            DrawIcon(frame, "SquareSimple", x1_Float + interval_Float * 1f, y_Bar2_Float, border_Float, height3_Float, co);
-            DrawIcon(frame, "SquareSimple", x1_Float + interval_Float * 2f, y_Bar1_Float, border_Float, height2_Float, co);
-            DrawIcon(frame, "SquareSimple", x1_Float + interval_Float * 3f, y, border_Float, height1_Float, co);
+            DrawIcon(ref frame, "Triangle", x1_Float, y_Triangle_Float, width_Triangle_Float, width_Triangle_Float, co, 180f);
+            DrawIcon(ref frame, "SquareSimple", x1_Float, y, border_Float, height1_Float, co);
+            DrawIcon(ref frame, "SquareSimple", x1_Float + interval_Float * 1f, y_Bar2_Float, border_Float, height3_Float, co);
+            DrawIcon(ref frame, "SquareSimple", x1_Float + interval_Float * 2f, y_Bar1_Float, border_Float, height2_Float, co);
+            DrawIcon(ref frame, "SquareSimple", x1_Float + interval_Float * 3f, y, border_Float, height1_Float, co);
 
 
         }
 
-        public void DrawIcon(MySpriteDrawFrame frame, string icon, float x, float y, float width, float height, Color picture_Color)
+        public void DrawIcon(ref MySpriteDrawFrame frame, string icon, float x, float y, float width, float height, Color picture_Color)
         {
             var sprite = new MySprite
             {
@@ -988,7 +988,7 @@ namespace IngameScript
             frame.Add(sprite);
         }
 
-        public void DrawIcon(MySpriteDrawFrame frame, string icon, float x, float y, float width, float height, Color picture_Color, float rotation)
+        public void DrawIcon(ref MySpriteDrawFrame frame, string icon, float x, float y, float width, float height, Color picture_Color, float rotation)
         {
             var sprite = new MySprite
             {
@@ -1004,7 +1004,7 @@ namespace IngameScript
             frame.Add(sprite);
         }
 
-        public void FacilitySignifier(MySpriteDrawFrame frame, float x, float y, float width, Color co)
+        public void FacilitySignifier(ref MySpriteDrawFrame frame, float x, float y, float width, Color co)
         {
             float width_LargeBox_Float = width * 0.8f;
             float interval_Float = width * 0.145f;
@@ -1013,14 +1013,14 @@ namespace IngameScript
             float x_Interval_Float = x - width * 0.17f * 0.5f - interval_Float * 0.5f;
 
 
-            DrawBox(frame, x, y, width_LargeBox_Float, width_LargeBox_Float, co);
-            DrawBox(frame, x, y1_Interval_Float, width_LargeBox_Float, interval_Float, card_Background_Color_Overall);
-            DrawBox(frame, x, y2_Interval_Float, width_LargeBox_Float, interval_Float, card_Background_Color_Overall);
-            DrawBox(frame, x_Interval_Float, y, interval_Float, width_LargeBox_Float, card_Background_Color_Overall);
+            DrawBox(ref frame, x, y, width_LargeBox_Float, width_LargeBox_Float, co);
+            DrawBox(ref frame, x, y1_Interval_Float, width_LargeBox_Float, interval_Float, card_Background_Color_Overall);
+            DrawBox(ref frame, x, y2_Interval_Float, width_LargeBox_Float, interval_Float, card_Background_Color_Overall);
+            DrawBox(ref frame, x_Interval_Float, y, interval_Float, width_LargeBox_Float, card_Background_Color_Overall);
 
         }
 
-        public void InventorySignifier(MySpriteDrawFrame frame, float x, float y, float width, Color co)
+        public void InventorySignifier(ref MySpriteDrawFrame frame, float x, float y, float width, Color co)
         {
             float width_LargeBox_Float = width * 0.8f;
             float height_LargeBox_Float = width_LargeBox_Float * 0.5f;
@@ -1033,13 +1033,13 @@ namespace IngameScript
             float y_Arraw_Float = y;
             float y_Square_Float = y_Arraw_Float - width_Arrow_Float * 0.5f - width_Square_Float * 0.5f;
 
-            DrawBox(frame, x, y_LargeBox_Float, width_LargeBox_Float, height_LargeBox_Float, co);
-            DrawBox(frame, x, y_SmallBox_Float, width_SmallBox_Float, height_SmallBox_Float, card_Background_Color_Overall);
-            DrawIcon(frame, "Triangle", x, y_Arraw_Float, width_Arrow_Float, width_Arrow_Float, co, 180f);
-            DrawIcon(frame, "SquareSimple", x, y_Square_Float, width_Square_Float, width_Square_Float, co);
+            DrawBox(ref frame, x, y_LargeBox_Float, width_LargeBox_Float, height_LargeBox_Float, co);
+            DrawBox(ref frame, x, y_SmallBox_Float, width_SmallBox_Float, height_SmallBox_Float, card_Background_Color_Overall);
+            DrawIcon(ref frame, "Triangle", x, y_Arraw_Float, width_Arrow_Float, width_Arrow_Float, co, 180f);
+            DrawIcon(ref frame, "SquareSimple", x, y_Square_Float, width_Square_Float, width_Square_Float, co);
         }
 
-        public void RefreshRateSignifier(MySpriteDrawFrame frame, float x, float y, float width, float border_Float, Color border_Color, Color background_Color)
+        public void RefreshRateSignifier(ref MySpriteDrawFrame frame, float x, float y, float width, float border_Float, Color border_Color, Color background_Color)
         {
             x++;
             float width_SingleTriangle_Float = width / 3f;
@@ -1052,20 +1052,20 @@ namespace IngameScript
             float x_InnerRightTriangle_Float = x_RightTriangle_Float - 1f;
 
 
-            DrawIcon(frame, "Triangle", x_LeftTriangle_Float, y, height_SingleTriangle_Float, width_SingleTriangle_Float, border_Color, 90f);
-            DrawIcon(frame, "Triangle", x, y, height_SingleTriangle_Float, width_SingleTriangle_Float, border_Color, 90f);
-            DrawIcon(frame, "Triangle", x_RightTriangle_Float, y, height_SingleTriangle_Float, width_SingleTriangle_Float, border_Color, 90f);
+            DrawIcon(ref frame, "Triangle", x_LeftTriangle_Float, y, height_SingleTriangle_Float, width_SingleTriangle_Float, border_Color, 90f);
+            DrawIcon(ref frame, "Triangle", x, y, height_SingleTriangle_Float, width_SingleTriangle_Float, border_Color, 90f);
+            DrawIcon(ref frame, "Triangle", x_RightTriangle_Float, y, height_SingleTriangle_Float, width_SingleTriangle_Float, border_Color, 90f);
 
             string refreshRate_String = GetValue_from_CustomData(information_Section, refreshRate_Key);
 
             switch (refreshRate_String)
             {
                 case "F":
-                    DrawIcon(frame, "Triangle", x_InnerMiddleTriangle_Float, y, height_InnerSingleTriangle_Float, width_InnerSingleTriangle_Float, background_Color, 90f);
-                    DrawIcon(frame, "Triangle", x_InnerRightTriangle_Float, y, height_InnerSingleTriangle_Float, width_InnerSingleTriangle_Float, background_Color, 90f);
+                    DrawIcon(ref frame, "Triangle", x_InnerMiddleTriangle_Float, y, height_InnerSingleTriangle_Float, width_InnerSingleTriangle_Float, background_Color, 90f);
+                    DrawIcon(ref frame, "Triangle", x_InnerRightTriangle_Float, y, height_InnerSingleTriangle_Float, width_InnerSingleTriangle_Float, background_Color, 90f);
                     break;
                 case "FF":
-                    DrawIcon(frame, "Triangle", x_InnerRightTriangle_Float, y, height_InnerSingleTriangle_Float, width_InnerSingleTriangle_Float, background_Color, 90f);
+                    DrawIcon(ref frame, "Triangle", x_InnerRightTriangle_Float, y, height_InnerSingleTriangle_Float, width_InnerSingleTriangle_Float, background_Color, 90f);
                     break;
             }
         }
@@ -1474,7 +1474,7 @@ namespace IngameScript
 
             float refreshCounter_Float = Convert.ToInt16(refreshCounter_String);
 
-            DrawBox(frame, 512 / 2, 512 / 2 + refreshCounter_Float, 520, 520, backgroundColor);
+            DrawBox(ref frame, 512 / 2, 512 / 2 + refreshCounter_Float, 520, 520, backgroundColor);
 
             for (int i = 0; i < itemAmountInEachScreen; i++)
             {
@@ -1483,13 +1483,13 @@ namespace IngameScript
                 int y = Convert.ToInt16(Math.Ceiling(Convert.ToDecimal(Convert.ToDouble(i + 1) / 7)));
 
                 if (i > indexMax_Int - 1) break;
-                else DrawSingleItemUnit(panel, frame, i + 1, x, y, cardColor);
+                else DrawSingleItemUnit(panel, ref frame, i + 1, x, y, cardColor);
             }
 
             frame.Dispose();
         }
 
-        public void DrawSingleItemUnit(IMyTextPanel panel, MySpriteDrawFrame frame, int index_Int, float x, float y, Color cardColor)
+        public void DrawSingleItemUnit(IMyTextPanel panel, ref MySpriteDrawFrame frame, int index_Int, float x, float y, Color cardColor)
         {
             string itemName_String = GetValue_from_CustomData(panel, index_Int.ToString(), itemType_Key);
             double amount_Double = Convert.ToDouble(GetValue_from_CustomData(panel, index_Int.ToString(), itemAmount2_Key));
@@ -1499,12 +1499,12 @@ namespace IngameScript
             float refreshCounter_Float = Convert.ToSingle(GetValue_from_CustomData(panel, panelInformation_Section, counter_Key));
             float x1 = Convert.ToSingle((x - 1) * itemBox_ColumnInterval_Float + (itemBox_ColumnInterval_Float - 1) / 2 + 1.25f);
             float y1 = Convert.ToSingle((y - 1) * (itemBox_RowInterval_Float + 1) + (itemBox_RowInterval_Float) / 2 + 2f) + refreshCounter_Float;
-            DrawBox(frame, x1, y1, itemBox_ColumnInterval_Float, itemBox_RowInterval_Float, cardColor);
+            DrawBox(ref frame, x1, y1, itemBox_ColumnInterval_Float, itemBox_RowInterval_Float, cardColor);
 
             //  Name text
             float x_Name = x1 - (itemBox_ColumnInterval_Float - 3) / 2 + 1;
             float y_Name = y1 - (itemBox_RowInterval_Float - 3) / 2 + 1;
-            PanelWriteText(frame, TranslateName(itemName_String), x_Name, y_Name, itemBox_ColumnInterval_Float - 3f, 15f, 0.55f, TextAlignment.LEFT);
+            PanelWriteText(ref frame, TranslateName(itemName_String), x_Name, y_Name, itemBox_ColumnInterval_Float - 3f, 15f, 0.55f, TextAlignment.LEFT);
 
             //  Picture box
             float y_Picture_Float = y_Name + 12 + itemBox_ColumnInterval_Float / 2f;
@@ -1514,11 +1514,11 @@ namespace IngameScript
             //  Amount text
             float x_Text_Amount = x1 + (itemBox_ColumnInterval_Float - 3) / 2 - 1;
             float y_Text_Amount = y_Picture_Float + itemBox_ColumnInterval_Float / 2f - 6f;
-            PanelWriteText(frame, AmountUnitConversion(amount_Double / 1000000, false), x_Text_Amount, y_Text_Amount, 0.8f, TextAlignment.RIGHT);
+            PanelWriteText(ref frame, AmountUnitConversion(amount_Double / 1000000, false), x_Text_Amount, y_Text_Amount, 0.8f, TextAlignment.RIGHT);
 
             //  Time remaining
             float y_TimeRemaining_Float = y_Text_Amount + 25f;
-            PanelWriteText(frame, time_String, x_Text_Amount, y_TimeRemaining_Float, itemBox_ColumnInterval_Float - 4f, 15f, 0.57f, TextAlignment.RIGHT);
+            PanelWriteText(ref frame, time_String, x_Text_Amount, y_TimeRemaining_Float, itemBox_ColumnInterval_Float - 4f, 15f, 0.57f, TextAlignment.RIGHT);
 
         }
 
@@ -1762,11 +1762,11 @@ namespace IngameScript
                 string[] arry = panel.CustomName.Split(':');
                 if (Convert.ToInt16(arry[1]) < maxNumber_Panel_Int)
                 {
-                    DrawFullFacilityScreen(panel, frame, arry[1], true, facilityList, borderColor, backgroundColor);
+                    DrawFullFacilityScreen(panel, ref frame, arry[1], true, facilityList, borderColor, backgroundColor);
                 }
                 else
                 {
-                    DrawFullFacilityScreen(panel, frame, arry[1], false, facilityList, borderColor, backgroundColor);
+                    DrawFullFacilityScreen(panel, ref frame, arry[1], false, facilityList, borderColor, backgroundColor);
                 }
                 frame.Dispose();
 
@@ -1783,7 +1783,7 @@ namespace IngameScript
                 if (panel.ContentType != ContentType.SCRIPT) panel.ContentType = ContentType.SCRIPT;
                 MySpriteDrawFrame frame = panel.DrawFrame();
                 string[] arry = panel.CustomName.Split(':');
-                DrawFullFacilityScreen(panel, frame, arry[1], true, facilityList, borderColor, backgroundColor);
+                DrawFullFacilityScreen(panel, ref frame, arry[1], true, facilityList, borderColor, backgroundColor);
                 frame.Dispose();
 
                 Echo(panel.CustomName);
@@ -1792,11 +1792,11 @@ namespace IngameScript
 
         }
 
-        public void DrawFullFacilityScreen(IMyTextPanel panel, MySpriteDrawFrame frame, string groupNumber, bool isEnoughScreen, Facility_Struct[] facilityList, Color borderColor, Color backgroundColor)
+        public void DrawFullFacilityScreen(IMyTextPanel panel, ref MySpriteDrawFrame frame, string groupNumber, bool isEnoughScreen, Facility_Struct[] facilityList, Color borderColor, Color backgroundColor)
         {
             panel.WriteText("", false);
 
-            DrawFacilityScreenFrame(panel, frame, borderColor, backgroundColor);
+            DrawFacilityScreenFrame(panel, ref frame, borderColor, backgroundColor);
 
             for (int i = 0; i < facilityAmountInEachScreen; i++)
             {
@@ -1808,17 +1808,17 @@ namespace IngameScript
                 {
                     if (isEnoughScreen)
                     {
-                        DrawSingleFacilityUnit(panel, frame, (k + 1).ToString() + ". " + facilityList[k].Name + " ×" + facilityList[k].Productivity + "%", facilityList[k].IsProducing_Bool, AmountUnitConversion(facilityList[k].ItemAmount, false), facilityList[k].Picture, facilityList[k].IsRepeatMode_Bool, facilityList[k].IsCooperativeMode_Bool, facilityList[k].IsEnabled_Bool, i);
+                        DrawSingleFacilityUnit(panel, ref frame, (k + 1).ToString() + ". " + facilityList[k].Name + " ×" + facilityList[k].Productivity + "%", facilityList[k].IsProducing_Bool, AmountUnitConversion(facilityList[k].ItemAmount, false), facilityList[k].Picture, facilityList[k].IsRepeatMode_Bool, facilityList[k].IsCooperativeMode_Bool, facilityList[k].IsEnabled_Bool, i);
                     }
                     else
                     {
                         double residus = facilityList.Length - facilityAmountInEachScreen * Convert.ToInt16(groupNumber) + 1;
-                        DrawSingleFacilityUnit(panel, frame, "+ " + residus.ToString() + " Facilities", false, "0", "Empty", false, false, false, i);
+                        DrawSingleFacilityUnit(panel, ref frame, "+ " + residus.ToString() + " Facilities", false, "0", "Empty", false, false, false, i);
                     }
                 }
                 else
                 {
-                    DrawSingleFacilityUnit(panel, frame, (k + 1).ToString() + ". " + facilityList[k].Name + " ×" + facilityList[k].Productivity + "%", facilityList[k].IsProducing_Bool, AmountUnitConversion(facilityList[k].ItemAmount, false), facilityList[k].Picture, facilityList[k].IsRepeatMode_Bool, facilityList[k].IsCooperativeMode_Bool, facilityList[k].IsEnabled_Bool, i);
+                    DrawSingleFacilityUnit(panel, ref frame, (k + 1).ToString() + ". " + facilityList[k].Name + " ×" + facilityList[k].Productivity + "%", facilityList[k].IsProducing_Bool, AmountUnitConversion(facilityList[k].ItemAmount, false), facilityList[k].Picture, facilityList[k].IsRepeatMode_Bool, facilityList[k].IsCooperativeMode_Bool, facilityList[k].IsEnabled_Bool, i);
                 }
 
                 panel.WriteText($"{(k + 1).ToString() + ".\n"}{facilityList[k].Name}", true);
@@ -1827,27 +1827,27 @@ namespace IngameScript
             }
         }
 
-        public void DrawFacilityScreenFrame(IMyTextPanel panel, MySpriteDrawFrame frame, Color borderColor, Color backgroundColor)
+        public void DrawFacilityScreenFrame(IMyTextPanel panel, ref MySpriteDrawFrame frame, Color borderColor, Color backgroundColor)
         {
             float lineWith_Float = 1f, screenCenter_Float = 512 / 2;
 
             //DrawBox(frame, 512 / 2, 512 / 2 + Convert.ToSingle(panel.CustomData), 514, 514, Color.Black);
-            DrawBox(frame, screenCenter_Float, screenCenter_Float + Convert.ToSingle(panel.CustomData), 514, 514, backgroundColor);
+            DrawBox(ref frame, screenCenter_Float, screenCenter_Float + Convert.ToSingle(panel.CustomData), 514, 514, backgroundColor);
 
             for (int i = 0; i <= 20; i++)
             {
-                DrawBox(frame, screenCenter_Float, 1 + facilityBox_RowInterval_Float * i, 512, lineWith_Float, borderColor);
+                DrawBox(ref frame, screenCenter_Float, 1 + facilityBox_RowInterval_Float * i, 512, lineWith_Float, borderColor);
             }
 
             float x1 = 1, x2 = x1 + 92, x3 = x2 + facilityBox_RowInterval_Float, x4 = x3 + facilityBox_RowInterval_Float, x5 = 512, x31 = (x3 + x4) / 2;
             float[] linePosition_X_Float = { x1, x2, x3, x4, x5 };
             foreach (var x in linePosition_X_Float)
             {
-                DrawBox(frame, x, screenCenter_Float, lineWith_Float, 512, borderColor);
+                DrawBox(ref frame, x, screenCenter_Float, lineWith_Float, 512, borderColor);
             }
         }
 
-        public void DrawSingleFacilityUnit(IMyTextPanel panel, MySpriteDrawFrame frame, string Name, bool isProducing, string itemAmount, string picture, bool isRepeating, bool isCooperative, bool isEnabled, int index)
+        public void DrawSingleFacilityUnit(IMyTextPanel panel, ref MySpriteDrawFrame frame, string Name, bool isProducing, string itemAmount, string picture, bool isRepeating, bool isCooperative, bool isEnabled, int index)
         {
             //  ItemAmount box
             float h = facilityBox_RowInterval_Float;
@@ -1856,8 +1856,8 @@ namespace IngameScript
             float y1 = Convert.ToSingle(1 + h / 2 + h * index) + Convert.ToSingle(panel.CustomData);
             float textY = y1 - h / 2 + 2F, textSize = 0.75f;
             //DrawBox(frame, x1, y1, width, h, background_Color);
-            if (isRepeating) PanelWriteText(frame, "RE", x1 - width / 2 + 2f, textY, textSize, TextAlignment.LEFT);
-            PanelWriteText(frame, itemAmount, x1 + width / 2 - 2f, textY, textSize, TextAlignment.RIGHT);
+            if (isRepeating) PanelWriteText(ref frame, "RE", x1 - width / 2 + 2f, textY, textSize, TextAlignment.LEFT);
+            PanelWriteText(ref frame, itemAmount, x1 + width / 2 - 2f, textY, textSize, TextAlignment.RIGHT);
 
             //  picture box
             float x2 = x1 + width / 2 + h / 2 + 0.5f;
@@ -1874,12 +1874,12 @@ namespace IngameScript
             float x3 = x2 + h - 0.5f;
             if (isEnabled)
             {
-                if (isProducing) DrawBox(frame, x3, y1, boxWH_Float, boxWH_Float, new Color(0, 140, 0));
-                else DrawBox(frame, x3, y1, boxWH_Float, boxWH_Float, new Color(130, 100, 0));
+                if (isProducing) DrawBox(ref frame, x3, y1, boxWH_Float, boxWH_Float, new Color(0, 140, 0));
+                else DrawBox(ref frame, x3, y1, boxWH_Float, boxWH_Float, new Color(130, 100, 0));
             }
             else
             {
-                DrawBox(frame, x3, y1, boxWH_Float, boxWH_Float, new Color(178, 9, 9));
+                DrawBox(ref frame, x3, y1, boxWH_Float, boxWH_Float, new Color(178, 9, 9));
             }
             if (isCooperative) DrawImage(frame, "Circle", x3, y1, h - 7, new Color(0, 0, 255));
 
@@ -1888,7 +1888,7 @@ namespace IngameScript
             float nameBoxWidth = Convert.ToSingle((512 - x3 - h / 2) - 2);
             float x4 = x3 + h / 2 + nameBoxWidth / 2 + 0.5f;
             //DrawBox(frame, x4, y1, nameBoxWidth, h, background_Color);
-            PanelWriteText(frame, Name, x4 - nameBoxWidth / 2 + 1f, textY, textSize, TextAlignment.LEFT);
+            PanelWriteText(ref frame, Name, x4 - nameBoxWidth / 2 + 1f, textY, textSize, TextAlignment.LEFT);
         }
 
         public string TranslateSpriteName(string name)
