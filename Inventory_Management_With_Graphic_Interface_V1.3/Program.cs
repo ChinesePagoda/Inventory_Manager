@@ -2147,9 +2147,8 @@ namespace IngameScript
         //###############     GasTank     ###############
 
         /*  Broadcast Connectors GPS    */
-        public void Broadcast_Connectors_GPS(string nextStage)
+        public void Broadcast_Connectors_GPS()
         {
-            stage_Key = nextStage;
 
             if (!function_BroadCastConnectorGPS_Bool) return;
 
@@ -2553,10 +2552,7 @@ namespace IngameScript
                     GasTank(hydrogenTanks, ref counter_HydrogenTank_Int, "HydrogenBottle", stage_OxygenTank);
                     break;
                 case stage_OxygenTank:
-                    GasTank(oxygenTanks, ref counter_OxydrogenTank_Int, "OxygenBottle", stage_BroadcastGPS);
-                    break;
-                case stage_BroadcastGPS:
-                    Broadcast_Connectors_GPS(stage_ShowCargoContainerResidues);
+                    GasTank(oxygenTanks, ref counter_OxydrogenTank_Int, "OxygenBottle", stage_ShowCargoContainerResidues);
                     break;
                 case stage_ShowCargoContainerResidues:
                     ShowCargoContainerResidues(stage_Combined_Refining);
@@ -2565,6 +2561,8 @@ namespace IngameScript
                     CheckEachRefinery(stage_ShowItems);
                     break;
             }
+
+            Broadcast_Connectors_GPS();
         }
 
         public void Main(string argument, UpdateType updateSource)
