@@ -1152,6 +1152,7 @@ namespace IngameScript
         public void GetAllItems()
         {
             time1_DateTime = time2_DateTime;
+            if (time2_DateTime == null) time1_DateTime = DateTime.Now;
             time2_DateTime = DateTime.Now;
 
             Dictionary<string, double> allItems_Dic = new Dictionary<string, double>();
@@ -1417,7 +1418,10 @@ namespace IngameScript
             if (timeDifference_TimeSpan.Ticks > 0 && amountDifference_Double > 0)
             {
                 double efficiency_Double = amountDifference_Double / timeDifference_TimeSpan.Ticks;
-                timeRemaining_Long = Convert.ToInt64(amount2_Double / efficiency_Double);
+                if(Int64.MaxValue > amount2_Double / efficiency_Double)
+                {
+                    timeRemaining_Long = Convert.ToInt64(amount2_Double / efficiency_Double);
+                }
             }
             TimeSpan timeRemaining_TimeSpan = new TimeSpan(timeRemaining_Long);
 
@@ -2576,6 +2580,7 @@ namespace IngameScript
             MainLogic();
 
             Argument_Handler(argument);
+
         }
     }
 }
