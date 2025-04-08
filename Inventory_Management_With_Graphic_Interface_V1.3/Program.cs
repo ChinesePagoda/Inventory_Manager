@@ -22,9 +22,6 @@ namespace IngameScript
 {
     partial class Program: MyGridProgram
     {
-
-
-
         MyIni _ini;
 
         List<string> spritesList = new List<string>();
@@ -43,8 +40,6 @@ namespace IngameScript
         Dictionary<string, string> translator = new Dictionary<string, string>();
 
         List<IMyPowerProducer> powerProducers = new List<IMyPowerProducer>();
-
-
         List<IMyAssembler> assemblers = new List<IMyAssembler>();
         List<IMyRefinery> refineries = new List<IMyRefinery>();
         List<IMyShipConnector> connectors = new List<IMyShipConnector>();
@@ -57,17 +52,21 @@ namespace IngameScript
         List<IMyGasTank> hydrogenTanks = new List<IMyGasTank>();
         List<IMyGasTank> oxygenTanks = new List<IMyGasTank>();
 
+        List<IMyRadioAntenna> radioAntennas = new List<IMyRadioAntenna>();
+
         double counter_Logo = 0;
         DateTime time1_DateTime = DateTime.Now;
         DateTime time2_DateTime = DateTime.Now;
 
+        StringBuilder debug_StringBuilder;
 
         int counter_ShowItems = 0, counter_ShowFacilities = 1, counter_Panel = 0,
             counter_Assembler_Int = 1, counter_Refinery_Int = 1, counter_CombinedRefining_Int = 1,
             counter_Connector_Int = 1, counter_CryoChamber_Int = 1, counter_Sorter_Int = 1,
             counter_HydrogenTank_Int = 1, counter_OxydrogenTank_Int = 1,
             counter_CargoContainer_Int = 1,
-            maxNumber_AssemblerPanel_Int = 0, maxNumber_RefineryPanel_Int = 0;
+            maxNumber_AssemblerPanel_Int = 0, maxNumber_RefineryPanel_Int = 0,
+            counter_AutoProduction_Int = 1;
 
         const int itemAmountInEachScreen = 28,
             facilityAmountInEachScreen = 20,
@@ -79,6 +78,7 @@ namespace IngameScript
         const string information_Section = "Information",
             function_On_Off_Section = "Function_On_Off(Y/N)",
             translateList_Section = "Translate_List",
+            autoProductionList_Section = "AutoProduction_List",
             length_Key = "Length";
         const string stage_ShowItems = "Stage_ShowItems",
             stage_ShowFacilities = "Stage_ShowFacilities",
@@ -91,24 +91,26 @@ namespace IngameScript
             stage_OxygenTank = "Stage_OxygenTank",
             stage_BroadcastGPS = "Stage_BroadcastGPS",
             stage_ShowCargoContainerResidues = "Stage_ShowCargoContainerRatio",
-            stage_Combined_Refining = "Stage_Combined_Refining";
+            stage_Combined_Refining = "Stage_Combined_Refining",
+            stage_AutoProduction = "Stage_AutoProduction";
         const string function_ShowOverall = "ShowOverall",
             function_ShowItems = "ShowItems",
             function_ShowFacilities = "ShowFacilities",
             function_InventoryManagement = "InventoryManagement",
             function_BroadCastConnectorGPS = "BroadCastConnectorGPS",
-            function_ShowCargoContainerRatio = "ShowCargoContainerRatio";
+            function_ShowCargoContainerRatio = "ShowCargoContainerRatio",
+            function_AutoProduction = "AutoProduction";
         bool function_ShowOverall_Bool = true,
             function_ShowItems_Bool = true,
             function_ShowFacilities_Bool = true,
             function_InventoryManagement_Bool = true,
             function_BroadCastConnectorGPS_Bool = true,
-            function_ShowCargoContainerRatio_Bool = true;
+            function_ShowCargoContainerRatio_Bool = true,
+            function_AutoProduction_Bool = true;
 
 
         const string customName_Key = "CustomName";
         const string refreshRate_Key = "Refresh_Rate(F_FF_FFF)";
-
 
         const string ore_Section = "Ore",
             combinedMode_Key = "Combined_Mode";
@@ -122,16 +124,27 @@ namespace IngameScript
             itemAmount2_Key = "Item_Amount_2",
             time_Key = "Time",
             time1_Key = "Time1",
-            time2_Key = "Time2";
+            time2_Key = "Time2",
+            productionAmount_Key = "ProductionAmount";
 
         string stage_Key = "";
 
-        string[] FunctionName_Array = { function_ShowOverall, function_ShowItems, function_ShowFacilities, function_InventoryManagement, function_BroadCastConnectorGPS, function_ShowCargoContainerRatio };
-
+        string[] FunctionName_Array = 
+        { 
+            function_ShowOverall, 
+            function_ShowItems, 
+            function_ShowFacilities, 
+            function_InventoryManagement, 
+            function_BroadCastConnectorGPS, 
+            function_ShowCargoContainerRatio,
+            function_AutoProduction
+        };
 
         public struct ItemList
         {
             public string Name;
+            public string ProductionName;
+            public double ProductionAmount;
             public double Amount1;
             public double Amount2;
             public DateTime Time1;
@@ -142,6 +155,14 @@ namespace IngameScript
         ItemList[] itemList_Ingot;
         ItemList[] itemList_Component;
         ItemList[] itemList_AmmoMagazine;
+
+        public struct ProdcutionProperty
+        {
+            public string ComponentName;
+            public string ProductionName;
+            public double ProductionAmount;
+        }
+        ProdcutionProperty[] productionList;
 
         public struct Facility_Struct
         {
@@ -159,8 +180,10 @@ namespace IngameScript
 
         Dictionary<string, double> method_Unified_Dic = new Dictionary<string, double>();
         Dictionary<string, double> method_Refinery_Dic;
-        Dictionary<string, double> allItems_InRefinery_Dic;
+        Dictionary<string, double> allitems_InAssemblers_Dic;
+        Dictionary<string, double> allItems_InRefineries_Dic;
         Dictionary<string, double> allItems_Old_Dic = new Dictionary<string, double>();
+        Dictionary<string, double> allItems_Old_Assemblers_Dic;
 
 
         Color card_Background_Color_Overall = new Color(10, 20, 40);
@@ -181,6 +204,8 @@ namespace IngameScript
             SetDefultConfiguration();
 
             BuildTranslateDic();
+
+            BuildProductionList();
 
             Build_SpriteList();
 
@@ -227,6 +252,7 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(hydrogenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Oxygen") && !b.DefinitionDisplayNameText.ToString().Contains("氧气"));
             GridTerminalSystem.GetBlocksOfType(oxygenTanks, b => b.IsSameConstructAs(Me) && !b.DefinitionDisplayNameText.ToString().Contains("Hydrogen") && !b.DefinitionDisplayNameText.ToString().Contains("氢气"));
 
+            GridTerminalSystem.GetBlocksOfType(radioAntennas, b => b.IsSameConstructAs(Me));
         }
 
         public void SetDefultConfiguration()
@@ -240,6 +266,7 @@ namespace IngameScript
             WriteDefaultItem(information_Section, "LCD_Refinery_Inventory_Display", "LCD_Refinery_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "LCD_Assembler_Inventory_Display", "LCD_Assembler_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "Assemblers_CooperativeMode", "CO_ON or CO_OFF | Fill In Argument of Programmable Block And Press Run");
+            WriteDefaultItem(information_Section, "Clear_Assembler_Queue", "CLS | Fill In Argument of Programmable Block And Press Run");
             WriteDefaultItem(information_Section, "IGCTAG", "CHANNEL1");
             WriteDefaultItem(information_Section, refreshRate_Key, "FF");
 
@@ -251,6 +278,13 @@ namespace IngameScript
 
             WriteDefaultItem(translateList_Section, length_Key, "1");
             WriteDefaultItem(translateList_Section, "1", "AH_BoreSight:More");
+
+
+            WriteDefaultItem(autoProductionList_Section, length_Key, "3");
+            WriteDefaultItem(autoProductionList_Section, "1", "MyObjectBuilder_Component/SteelPlate:MyObjectBuilder_BlueprintDefinition/SteelPlate:5000");
+            WriteDefaultItem(autoProductionList_Section, "2", "MyObjectBuilder_Component/Construction:MyObjectBuilder_BlueprintDefinition/ConstructionComponent:5000");
+            WriteDefaultItem(autoProductionList_Section, "3", "MyObjectBuilder_Component/InteriorPlate:MyObjectBuilder_BlueprintDefinition/InteriorPlate:5000");
+
 
             foreach (var panel in panels_Items_All) panel.CustomData = "";
             foreach (var panel in panels_Items_Ore) panel.CustomData = "";
@@ -372,6 +406,8 @@ namespace IngameScript
             if (value_String != "Y") function_BroadCastConnectorGPS_Bool = false;
             value_String = GetValue_from_CustomData(function_On_Off_Section, function_ShowCargoContainerRatio);
             if (value_String != "Y") function_ShowCargoContainerRatio_Bool = false;
+            value_String = GetValue_from_CustomData(function_On_Off_Section, function_AutoProduction);
+            if (value_String != "Y") function_AutoProduction_Bool = false;
         }
 
         public void RefreshRate()
@@ -539,6 +575,7 @@ namespace IngameScript
             }
         }
 
+        /*###############################################*/
         /*###############     Overall     ###############*/
         public void OverallDisplay()
         {
@@ -669,8 +706,8 @@ namespace IngameScript
             string igcTag_String = GetValue_from_CustomData(information_Section, "IGCTAG");
 
             IGCSignifier(ref frame, x_Left, y_6thRow_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
-            PanelWriteText(ref frame, "IGCTAG:", x_IGCTag_Float, y_IGCTag_Float, fontsize_ProgressBar_Float, TextAlignment.LEFT);
-            PanelWriteText(ref frame, igcTag_String, x_IGCTag_Float, y_IGCTag2_Float, fontsize_ProgressBar_Float, TextAlignment.LEFT);
+            PanelWriteText(ref frame, igcTag_String, x_IGCTag_Float, y_IGCTag_Float, fontsize_ProgressBar_Float, TextAlignment.LEFT);
+            PanelWriteText(ref frame, AntennaDistance(), x_IGCTag_Float, y_IGCTag2_Float, fontsize_ProgressBar_Float, TextAlignment.LEFT);
 
             //  Facility
             float y_7thRow_Float = 6f * itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2f + 1.5f + Convert.ToSingle(panel.CustomData);
@@ -693,12 +730,15 @@ namespace IngameScript
             RefreshRateSignifier(ref frame, x_RefreshRate_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, 3f, font_Color_Overall, card_Background_Color_Overall);
 
             //  Combined_Refining
-            //  MyObjectBuilder_Ore/Stone
             float x_Combined_Refining_Float = x_Left + itemBox_ColumnInterval_Float * 4f;
             float x_Combined_Refining_Mode_Float = x_PercentageSign_Float + itemBox_ColumnInterval_Float * 2f;
             string combined_Refining_Mode_String = GetValue_from_CustomData(ore_Section, combinedMode_Key);
             DrawIcon(ref frame, "MyObjectBuilder_Ore/Stone", x_Combined_Refining_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
             PanelWriteText(ref frame, combined_Refining_Mode_String, x_Combined_Refining_Mode_Float, y_PercentageSign_Float, 0.95f, TextAlignment.RIGHT);
+
+            //  AutoProdcution
+            float x_AutoProduction_Float = x_Left + itemBox_ColumnInterval_Float * 5f;
+            DrawIcon(ref frame, "MyObjectBuilder_PhysicalGunObject/WelderItem", x_AutoProduction_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
 
 
             //  FunctionalSign
@@ -722,6 +762,10 @@ namespace IngameScript
             if (function_ShowCargoContainerRatio_Bool == false)
             {
                 DrawIcon(ref frame, "Danger", x_Residues_Float, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
+            }
+            if(function_AutoProduction_Bool == false)
+            {
+                DrawIcon(ref frame, "Danger", x_AutoProduction_Float, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
             }
         }
 
@@ -972,6 +1016,26 @@ namespace IngameScript
 
         }
 
+        public string AntennaDistance()
+        {
+            float distance_Float = 0;
+            int k = 1;
+            foreach(var radioAntenna in radioAntennas)
+            {
+                if(radioAntenna.Enabled && radioAntenna.EnableBroadcasting)
+                {
+                    if (k == 1)
+                    {
+                        distance_Float = radioAntenna.Radius;
+                        k++;
+                    }
+                    else if (distance_Float < radioAntenna.Radius) distance_Float = radioAntenna.Radius;
+                }
+            }
+
+            return AmountUnitConversion(distance_Float, false) + "m";
+        }
+
         public void DrawIcon(ref MySpriteDrawFrame frame, string icon, float x, float y, float width, float height, Color picture_Color)
         {
             var sprite = new MySprite
@@ -1070,9 +1134,11 @@ namespace IngameScript
             }
         }
 
-        //###############     Overall     ###############
+        /*###############     Overall     ###############*/
+        /*###############################################*/
 
 
+        /*#################################################*/
         /*###############     ShowItems     ###############*/
 
         public void ShowItems(string nextStage)
@@ -1086,40 +1152,34 @@ namespace IngameScript
                 return;
             }
 
-            switch (counter_ShowItems.ToString())
+            Echo($"{counter_ShowItems}/{counter_TotalCycle_Int}");
+            switch (counter_ShowItems)
             {
-                case "1":
-                    Echo($"{counter_ShowItems}/{counter_TotalCycle_Int}");
+                case 1:
                     Echo("GetItems");
                     GetAllItems();
                     break;
-                case "2":
-                    Echo($"{counter_ShowItems}/{counter_TotalCycle_Int}");
+                case 2:
                     Echo("AllItems");
                     ItemDivideInGroups(itemList_All, panels_Items_All);
                     break;
-                case "3":
-                    Echo($"{counter_ShowItems}/{counter_TotalCycle_Int}");
+                case 3:
                     Echo("Ore");
                     ItemDivideInGroups(itemList_Ore, panels_Items_Ore);
                     break;
-                case "4":
-                    Echo($"{counter_ShowItems}/{counter_TotalCycle_Int}");
+                case 4:
                     Echo("Ingot");
                     ItemDivideInGroups(itemList_Ingot, panels_Items_Ingot);
                     break;
-                case "5":
-                    Echo($"{counter_ShowItems}/{counter_TotalCycle_Int}");
+                case 5:
                     Echo("Component");
                     ItemDivideInGroups(itemList_Component, panels_Items_Component);
                     break;
-                case "6":
-                    Echo($"{counter_ShowItems}/{counter_TotalCycle_Int}");
+                case 6:
                     Echo("AmmoMagazine");
                     ItemDivideInGroups(itemList_AmmoMagazine, panels_Items_AmmoMagazine);
                     break;
-                case "7":
-                    Echo($"{counter_ShowItems}/{counter_TotalCycle_Int}");
+                case 7:
                     Echo("DrawItemPanels");
                     DrawItemPanels();
                     break;
@@ -1254,10 +1314,15 @@ namespace IngameScript
                 itemList_All[k].Time2 = time2_DateTime;
                 if (allItems_Old_Dic.ContainsKey(key)) itemList_All[k].Amount1 = allItems_Old_Dic[key];
                 else itemList_All[k].Amount1 = 0;
+                foreach(var item in productionList)
+                {
+                    if (item.ComponentName == key) itemList_All[k].ProductionAmount = item.ProductionAmount * 1000000;
+                }
                 k++;
             }
-
+            allItems_Old_Dic.Clear();
             allItems_Old_Dic = allItems_Dic;
+
 
             itemList_Ore = new ItemList[LengthOfEachCategory("MyObjectBuilder_Ore")];
             itemList_Ingot = new ItemList[LengthOfEachCategory("MyObjectBuilder_Ingot")];
@@ -1410,6 +1475,7 @@ namespace IngameScript
             double amount2_Double = item_IL.Amount2;
             DateTime time1_DT = item_IL.Time1;
             DateTime time2_DT = item_IL.Time2;
+            double productionAmount_Double = item_IL.ProductionAmount;
 
             double amountDifference_Double = amount1_Double - amount2_Double;
             TimeSpan timeDifference_TimeSpan = time2_DT - time1_DT;
@@ -1441,7 +1507,7 @@ namespace IngameScript
             WriteValue_to_CustomData(panel, index_Int.ToString(), time_Key, time_String);
             WriteValue_to_CustomData(panel, index_Int.ToString(), time1_Key, time1_DT.ToString());
             WriteValue_to_CustomData(panel, index_Int.ToString(), time2_Key, time2_DT.ToString());
-
+            WriteValue_to_CustomData(panel, index_Int.ToString(), productionAmount_Key, productionAmount_Double.ToString());
         }
 
         public void WriteTheLastItemCustomData(IMyTextPanel panel, int index_Int, double residue_Double)
@@ -1498,6 +1564,7 @@ namespace IngameScript
             string itemName_String = GetValue_from_CustomData(panel, index_Int.ToString(), itemType_Key);
             double amount_Double = Convert.ToDouble(GetValue_from_CustomData(panel, index_Int.ToString(), itemAmount2_Key));
             string time_String = GetValue_from_CustomData(panel, index_Int.ToString(), time_Key);
+            double amount_Production_Double = Convert.ToDouble(GetValue_from_CustomData(panel, index_Int.ToString(), productionAmount_Key));
 
             //  Main box
             float refreshCounter_Float = Convert.ToSingle(GetValue_from_CustomData(panel, panelInformation_Section, counter_Key));
@@ -1519,6 +1586,13 @@ namespace IngameScript
             float x_Text_Amount = x1 + (itemBox_ColumnInterval_Float - 3) / 2 - 1;
             float y_Text_Amount = y_Picture_Float + itemBox_ColumnInterval_Float / 2f - 6f;
             PanelWriteText(ref frame, AmountUnitConversion(amount_Double / 1000000, false), x_Text_Amount, y_Text_Amount, 0.8f, TextAlignment.RIGHT);
+
+            //  AutoProductionAmount text
+            float y_Text_Production_Amount = y_Text_Amount - 12f;
+            if(amount_Production_Double != 0)
+            {
+                PanelWriteText(ref frame, AmountUnitConversion(amount_Production_Double / 1000000, false), x_Text_Amount, y_Text_Production_Amount, 0.5f, TextAlignment.RIGHT);
+            }
 
             //  Time remaining
             float y_TimeRemaining_Float = y_Text_Amount + 25f;
@@ -1552,56 +1626,11 @@ namespace IngameScript
             }
         }
 
-        //###############     ShowItems     ###############
+        /*###############     ShowItems     ###############*/
+        /*#################################################*/
 
-
-        /*###############     ShowProductionQueue     ###############*/
-        public void DebugLCD(string text)
-        {
-            List<IMyTextPanel> debugPanel = new List<IMyTextPanel>();
-            GridTerminalSystem.GetBlocksOfType(debugPanel, b => b.IsSameConstructAs(Me) && b.CustomName == "DEBUGLCD");
-
-            if (debugPanel.Count == 0) return;
-
-            string temp = "";
-            foreach (var panel in debugPanel)
-            {
-                temp = "";
-                temp = panel.GetText();
-            }
-
-            foreach (var panel in debugPanel)
-            {
-                if (panel.ContentType != ContentType.TEXT_AND_IMAGE) panel.ContentType = ContentType.TEXT_AND_IMAGE;
-                panel.FontSize = 0.55f;
-                panel.Font = "LoadingScreen";
-                panel.WriteText(DateTime.Now.ToString(), false);
-                panel.WriteText("\n", true);
-                panel.WriteText(text, true);
-                panel.WriteText("\n", true);
-                panel.WriteText(temp, true);
-            }
-        }
-
-        public void ShowProductionQueue()
-        {
-            StringBuilder str = new StringBuilder();
-            foreach (var assembler in assemblers)
-            {
-                List<MyProductionItem> productionitems = new List<MyProductionItem>();
-                assembler.GetQueue(productionitems);
-                foreach (var item1 in productionitems)
-                {
-                    str.Append($"{assembler.CustomName}:{item1.BlueprintId}:{item1.Amount}");
-                    str.Append("\n");
-                }
-            }
-            DebugLCD(str.ToString());
-        }
-        //###############     ShowProductionQueue     ###############
-
-
-        /*###############   RefineryAndAssembler    ###############*/
+        /*###########################################################*/
+        /*###############   Refinery_And_Assembler    ###############*/
 
         public void ShowFacilities(string nextStage)
         {
@@ -1932,10 +1961,11 @@ namespace IngameScript
             frame.Add(sprite);
         }
 
+        /*###############   Refinery_And_Assembler    ###############*/
+        /*###########################################################*/
 
-        //###############   RefineryAndAssembler    ###############
 
-
+        /*#######################################################*/
         /*###############     Assembler_Clear     ###############*/
         public void Assembler_Clear(string nextStage)
         {
@@ -1983,13 +2013,12 @@ namespace IngameScript
 
         public void ClearInventory(IMyInventory inventory_Block)
         {
-
-            if (!inventory_Block.IsItemAt(0)) return;
-
             foreach (var cargoContainer in cargoContainers)
             {
                 List<MyInventoryItem> items = new List<MyInventoryItem>();
                 inventory_Block.GetItems(items);
+
+                if (items.Count < 1) return;
 
                 foreach (var item in items)
                 {
@@ -1997,9 +2026,11 @@ namespace IngameScript
                 }
             }
         }
-        //###############     Assembler_Clear     ###############
+        /*###############     Assembler_Clear     ###############*/
+        /*#######################################################*/
 
 
+        /*######################################################*/
         /*###############     Refinery_Clear     ###############*/
         public void Refinery_Clear(string nextStage)
         {
@@ -2023,9 +2054,11 @@ namespace IngameScript
             }
             counter_Refinery_Int++;
         }
-        //###############     Refinery_Clear     ###############
+        /*###############     Refinery_Clear     ###############*/
+        /*######################################################*/
 
 
+        /*#######################################################*/
         /*###############     Connector_Clear     ###############*/
         public void Connector_Clear(string nextStage)
         {
@@ -2049,9 +2082,11 @@ namespace IngameScript
             }
             counter_Connector_Int++;
         }
-        //###############     Connector_Clear     ###############
+        /*###############     Connector_Clear     ###############*/
+        /*#######################################################*/
 
 
+        /*#########################################################*/
         /*###############     CryoChamber_Clear     ###############*/
         public void CryoChamber_Clear(string nextStage)
         {
@@ -2075,9 +2110,11 @@ namespace IngameScript
             }
             counter_CryoChamber_Int++;
         }
-        //###############     CryoChamber_Clear     ###############
+        /*###############     CryoChamber_Clear     ###############*/
+        /*#########################################################*/
 
 
+        /*####################################################*/
         /*###############     Sorter_Clear     ###############*/
         public void Sorter_Clear(string nextStage)
         {
@@ -2100,9 +2137,11 @@ namespace IngameScript
             }
             counter_Sorter_Int++;
         }
-        //###############     Sorter_Clear     ###############
+        /*###############     Sorter_Clear     ###############*/
+        /*####################################################*/
 
 
+        /*###############################################*/
         /*###############     GasTank     ###############*/
         public void GasTank(List<IMyGasTank> gasTanks, ref int counter_Int, string bottleName_String, string nextStage)
         {
@@ -2148,7 +2187,9 @@ namespace IngameScript
             }
 
         }
-        //###############     GasTank     ###############
+        /*###############     GasTank     ###############*/
+        /*###############################################*/
+
 
         /*  Broadcast Connectors GPS    */
         public void Broadcast_Connectors_GPS()
@@ -2189,10 +2230,42 @@ namespace IngameScript
             if (value_String == null || value_String == "") WriteValue_to_CustomData(information_Section, "IGCTAG", "CHANNEL1");
             IGC.SendBroadcastMessage(value_String, sb.ToString());
 
-            WriteValue_to_CustomData("Connectors_Information", "Value", sb.ToString());
+            WriteValue_to_CustomData("Connectors_Information", "Value1", sb.ToString());
+
+
+
+            sb.Clear();
+            sb.Append(connectors_BroadCast.Count.ToString());
+            sb.Append("=");
+
+            foreach (var connector in connectors_BroadCast)
+            {
+                sb.Append("[");
+                sb.Append(connector.CustomName.ToString());
+                sb.Append(":");
+                sb.Append(connector.GetPosition().X.ToString());
+                sb.Append(":");
+                sb.Append(connector.GetPosition().Y.ToString());
+                sb.Append(":");
+                sb.Append(connector.GetPosition().Z.ToString());
+                sb.Append(":");
+                sb.Append(connector.WorldMatrix.Forward.X.ToString());
+                sb.Append(":");
+                sb.Append(connector.WorldMatrix.Forward.Y.ToString());
+                sb.Append(":");
+                sb.Append(connector.WorldMatrix.Forward.Z.ToString());
+            }
+
+            value_String = GetValue_from_CustomData(information_Section, "IGCTAG");
+            IGC.SendBroadcastMessage(value_String, sb.ToString());
+
+            WriteValue_to_CustomData("Connectors_Information", "Value2", sb.ToString());
+
         }
         /*  Broadcast Connectors GPS    */
 
+
+        /*#############################################################*/
         /*###############   ShowCargoContainerResidues  ###############*/
         public void ShowCargoContainerResidues(string nextStage)
         {
@@ -2205,7 +2278,7 @@ namespace IngameScript
             Echo($"{counter_CargoContainer_Int}/{cargoContainers.Count}");
 
 
-            for (int i = 0; i <= 4; i++)
+            for (int i = 0; i <= 9; i++)
             {
                 var cargoContainer = cargoContainers[counter_CargoContainer_Int - 1];
                 string newName_String = GetValue_from_CustomData(cargoContainer, information_Section, customName_Key);
@@ -2233,9 +2306,11 @@ namespace IngameScript
 
 
         }
-        //###############   ShowCargoContainerResidues  ###############
+        /*###############   ShowCargoContainerResidues  ###############*/
+        /*#############################################################*/
 
 
+        /*#####################################################*/
         /*###############   Combined_Refining   ###############*/
         public void CheckEachRefinery(string nextStage)
         {
@@ -2336,21 +2411,21 @@ namespace IngameScript
         public void GetItemsInRefinery(IMyRefinery refinery_Block)
         {
             var items = new List<MyInventoryItem>();
-            allItems_InRefinery_Dic = new Dictionary<string, double>();
+            allItems_InRefineries_Dic = new Dictionary<string, double>();
 
             refinery_Block.InputInventory.GetItems(items);
 
             foreach (var item in items)
             {
-                if (allItems_InRefinery_Dic.ContainsKey(item.Type.ToString())) allItems_InRefinery_Dic[item.Type.ToString()] += (double)item.Amount.RawValue;
-                else allItems_InRefinery_Dic.Add(item.Type.ToString(), (double)item.Amount.RawValue);
+                if (allItems_InRefineries_Dic.ContainsKey(item.Type.ToString())) allItems_InRefineries_Dic[item.Type.ToString()] += (double)item.Amount.RawValue;
+                else allItems_InRefineries_Dic.Add(item.Type.ToString(), (double)item.Amount.RawValue);
             }
 
         }
 
         public void CompareOre(IMyRefinery refinery_Block, Dictionary<string, double> method_Dic)
         {
-            foreach (var key in allItems_InRefinery_Dic.Keys) if (!method_Dic.ContainsKey(key)) MoveAwayItem(refinery_Block, key);
+            foreach (var key in allItems_InRefineries_Dic.Keys) if (!method_Dic.ContainsKey(key)) MoveAwayItem(refinery_Block, key);
 
             foreach (var key in method_Dic.Keys) RegulateItem(refinery_Block, key, method_Dic);
         }
@@ -2365,7 +2440,7 @@ namespace IngameScript
 
                 GetItemsInRefinery(refinery_Block);
 
-                if (allItems_InRefinery_Dic.ContainsKey(itemName_String)) itemAmount_Difference_Double = allItems_InRefinery_Dic[itemName_String] - method_Dic[itemName_String];
+                if (allItems_InRefineries_Dic.ContainsKey(itemName_String)) itemAmount_Difference_Double = allItems_InRefineries_Dic[itemName_String] - method_Dic[itemName_String];
                 else itemAmount_Difference_Double = -method_Dic[itemName_String];
 
                 amount_FP.RawValue = Convert.ToInt64(Math.Abs(itemAmount_Difference_Double));
@@ -2404,7 +2479,7 @@ namespace IngameScript
             foreach (var cargoContainer in cargoContainers)
             {
 
-                if (!allItems_InRefinery_Dic.ContainsKey(itemName_String)) return;
+                if (!allItems_InRefineries_Dic.ContainsKey(itemName_String)) return;
 
                 var items = new List<MyInventoryItem>();
                 refinery_Block.InputInventory.GetItems(items);
@@ -2420,9 +2495,151 @@ namespace IngameScript
         }
 
 
-        //###############   Combined_Refining   ###############
+        /*###############   Combined_Refining   ###############*/
+        /*#####################################################*/
 
 
+        /*##################################################*/
+        /*###############   AutoProduction   ###############*/
+
+        public void BuildProductionList()
+        {
+            int length_Int = Convert.ToInt16(GetValue_from_CustomData(autoProductionList_Section, length_Key));
+            productionList = new ProdcutionProperty[length_Int];
+
+            for(int i = 1; i <= length_Int; i++)
+            {
+                string value_String = GetValue_from_CustomData(autoProductionList_Section, i.ToString());
+
+                string[] value_Array = value_String.Split(':');
+
+                if(value_Array.Length == 3)
+                {
+                    productionList[i - 1].ComponentName = value_Array[0];
+                    productionList[i - 1].ProductionName = value_Array[1];
+                    productionList[i - 1].ProductionAmount = Convert.ToDouble(value_Array[2]);
+                }
+            }
+        }
+
+        public void AutoProduction(string nextStage)
+        {
+            const int counter_TotalCycle_Int = 2;
+
+            if (!function_AutoProduction_Bool)
+            {
+                stage_Key = nextStage;
+                counter_AutoProduction_Int = 1;
+                return;
+            }
+
+            Echo($"{counter_AutoProduction_Int}/{counter_TotalCycle_Int}");
+            switch (counter_AutoProduction_Int)
+            {
+                case 1:
+                    Echo("PrepareData");
+                    GetItemsFromAssemblers();
+                    SumItems_Old_Assemblers();
+                    break;
+                case 2:
+                    Echo("SendProductionOrder");
+                    SendProductionOrder();
+                    break;
+            }
+
+            if (counter_AutoProduction_Int >= counter_TotalCycle_Int)
+            {
+                stage_Key = nextStage;
+                counter_AutoProduction_Int = 1;
+                return;
+            }
+            counter_AutoProduction_Int++;
+
+
+        }
+
+        public void GetItemsFromAssemblers()
+        {
+            allitems_InAssemblers_Dic = new Dictionary<string, double>();
+
+            foreach(var assembler in assemblers)
+            {
+                List <MyProductionItem> items = new List<MyProductionItem>();
+                assembler.GetQueue(items);
+                foreach (var item in items)
+                {
+                    if (allitems_InAssemblers_Dic.ContainsKey(item.BlueprintId.ToString())) allitems_InAssemblers_Dic[item.BlueprintId.ToString()] += (double)item.Amount.RawValue;
+                    else allitems_InAssemblers_Dic.Add(item.BlueprintId.ToString(), (double)item.Amount.RawValue);
+                }
+            }
+
+            foreach(var item in allitems_InAssemblers_Dic.Keys)
+            {
+                debug_StringBuilder.Append($"Item={item}");
+                debug_StringBuilder.Append("\n");
+                debug_StringBuilder.Append($"Amount={allitems_InAssemblers_Dic[item]}");
+                debug_StringBuilder.Append("\n");
+
+            }
+        }
+
+        public void SumItems_Old_Assemblers()
+        {
+            allItems_Old_Assemblers_Dic = new Dictionary<string, double>();
+            allItems_Old_Assemblers_Dic = allItems_Old_Dic;
+            foreach (var item in productionList)
+            {
+                if (allitems_InAssemblers_Dic.ContainsKey(item.ProductionName))
+                {
+                    if (allItems_Old_Dic.ContainsKey(item.ComponentName))
+                    {
+                        allItems_Old_Assemblers_Dic[item.ComponentName] += 
+                            allitems_InAssemblers_Dic[item.ProductionName];
+                    }
+                    else
+                    {
+                        allItems_Old_Assemblers_Dic.Add
+                            (
+                            item.ComponentName,
+                            allitems_InAssemblers_Dic[item.ProductionName]
+                            );
+                    }
+
+                }
+            }
+        }
+
+        public void SendProductionOrder()
+        {
+            foreach(var item in productionList)
+            {
+                if (allItems_Old_Assemblers_Dic.ContainsKey(item.ComponentName))
+                {
+                    double residus_Double = item.ProductionAmount * 1000000 - allItems_Old_Assemblers_Dic[item.ComponentName];
+                    if (residus_Double > 0) AddItemToAssemblerQueue(item.ProductionName, residus_Double / 1000000);
+                }
+                else
+                {
+                    AddItemToAssemblerQueue(item.ProductionName, item.ProductionAmount);
+                }
+            }
+        }
+
+        public void AddItemToAssemblerQueue(string itemName_String, double itemAmount_Double)
+        {
+            foreach(var assembler in assemblers)
+            {
+                if (!assembler.CooperativeMode)
+                {
+                    MyDefinitionId item_MyDefinitionId = MyDefinitionId.Parse(itemName_String);
+                    assembler.AddQueueItem(item_MyDefinitionId, itemAmount_Double);
+                    return;
+                }
+            }
+        }
+
+        /*###############   AutoProduction   ###############*/
+        /*##################################################*/
 
         public void Argument_Handler(string argument)
         {
@@ -2532,7 +2749,10 @@ namespace IngameScript
             switch (stage_Key)
             {
                 case stage_ShowItems:
-                    ShowItems(stage_ShowFacilities);
+                    ShowItems(stage_AutoProduction);
+                    break;
+                case stage_AutoProduction:
+                    AutoProduction(stage_ShowFacilities);
                     break;
                 case stage_ShowFacilities:
                     ShowFacilities(stage_Assembler_Clear);
@@ -2572,6 +2792,8 @@ namespace IngameScript
         public void Main(string argument, UpdateType updateSource)
         {
             Echo("Main");
+
+            debug_StringBuilder = new StringBuilder();
 
             ProgrammableBlockScreen();
 
