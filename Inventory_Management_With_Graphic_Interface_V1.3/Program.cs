@@ -1197,7 +1197,6 @@ namespace IngameScript
         public void BuildTranslateDic()
         {
             string value = GetValue_from_CustomData(translateList_Section, length_Key);
-
             int length = Convert.ToInt16(value);
 
             for (int i = 1; i <= length; i++)
@@ -1932,13 +1931,16 @@ namespace IngameScript
             string temp = "Textures\\FactionLogo\\Empty.dds";
             foreach (var sprite in spritesList)
             {
-                //string blueprintId_Short_String = blueprintId_String;
-                //if (blueprintId_String.IndexOf("Component") != -1) blueprintId_Short_String = blueprintId_String.Substring(0, blueprintId_String.Length - 9);
-                //else if(blueprintId_String.IndexOf("_") != -1) blueprintId_Short_String = blueprintId_String.Substring(blueprintId_String.IndexOf("_") + 1);
 
-                //Echo(blueprintId_String + " / " + blueprintId_Short_String);
+                foreach(var productionitem in productionList)
+                {
+                    if(productionitem.ProductionName.IndexOf(blueprintId_String) != -1)
+                    {
+                        blueprintId_String = productionitem.ComponentName;
+                    }
+                }
 
-                if (sprite.IndexOf(blueprintId_String) != -1 /*|| sprite.IndexOf(blueprintId_Short_String) != -1*/)
+                if (sprite.IndexOf(blueprintId_String) != -1)
                 {
                     temp = sprite;
                     break;
