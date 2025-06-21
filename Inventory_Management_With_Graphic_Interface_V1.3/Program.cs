@@ -1514,6 +1514,7 @@ namespace IngameScript
             WriteValue_to_CustomData(panel, index_Int.ToString(), itemType_Key, "AH_BoreSight");
             WriteValue_to_CustomData(panel, index_Int.ToString(), itemAmount2_Key, residue_Double.ToString());
             WriteValue_to_CustomData(panel, index_Int.ToString(), time_Key, "");
+            WriteValue_to_CustomData(panel, index_Int.ToString(), productionAmount_Key, "0");
         }
 
         public void DrawItemPanels()
@@ -1565,6 +1566,7 @@ namespace IngameScript
             string time_String = GetValue_from_CustomData(panel, index_Int.ToString(), time_Key);
             double amount_Production_Double = Convert.ToDouble(GetValue_from_CustomData(panel, index_Int.ToString(), productionAmount_Key));
 
+
             //  Main box
             float refreshCounter_Float = Convert.ToSingle(GetValue_from_CustomData(panel, panelInformation_Section, counter_Key));
             float x1 = Convert.ToSingle((x - 1) * itemBox_ColumnInterval_Float + (itemBox_ColumnInterval_Float - 1) / 2 + 1.25f);
@@ -1588,7 +1590,7 @@ namespace IngameScript
 
             //  AutoProductionAmount text
             float y_Text_Production_Amount = y_Text_Amount - 12f;
-            if(amount_Production_Double != 0)
+            if (amount_Production_Double != 0)
             {
                 PanelWriteText(ref frame, AmountUnitConversion(amount_Production_Double / 1000000, false), x_Text_Amount, y_Text_Production_Amount, 0.5f, TextAlignment.RIGHT);
             }
@@ -1596,7 +1598,6 @@ namespace IngameScript
             //  Time remaining
             float y_TimeRemaining_Float = y_Text_Amount + 25f;
             PanelWriteText(ref frame, time_String, x_Text_Amount, y_TimeRemaining_Float, itemBox_ColumnInterval_Float - 4f, 15f, 0.57f, TextAlignment.RIGHT);
-
         }
 
         public string ShortName(string name)
