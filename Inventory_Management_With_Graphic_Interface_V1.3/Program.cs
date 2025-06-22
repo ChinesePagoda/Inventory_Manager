@@ -60,13 +60,15 @@ namespace IngameScript
 
         StringBuilder debug_StringBuilder;
 
-        int counter_ShowItems = 0, counter_ShowFacilities = 1, counter_Panel = 0,
+        int counter_ShowItems_Int = 0, counter_ShowFacilities_Int = 1, counter_Panel_Int = 0,
             counter_Assembler_Int = 1, counter_Refinery_Int = 1, counter_CombinedRefining_Int = 1,
             counter_Connector_Int = 1, counter_CryoChamber_Int = 1, counter_Sorter_Int = 1,
             counter_HydrogenTank_Int = 1, counter_OxydrogenTank_Int = 1,
             counter_CargoContainer_Int = 1,
             maxNumber_AssemblerPanel_Int = 0, maxNumber_RefineryPanel_Int = 0,
-            counter_AutoProduction_Int = 1;
+            counter_AutoProduction_Int = 1,
+            counter_CombiningLikeTerms_Int = 1, counter_CombiningLikeTerms_CargoContainer_Int = 1,
+            counter_Sub_Function_Interval_Int = 1;
 
         const int itemAmountInEachScreen = 28,
             facilityAmountInEachScreen = 20,
@@ -89,10 +91,10 @@ namespace IngameScript
             stage_Sorter_Clear = "Stage_Sorter_Clear",
             stage_HydrogenTank = "Stage_HydrogenTank",
             stage_OxygenTank = "Stage_OxygenTank",
-            stage_BroadcastGPS = "Stage_BroadcastGPS",
             stage_ShowCargoContainerResidues = "Stage_ShowCargoContainerRatio",
             stage_Combined_Refining = "Stage_Combined_Refining",
-            stage_AutoProduction = "Stage_AutoProduction";
+            stage_AutoProduction = "Stage_AutoProduction",
+            stage_CombiningLikeTerms = "Stage_CombiningLikeTerms";
         const string function_ShowOverall = "ShowOverall",
             function_ShowItems = "ShowItems",
             function_ShowFacilities = "ShowFacilities",
@@ -107,7 +109,6 @@ namespace IngameScript
             function_BroadCastConnectorGPS_Bool = true,
             function_ShowCargoContainerRatio_Bool = true,
             function_AutoProduction_Bool = true;
-
 
         const string customName_Key = "CustomName";
         const string refreshRate_Key = "Refresh_Rate(F_FF_FFF)";
@@ -143,7 +144,6 @@ namespace IngameScript
         public struct ItemList
         {
             public string Name;
-            public string ProductionName;
             public double ProductionAmount;
             public double Amount1;
             public double Amount2;
@@ -1133,7 +1133,6 @@ namespace IngameScript
                     break;
             }
         }
-
         /*###############     Overall     ###############*/
         /*###############################################*/
 
@@ -1148,12 +1147,12 @@ namespace IngameScript
             if (!function_ShowItems_Bool)
             {
                 stage_Key = nextStage;
-                counter_ShowItems = 1;
+                counter_ShowItems_Int = 1;
                 return;
             }
 
-            Echo($"{counter_ShowItems}/{counter_TotalCycle_Int}");
-            switch (counter_ShowItems)
+            Echo($"{counter_ShowItems_Int}/{counter_TotalCycle_Int}");
+            switch (counter_ShowItems_Int)
             {
                 case 1:
                     Echo("GetItems");
@@ -1185,13 +1184,13 @@ namespace IngameScript
                     break;
             }
 
-            if (counter_ShowItems >= counter_TotalCycle_Int)
+            if (counter_ShowItems_Int >= counter_TotalCycle_Int)
             {
                 stage_Key = nextStage;
-                counter_ShowItems = 1;
+                counter_ShowItems_Int = 1;
                 return;
             }
-            counter_ShowItems++;
+            counter_ShowItems_Int++;
         }
 
         public void BuildTranslateDic()
@@ -1640,49 +1639,49 @@ namespace IngameScript
                 return;
             }
 
-            Echo($"{counter_ShowFacilities}/{panels_Refineries.Count + panels_Assemblers.Count + 2}");
+            Echo($"{counter_ShowFacilities_Int}/{panels_Refineries.Count + panels_Assemblers.Count + 2}");
 
 
-            if (counter_ShowFacilities == 1)
+            if (counter_ShowFacilities_Int == 1)
             {
                 Echo("GetFacilities");
                 GetFacilities();
                 maxNumber_RefineryPanel_Int = GetMaxNumber(refineryList, panels_Refineries);
                 maxNumber_AssemblerPanel_Int = GetMaxNumber(assemblerList, panels_Assemblers);
-                counter_ShowFacilities++;
+                counter_ShowFacilities_Int++;
                 return;
             }
-            else if (counter_ShowFacilities == 2)
+            else if (counter_ShowFacilities_Int == 2)
             {
                 Echo("MaxPanelNumber");
                 maxNumber_RefineryPanel_Int = GetMaxNumber(refineryList, panels_Refineries);
                 maxNumber_AssemblerPanel_Int = GetMaxNumber(assemblerList, panels_Assemblers);
-                counter_ShowFacilities++;
+                counter_ShowFacilities_Int++;
                 return;
             }
 
 
-            if (counter_ShowFacilities <= panels_Refineries.Count + 2)
+            if (counter_ShowFacilities_Int <= panels_Refineries.Count + 2)
             {
                 Echo("Ref");
-                counter_Panel = counter_ShowFacilities - 3;
+                counter_Panel_Int = counter_ShowFacilities_Int - 3;
                 if (refineries.Count > 0) FacilitiesDivideIntoGroup(refineryList, panels_Refineries, maxNumber_RefineryPanel_Int, ore_Background_Color, oreCard_Background_Color);
             }
             else
             {
                 Echo("Ass");
-                counter_Panel = counter_ShowFacilities - panels_Refineries.Count - 3;
+                counter_Panel_Int = counter_ShowFacilities_Int - panels_Refineries.Count - 3;
                 if (assemblers.Count > 0) FacilitiesDivideIntoGroup(assemblerList, panels_Assemblers, maxNumber_AssemblerPanel_Int, ingot_Background_Color, ingotCard_Background_Color);
             }
 
 
-            if (counter_ShowFacilities >= panels_Refineries.Count + panels_Assemblers.Count + 2)
+            if (counter_ShowFacilities_Int >= panels_Refineries.Count + panels_Assemblers.Count + 2)
             {
-                counter_ShowFacilities = 1;
+                counter_ShowFacilities_Int = 1;
                 stage_Key = nextStage;
                 return;
             }
-            counter_ShowFacilities++;
+            counter_ShowFacilities_Int++;
 
         }
 
@@ -1780,12 +1779,12 @@ namespace IngameScript
         {
             if (facilityList.Length == 0 || facilityPanels.Count == 0) return;
 
-            Echo($"{counter_Panel + 1}/{facilityPanels.Count}");
+            Echo($"{counter_Panel_Int + 1}/{facilityPanels.Count}");
 
             if (facilityList.Length > maxNumber_Panel_Int * facilityAmountInEachScreen)
             {
                 //  Not enough panel
-                var panel = facilityPanels[counter_Panel];
+                var panel = facilityPanels[counter_Panel_Int];
 
                 if (panel.CustomData != "0") panel.CustomData = "0";
                 else panel.CustomData = "1";
@@ -1808,7 +1807,7 @@ namespace IngameScript
             else
             {
                 //  Enough panel
-                var panel = facilityPanels[counter_Panel];
+                var panel = facilityPanels[counter_Panel_Int];
 
                 if (panel.CustomData != "0") panel.CustomData = "0";
                 else panel.CustomData = "1";
@@ -2280,7 +2279,6 @@ namespace IngameScript
 
             Echo($"{counter_CargoContainer_Int}/{cargoContainers.Count}");
 
-
             for (int i = 0; i <= 9; i++)
             {
                 var cargoContainer = cargoContainers[counter_CargoContainer_Int - 1];
@@ -2644,6 +2642,106 @@ namespace IngameScript
         /*###############   AutoProduction   ###############*/
         /*##################################################*/
 
+
+
+        /*################################################################*/
+        /*####################   CombiningLikeTerms   ####################*/
+
+        public void CombiningLikeTerms(string nextStage)
+        {
+            if (cargoContainers.Count < 1 || !function_InventoryManagement_Bool)
+            {
+                stage_Key = nextStage;
+                return;
+            }
+
+            Echo($"{counter_CombiningLikeTerms_Int}/2");
+
+            switch (counter_CombiningLikeTerms_Int)
+            {
+                case 1:
+                    Echo("TransferItemsToFrontBoxes");
+                    TransferItemsToFrontBoxes();
+                    break;
+                case 2:
+                    Echo("CargoContainerCycle");
+                    CargoContainerCycle(nextStage);
+                    break;
+            }
+        }
+
+        public void TransferItemsToFrontBoxes()
+        {
+            counter_CombiningLikeTerms_Int = 2;
+
+            for (int index_CountDown_Int = cargoContainers.Count; index_CountDown_Int >= 2; index_CountDown_Int--)
+            {
+                IMyCargoContainer currentCargoContainer = cargoContainers[index_CountDown_Int - 1];
+                if (currentCargoContainer.GetInventory().CurrentVolume == 0) continue;
+
+
+                for (int index_CountForward_Int = 1; index_CountForward_Int < index_CountDown_Int; index_CountForward_Int++)
+                {
+                    if (currentCargoContainer.GetInventory().CurrentVolume == 0) break;
+
+                    IMyCargoContainer targetCargoContainer = cargoContainers[index_CountForward_Int - 1];
+                    if (targetCargoContainer.GetInventory().CurrentVolume == targetCargoContainer.GetInventory().MaxVolume) continue;
+
+                    List<MyInventoryItem> items = new List<MyInventoryItem>();
+                    currentCargoContainer.GetInventory().GetItems(items);
+
+                    foreach (var item in items)
+                    {
+                        currentCargoContainer.GetInventory().TransferItemTo
+                            (
+                            targetCargoContainer.GetInventory(), 
+                            item
+                            );
+                    }
+                }
+            }
+        }
+
+        public void CargoContainerCycle(string nextStage)
+        {
+            for(int i = 1; i <= 2; i++)
+            {
+                int cargoContainer_Index_Int = counter_CombiningLikeTerms_CargoContainer_Int + i - 1;
+                if(cargoContainer_Index_Int > cargoContainers.Count)
+                {
+                    counter_CombiningLikeTerms_CargoContainer_Int = 1;
+                    cargoContainer_Index_Int = counter_CombiningLikeTerms_CargoContainer_Int + i - 1;
+                }
+
+                IMyCargoContainer currentCargoContainer = cargoContainers[cargoContainer_Index_Int - 1];
+
+                List<MyInventoryItem> items = new List<MyInventoryItem>();
+                currentCargoContainer.GetInventory().GetItems(items);
+
+                foreach (var item in items)
+                {
+                    currentCargoContainer.GetInventory().TransferItemTo
+                        (
+                        currentCargoContainer.GetInventory(),
+                        item
+                        );
+                }
+            }
+
+            stage_Key = nextStage;
+            counter_CombiningLikeTerms_Int = 1;
+
+        }
+
+
+        /*####################   CombiningLikeTerms   ####################*/
+        /*################################################################*/
+
+
+
+        /*######################################################*/
+        /*####################   Argument   ####################*/
+
         public void Argument_Handler(string argument)
         {
             if(argument == "CLS")
@@ -2743,22 +2841,39 @@ namespace IngameScript
             return newName_String;
         }
 
+        /*####################   Argument   ####################*/
+        /*######################################################*/
+
+
+
+
+
         public void MainLogic()
         {
             if (stage_Key == "") stage_Key = stage_ShowItems;
 
+            if (counter_Sub_Function_Interval_Int < 10 && stage_Key == stage_Assembler_Clear) stage_Key = stage_ShowItems;
+
             Echo($"{stage_Key}");
+
+
 
             switch (stage_Key)
             {
                 case stage_ShowItems:
-                    ShowItems(stage_AutoProduction);
-                    break;
-                case stage_AutoProduction:
-                    AutoProduction(stage_ShowFacilities);
+                    if (counter_Sub_Function_Interval_Int >= 10) counter_Sub_Function_Interval_Int = 1;
+                    ShowItems(stage_ShowFacilities);
                     break;
                 case stage_ShowFacilities:
-                    ShowFacilities(stage_Assembler_Clear);
+                    ShowFacilities(stage_Combined_Refining);
+                    break;
+                case stage_Combined_Refining:
+                    counter_Sub_Function_Interval_Int++;
+                    CheckEachRefinery(stage_AutoProduction);
+                    break;
+
+                case stage_AutoProduction:
+                    AutoProduction(stage_Assembler_Clear);
                     break;
                 case stage_Assembler_Clear:
                     Assembler_Clear(stage_Refinery_Clear);
@@ -2779,13 +2894,13 @@ namespace IngameScript
                     GasTank(hydrogenTanks, ref counter_HydrogenTank_Int, "HydrogenBottle", stage_OxygenTank);
                     break;
                 case stage_OxygenTank:
-                    GasTank(oxygenTanks, ref counter_OxydrogenTank_Int, "OxygenBottle", stage_ShowCargoContainerResidues);
+                    GasTank(oxygenTanks, ref counter_OxydrogenTank_Int, "OxygenBottle", stage_CombiningLikeTerms);
+                    break;
+                case stage_CombiningLikeTerms:
+                    CombiningLikeTerms(stage_ShowCargoContainerResidues);
                     break;
                 case stage_ShowCargoContainerResidues:
-                    ShowCargoContainerResidues(stage_Combined_Refining);
-                    break;
-                case stage_Combined_Refining:
-                    CheckEachRefinery(stage_ShowItems);
+                    ShowCargoContainerResidues(stage_ShowItems);
                     break;
             }
 
