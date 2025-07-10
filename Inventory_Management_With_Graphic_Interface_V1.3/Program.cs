@@ -2649,7 +2649,7 @@ namespace IngameScript
 
         public void CombiningLikeTerms(string nextStage)
         {
-            if (cargoContainers.Count < 1 || !function_InventoryManagement_Bool)
+            if (cargoContainers.Count < 2 || !function_InventoryManagement_Bool)
             {
                 stage_Key = nextStage;
                 return;
