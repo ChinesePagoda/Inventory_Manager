@@ -17,6 +17,7 @@ using VRage.Game;
 using VRage;
 using VRageMath;
 using System.Collections.Immutable;
+using VRageRender;
 
 namespace IngameScript
 {
@@ -2756,6 +2757,10 @@ namespace IngameScript
             {
                 AssemblerCO_OFF();
             }
+            else if(argument == "LCD_REF")
+            {
+                RefreshLCD();
+            }
             else
             {
                 string[] argument_Array = argument.Split('=');
@@ -2839,6 +2844,43 @@ namespace IngameScript
             newName_String = newName_String + "_" + index_String;
 
             return newName_String;
+        }
+
+        public void RefreshLCD()
+        {
+            List<IMyTextPanel> all_LCDs = new List<IMyTextPanel>();
+
+            all_LCDs.AddRange(panels_Items_All);
+            all_LCDs.AddRange(panels_Items_Ore);
+            all_LCDs.AddRange(panels_Items_Ingot);
+            all_LCDs.AddRange(panels_Items_Component);
+            all_LCDs.AddRange(panels_Items_AmmoMagazine);
+            all_LCDs.AddRange(panels_Refineries);
+            all_LCDs.AddRange(panels_Assemblers);
+            all_LCDs.AddRange(panels_Overall);
+
+            foreach(var lcd in all_LCDs)
+            {
+                float heightOffset_Float = Convert.ToSingle(counter_Logo);
+
+                if (lcd.ContentType != ContentType.SCRIPT) lcd.ContentType = ContentType.SCRIPT;
+                MySpriteDrawFrame frame = lcd.DrawFrame();
+
+                RectangleF viewport_RectangleF = new RectangleF(
+                    (lcd.TextureSize - lcd.SurfaceSize) / 2f,
+                    lcd.SurfaceSize + new Vector2(0, heightOffset_Float)
+                );
+
+                DrawIcon(ref frame, "UVChecker",
+                    viewport_RectangleF.Center.X, viewport_RectangleF.Center.Y,
+                    viewport_RectangleF.Width, viewport_RectangleF.Height,
+                    Color.White);
+
+                frame.Dispose();
+
+
+            }
+
         }
 
         /*####################   Argument   ####################*/
