@@ -18,6 +18,7 @@ using VRage;
 using VRageMath;
 using System.Collections.Immutable;
 using VRageRender;
+using Sandbox.Game.Entities;
 
 namespace IngameScript
 {
@@ -112,6 +113,7 @@ namespace IngameScript
             function_AutoProduction_Bool = true;
 
         const string customName_Key = "CustomName";
+        const string volumeThreshold_Key = "VolumeThreshold";
         const string refreshRate_Key = "Refresh_Rate(F_FF_FFF)";
 
         const string ore_Section = "Ore",
@@ -269,6 +271,7 @@ namespace IngameScript
             WriteDefaultItem(information_Section, "Assemblers_CooperativeMode", "CO_ON or CO_OFF | Fill In Argument of Programmable Block And Press Run");
             WriteDefaultItem(information_Section, "Clear_Assembler_Queue", "CLS | Fill In Argument of Programmable Block And Press Run");
             WriteDefaultItem(information_Section, "IGCTAG", "CHANNEL1");
+            WriteDefaultItem(information_Section, volumeThreshold_Key, "6000");
             WriteDefaultItem(information_Section, refreshRate_Key, "FF");
 
             FunctionOnOff(true);
@@ -853,7 +856,7 @@ namespace IngameScript
 
         public void CalculatePowerProducer(out string percentage_String, out string finalValue_String)
         {
-            double currentOutput = 0, totalOutput = 0;
+            float currentOutput = 0, totalOutput = 0;
             foreach (var powerProducer in powerProducers)
             {
                 currentOutput += powerProducer.CurrentOutput;
@@ -2280,17 +2283,32 @@ namespace IngameScript
 
             Echo($"{counter_CargoContainer_Int}/{cargoContainers.Count}");
 
+            string volumeThreshold_String = GetValue_from_CustomData(information_Section, volumeThreshold_Key);
+            double volumeThreshold_Double = Convert.ToDouble(volumeThreshold_String) / 1000;
+
             for (int i = 0; i <= 9; i++)
             {
                 var cargoContainer = cargoContainers[counter_CargoContainer_Int - 1];
-                string newName_String = GetValue_from_CustomData(cargoContainer, information_Section, customName_Key);
-                if (newName_String == "")
+
+                string newName_String;
+                double ratio_Double;
+
+                if ((double)cargoContainer.GetInventory().MaxVolume < volumeThreshold_Double)
                 {
                     newName_String = cargoContainer.CustomName;
-                    WriteValue_to_CustomData(cargoContainer, information_Section, customName_Key, newName_String);
+                    ratio_Double = (double)cargoContainer.GetInventory().CurrentVolume / (double)cargoContainer.GetInventory().MaxVolume;
+                }
+                else
+                {
+                    newName_String = GetValue_from_CustomData(cargoContainer, information_Section, customName_Key);
+                    if (newName_String == "")
+                    {
+                        newName_String = cargoContainer.CustomName;
+                        WriteValue_to_CustomData(cargoContainer, information_Section, customName_Key, newName_String);
+                    }
+                    ratio_Double = (double)cargoContainer.GetInventory().CurrentVolume / (double)cargoContainer.GetInventory().MaxVolume;
                 }
 
-                double ratio_Double = (double)cargoContainer.GetInventory().CurrentVolume / (double)cargoContainer.GetInventory().MaxVolume;
                 ratio_Double = Math.Round(ratio_Double * 100, 1);
 
                 cargoContainer.CustomName = newName_String + "__" + ratio_Double.ToString() + "%";
@@ -2819,9 +2837,14 @@ namespace IngameScript
 
         public void ReNameBlocks(List<IMyCargoContainer> blocks, string newName_String)
         {
+            string volumeThreshold_String = GetValue_from_CustomData(information_Section, volumeThreshold_Key);
+            double volumeThreshold_Double = Convert.ToDouble(volumeThreshold_String) / 1000;
+
             int i = 1;
             foreach (var block in blocks)
             {
+                if ((double)block.GetInventory().MaxVolume < volumeThreshold_Double) continue;
+
                 block.CustomName = BuildIndexString(blocks.Count, newName_String, i);
                 WriteValue_to_CustomData(block, information_Section, customName_Key, BuildIndexString(blocks.Count, newName_String, i));
                 i++;
