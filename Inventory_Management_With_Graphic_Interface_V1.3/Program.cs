@@ -19,12 +19,14 @@ using VRageMath;
 using System.Collections.Immutable;
 using VRageRender;
 using Sandbox.Game.Entities;
+using VRage.Game.VisualScripting.Utils;
 
 namespace IngameScript
 {
     partial class Program: MyGridProgram
     {
         MyIni _ini;
+                
 
         List<string> spritesList = new List<string>();
         List<IMyTextPanel> panels = new List<IMyTextPanel>();
@@ -187,7 +189,7 @@ namespace IngameScript
         Dictionary<string, double> allItems_InRefineries_Dic;
         Dictionary<string, double> allItems_Old_Dic = new Dictionary<string, double>();
         Dictionary<string, double> allItems_Old_Assemblers_Dic;
-
+        Dictionary<string, MyIni> panel_UI_Info_Dic;
 
         Color card_Background_Color_Overall = new Color(10, 20, 40);
         Color ore_Background_Color = new Color(10, 5, 2);
@@ -206,9 +208,9 @@ namespace IngameScript
 
             SetDefultConfiguration();
 
-            BuildTranslateDic();
+            Build_TranslateDic();
 
-            BuildProductionList();
+            Build_ProductionList();
 
             Build_SpriteList();
 
@@ -472,11 +474,6 @@ namespace IngameScript
         public void WriteValue_to_CustomData(IMyRefinery block, string section, string key, string value)
         {
             _ini = new MyIni();
-            // This time we _must_ check for failure since the user may have written invalid ini.
-            MyIniParseResult result;
-            if (!_ini.TryParse(block.CustomData, out result))
-                throw new Exception(result.ToString());
-
             _ini.Set(section, key, value);
             block.CustomData = _ini.ToString();
         }
@@ -1197,7 +1194,7 @@ namespace IngameScript
             counter_ShowItems_Int++;
         }
 
-        public void BuildTranslateDic()
+        public void Build_TranslateDic()
         {
             string value = GetValue_from_CustomData(translateList_Section, length_Key);
             int length = Convert.ToInt16(value);
@@ -1218,6 +1215,7 @@ namespace IngameScript
             time2_DateTime = DateTime.Now;
 
             Dictionary<string, double> allItems_Dic = new Dictionary<string, double>();
+            panel_UI_Info_Dic = new Dictionary<string, MyIni>();
 
             foreach (var cargoContainer in cargoContainers)
             {
@@ -1394,6 +1392,7 @@ namespace IngameScript
             {
                 foreach (var panel in panels_Items)
                 {
+                    if (panel_UI_Info_Dic.ContainsKey(panel.CustomName)) continue;
                     string[] arry = panel.CustomName.Split(':');
                     if (Convert.ToInt16(arry[1]) < FindMax(index_Array))
                     {
@@ -1409,6 +1408,7 @@ namespace IngameScript
             {
                 foreach (var panel in panels_Items)
                 {
+                    if (panel_UI_Info_Dic.ContainsKey(panel.CustomName)) continue;
                     string[] arry = panel.CustomName.Split(':');
                     WriteSinglePanelCustomData(panel, arry[1], true, itemList);
                 }
@@ -1431,17 +1431,19 @@ namespace IngameScript
         {
             panel.WriteText("", false);
 
+            MyIni ini_Temp = new MyIni();
+
             for (int i = 0; i < itemAmountInEachScreen; i++)
             {
-                int k = (Convert.ToInt16(groupNumber) - 1) * itemAmountInEachScreen + i;
+                int itemIndex_Int = (Convert.ToInt16(groupNumber) - 1) * itemAmountInEachScreen + i;
                 int x = (i + 1) % 7;
                 if (x == 0) x = 7;
                 int y = Convert.ToInt16(Math.Ceiling(Convert.ToDecimal(Convert.ToDouble(i + 1) / 7)));
 
-                if (k > itemList.Length - 1)
+                if (itemIndex_Int > itemList.Length - 1)
                 {
-                    WriteValue_to_CustomData(panel, panelInformation_Section, Amount_Key, i.ToString());
-                    return;
+                    ini_Temp.Set(panelInformation_Section, Amount_Key, i.ToString());
+                    break;
                 }
                 else
                 {
@@ -1449,28 +1451,33 @@ namespace IngameScript
                     {
                         if (isEnoughScreen)
                         {
-                            WriteSingleItemCustomData(panel, i + 1, itemList[k]);
+                            WriteSingleItemCustomData(ref ini_Temp, i + 1, itemList[itemIndex_Int]);
                         }
                         else
                         {
                             double residus = itemList.Length - itemAmountInEachScreen * Convert.ToInt16(groupNumber) + 1;
-                            WriteTheLastItemCustomData(panel, i + 1, residus);
+                            WriteTheLastItemCustomData(ref ini_Temp, i + 1, residus);
                         }
                     }
                     else
                     {
-                        WriteSingleItemCustomData(panel, i + 1, itemList[k]);
+                        WriteSingleItemCustomData(ref ini_Temp, i + 1, itemList[itemIndex_Int]);
                     }
 
-                    WriteValue_to_CustomData(panel, panelInformation_Section, Amount_Key, (i + 1).ToString());
-                    panel.WriteText(itemList[k].Name, true);
+                    ini_Temp.Set(panelInformation_Section, Amount_Key, (i + 1).ToString());
+
+                    panel.WriteText(itemList[itemIndex_Int].Name, true);
                     panel.WriteText("\n", true);
 
                 }
             }
-        }
 
-        public void WriteSingleItemCustomData(IMyTextPanel panel, int index_Int, ItemList item_IL)
+            panel_UI_Info_Dic.Add(panel.CustomName, ini_Temp);
+
+
+        }
+        
+        public void WriteSingleItemCustomData(ref MyIni panelUI_Info_Ini, int index_Int, ItemList item_IL)
         {
             string itemType_String = item_IL.Name;
             double amount1_Double = item_IL.Amount1;
@@ -1486,7 +1493,7 @@ namespace IngameScript
             if (timeDifference_TimeSpan.Ticks > 0 && amountDifference_Double > 0)
             {
                 double efficiency_Double = amountDifference_Double / timeDifference_TimeSpan.Ticks;
-                if(Int64.MaxValue > amount2_Double / efficiency_Double)
+                if (Int64.MaxValue > amount2_Double / efficiency_Double)
                 {
                     timeRemaining_Long = Convert.ToInt64(amount2_Double / efficiency_Double);
                 }
@@ -1503,21 +1510,22 @@ namespace IngameScript
                 time_String = timeRemaining_TimeSpan.Days.ToString() + "d" + timeRemaining_TimeSpan.Hours.ToString() + ":" + timeRemaining_TimeSpan.Minutes.ToString();
             }
 
-            WriteValue_to_CustomData(panel, index_Int.ToString(), itemType_Key, itemType_String);
-            WriteValue_to_CustomData(panel, index_Int.ToString(), itemAmount1_Key, amount1_Double.ToString());
-            WriteValue_to_CustomData(panel, index_Int.ToString(), itemAmount2_Key, amount2_Double.ToString());
-            WriteValue_to_CustomData(panel, index_Int.ToString(), time_Key, time_String);
-            WriteValue_to_CustomData(panel, index_Int.ToString(), time1_Key, time1_DT.ToString());
-            WriteValue_to_CustomData(panel, index_Int.ToString(), time2_Key, time2_DT.ToString());
-            WriteValue_to_CustomData(panel, index_Int.ToString(), productionAmount_Key, productionAmount_Double.ToString());
+            panelUI_Info_Ini.Set(index_Int.ToString(), itemType_Key, itemType_String);
+            panelUI_Info_Ini.Set(index_Int.ToString(), itemAmount1_Key, amount1_Double.ToString());
+            panelUI_Info_Ini.Set(index_Int.ToString(), itemAmount2_Key, amount2_Double.ToString());
+            panelUI_Info_Ini.Set(index_Int.ToString(), time_Key, time_String);
+            panelUI_Info_Ini.Set(index_Int.ToString(), time1_Key, time1_DT.ToString());
+            panelUI_Info_Ini.Set(index_Int.ToString(), time2_Key, time2_DT.ToString());
+            panelUI_Info_Ini.Set(index_Int.ToString(), productionAmount_Key, productionAmount_Double.ToString());
+
         }
 
-        public void WriteTheLastItemCustomData(IMyTextPanel panel, int index_Int, double residue_Double)
+        public void WriteTheLastItemCustomData(ref MyIni panelUI_Info_Ini, int index_Int, double residue_Double)
         {
-            WriteValue_to_CustomData(panel, index_Int.ToString(), itemType_Key, "AH_BoreSight");
-            WriteValue_to_CustomData(panel, index_Int.ToString(), itemAmount2_Key, residue_Double.ToString());
-            WriteValue_to_CustomData(panel, index_Int.ToString(), time_Key, "");
-            WriteValue_to_CustomData(panel, index_Int.ToString(), productionAmount_Key, "0");
+            panelUI_Info_Ini.Set(index_Int.ToString(), itemType_Key, "AH_BoreSight");
+            panelUI_Info_Ini.Set(index_Int.ToString(), itemAmount2_Key, residue_Double.ToString());
+            panelUI_Info_Ini.Set(index_Int.ToString(), time_Key, "");
+            panelUI_Info_Ini.Set(index_Int.ToString(), productionAmount_Key, "0");
         }
 
         public void DrawItemPanels()
@@ -1536,7 +1544,7 @@ namespace IngameScript
             MySpriteDrawFrame frame = panel.DrawFrame();
 
             string refreshCounter_String = GetValue_from_CustomData(panel, panelInformation_Section, counter_Key);
-            int indexMax_Int = Convert.ToInt16(GetValue_from_CustomData(panel, panelInformation_Section, Amount_Key));
+            int indexMax_Int = Convert.ToInt16(panel_UI_Info_Dic[panel.CustomName].Get(panelInformation_Section, Amount_Key).ToString());
 
             if (refreshCounter_String == null || refreshCounter_String != "0")
             {
@@ -1564,11 +1572,12 @@ namespace IngameScript
 
         public void DrawSingleItemUnit(IMyTextPanel panel, ref MySpriteDrawFrame frame, int index_Int, float x, float y, Color cardColor)
         {
-            string itemName_String = GetValue_from_CustomData(panel, index_Int.ToString(), itemType_Key);
-            double amount_Double = Convert.ToDouble(GetValue_from_CustomData(panel, index_Int.ToString(), itemAmount2_Key));
-            string time_String = GetValue_from_CustomData(panel, index_Int.ToString(), time_Key);
-            double amount_Production_Double = Convert.ToDouble(GetValue_from_CustomData(panel, index_Int.ToString(), productionAmount_Key));
+            MyIni panelUI_Ini = panel_UI_Info_Dic[panel.CustomName];
 
+            string itemName_String = panelUI_Ini.Get(index_Int.ToString(), itemType_Key).ToString();
+            double amount_Double = Convert.ToDouble(panelUI_Ini.Get(index_Int.ToString(), itemAmount2_Key).ToString());
+            string time_String = panelUI_Ini.Get(index_Int.ToString(), time_Key).ToString();
+            double amount_Production_Double = Convert.ToDouble(panelUI_Ini.Get(index_Int.ToString(), productionAmount_Key).ToString());
 
             //  Main box
             float refreshCounter_Float = Convert.ToSingle(GetValue_from_CustomData(panel, panelInformation_Section, counter_Key));
@@ -2522,7 +2531,7 @@ namespace IngameScript
         /*##################################################*/
         /*###############   AutoProduction   ###############*/
 
-        public void BuildProductionList()
+        public void Build_ProductionList()
         {
             int length_Int = Convert.ToInt16(GetValue_from_CustomData(autoProductionList_Section, length_Key));
             productionList = new ProdcutionProperty[length_Int];
