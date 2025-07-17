@@ -474,6 +474,11 @@ namespace IngameScript
         public void WriteValue_to_CustomData(IMyRefinery block, string section, string key, string value)
         {
             _ini = new MyIni();
+            // This time we _must_ check for failure since the user may have written invalid ini.
+            MyIniParseResult result;
+            if (!_ini.TryParse(block.CustomData, out result))
+                throw new Exception(result.ToString());
+
             _ini.Set(section, key, value);
             block.CustomData = _ini.ToString();
         }
