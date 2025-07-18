@@ -68,7 +68,7 @@ namespace IngameScript
             counter_Assembler_Int = 1, counter_Refinery_Int = 1, counter_CombinedRefining_Int = 1,
             counter_Connector_Int = 1, counter_CryoChamber_Int = 1, counter_Sorter_Int = 1,
             counter_HydrogenTank_Int = 1, counter_OxydrogenTank_Int = 1,
-            counter_CargoContainer_Int = 1,
+            counter_CargoContainer_Int = 0,
             maxNumber_AssemblerPanel_Int = 0, maxNumber_RefineryPanel_Int = 0,
             counter_AutoProduction_Int = 1,
             counter_CombiningLikeTerms_Int = 1, counter_CombiningLikeTerms_CargoContainer_Int = 1,
@@ -2302,6 +2302,15 @@ namespace IngameScript
 
             for (int i = 0; i <= 9; i++)
             {
+                counter_CargoContainer_Int++;
+                if (counter_CargoContainer_Int > cargoContainers.Count)
+                {
+                    counter_CargoContainer_Int = 0;
+                    stage_Key = nextStage;
+                    return;
+                }
+
+
                 var cargoContainer = cargoContainers[counter_CargoContainer_Int - 1];
 
                 string newName_String;
@@ -2309,8 +2318,7 @@ namespace IngameScript
 
                 if ((double)cargoContainer.GetInventory().MaxVolume < volumeThreshold_Double)
                 {
-                    newName_String = cargoContainer.CustomName;
-                    ratio_Double = (double)cargoContainer.GetInventory().CurrentVolume / (double)cargoContainer.GetInventory().MaxVolume;
+                    continue;
                 }
                 else
                 {
@@ -2327,13 +2335,6 @@ namespace IngameScript
 
                 cargoContainer.CustomName = newName_String + "__" + ratio_Double.ToString() + "%";
 
-                if (counter_CargoContainer_Int >= cargoContainers.Count)
-                {
-                    counter_CargoContainer_Int = 1;
-                    stage_Key = nextStage;
-                    return;
-                }
-                counter_CargoContainer_Int++;
 
             }
 
