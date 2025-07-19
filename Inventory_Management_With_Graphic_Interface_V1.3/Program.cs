@@ -58,7 +58,7 @@ namespace IngameScript
 
         List<IMyRadioAntenna> radioAntennas = new List<IMyRadioAntenna>();
 
-        double counter_Logo = 0;
+        float counter_Logo_Float = 0;
         DateTime time1_DateTime = DateTime.Now;
         DateTime time2_DateTime = DateTime.Now;
 
@@ -77,7 +77,7 @@ namespace IngameScript
         const int itemAmountInEachScreen = 28,
             facilityAmountInEachScreen = 20,
             method_Total_Int = 10;
-        const float itemBox_ColumnInterval_Float = 73,
+        const float itemBox_LongitudianlInterval_Float = 73,
             itemBox_RowInterval_Float = 125,
             amountBox_Height_Float = 24,
             facilityBox_RowInterval_Float = 25.5f;
@@ -555,7 +555,8 @@ namespace IngameScript
 
         public void ProgrammableBlockScreen()
         {
-            if (counter_Logo++ >= 360f) counter_Logo = 0f;
+            counter_Logo_Float++;
+            if (counter_Logo_Float >= 360f) counter_Logo_Float = 0f;
 
             //  512 X 320
             IMyTextSurface panel = Me.GetSurface(0);
@@ -563,12 +564,36 @@ namespace IngameScript
             if (panel == null) return;
             panel.ContentType = ContentType.SCRIPT;
 
+            RectangleF
+                visibleArea_RectangleF = new RectangleF
+                (
+                    (panel.TextureSize - panel.SurfaceSize) / 2f + new Vector2(0, counter_Logo_Float / 360f),
+                    panel.SurfaceSize
+                ),
+                logo_RectangleF = new RectangleF
+                (
+                    visibleArea_RectangleF.Position,
+                    new Vector2(visibleArea_RectangleF.Width, visibleArea_RectangleF.Height * 0.6f)
+                ),
+                text_RectangleF = new RectangleF
+                (
+                    visibleArea_RectangleF.Position + new Vector2(0, logo_RectangleF.Height),
+                    new Vector2(visibleArea_RectangleF.Width, visibleArea_RectangleF.Height * 0.4f)
+                );
+
+            logo_RectangleF = ScalingViewport(logo_RectangleF, 0.8f, 2);
+
             MySpriteDrawFrame frame = panel.DrawFrame();
-
-            float x = 512 / 2, y1 = 205 + Convert.ToSingle(counter_Logo) / 360f;
-            DrawLogo(ref frame, x, y1, 200);
-            PanelWriteText(ref frame, "Inventory_Management\nWith_Graphic_Interface_V1.3\nby Hi.James", x, y1 + 110 + Convert.ToSingle(counter_Logo / 360), 1f, TextAlignment.CENTER);
-
+            DrawLogo(ref frame, logo_RectangleF);
+            PanelWriteText
+                (
+                    ref frame,
+                    "Inventory_Management\nWith_Graphic_Interface_V1.3\nby Hi.James",
+                    text_RectangleF,
+                    1f,
+                    font_Color_Overall,
+                    TextAlignment.CENTER
+                );
             frame.Dispose();
 
         }
@@ -594,7 +619,7 @@ namespace IngameScript
 
                 if (panel.ContentType != ContentType.SCRIPT) panel.ContentType = ContentType.SCRIPT;
 
-                panel.ScriptBackgroundColor = font_Color_Overall;
+                panel.ScriptBackgroundColor = card_Background_Color_Overall;
 
                 MySpriteDrawFrame frame = panel.DrawFrame();
 
@@ -605,197 +630,627 @@ namespace IngameScript
         }
 
         public void DrawContentBox(IMyTextPanel panel, ref MySpriteDrawFrame frame)
-        {
-            float x_Left = itemBox_ColumnInterval_Float / 2 + 1.5f, x_Right = itemBox_ColumnInterval_Float + 2 + (512 - itemBox_ColumnInterval_Float - 4) / 2, x_Title = 70, y_Title = itemBox_ColumnInterval_Float + 2 + Convert.ToSingle(panel.CustomData);
-            float progressBar_YCorrect = 0f, progressBarWidth = 512 - itemBox_ColumnInterval_Float - 6, progressBarHeight = itemBox_ColumnInterval_Float - 3;
-            float fontsize_ProgressBar_Float = 1.2f;
+        {            
+            RectangleF visibleArea_RectangleF = new RectangleF
+                (
+                    (panel.TextureSize - panel.SurfaceSize) / 2f + new Vector2(0, Convert.ToSingle(panel.CustomData)),
+                    panel.SurfaceSize
+                );
+
+            float sideLength_Float;
+
+            if (visibleArea_RectangleF.Width <= visibleArea_RectangleF.Height) sideLength_Float = visibleArea_RectangleF.Width;
+            else sideLength_Float = visibleArea_RectangleF.Height;
+
+            RectangleF viewport_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        visibleArea_RectangleF.Center.X - sideLength_Float / 2,
+                        visibleArea_RectangleF.Center.Y - sideLength_Float / 2
+                    ),
+                    new Vector2(sideLength_Float, sideLength_Float)
+                );
+            DrawIcon(ref frame, "SquareSimple", viewport_RectangleF, font_Color_Overall);
+
+            float
+                fontsize_ScalingFactor_Float = sideLength_Float / 512f,
+                fontsize_Tag_Float = 0.6f,
+                fontsize_ProgressBar_Float = 1.2f,
+                height_Row_Float = viewport_RectangleF.Height / 7f,
+                border_Float = height_Row_Float * 0.02f,
+                contentArea_ScalingFactor_Float = 0.85f,
+                warningSign_ScalingFactor_Float = 0.7f;
+
+            Vector2
+                iconBox_BackGround_Size_Vector2 = new Vector2
+                (
+                    height_Row_Float - 2f * border_Float,
+                    height_Row_Float - 2f * border_Float
+                ),
+                title_BackGround_Size_Vector2 = new Vector2
+                (
+                    viewport_RectangleF.Width - 2f * height_Row_Float - 2f * border_Float,
+                    height_Row_Float - 2f * border_Float
+                ),
+                progressBar_BackGround_Size_Vector2 = new Vector2
+                (
+                    viewport_RectangleF.Width - height_Row_Float - 2f * border_Float,
+                    height_Row_Float - 2f * border_Float
+                ),
+                progressBar_Text_Size_Vector2 = new Vector2
+                (
+                    viewport_RectangleF.Width - height_Row_Float - 2f * border_Float,
+                    (height_Row_Float - 2f * border_Float) / 2f
+                );
+
+
+
 
             //  Title
-            DrawBox(ref frame, x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
-            DrawBox(ref frame, 512 - x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
-            DrawBox(ref frame, 512 / 2, x_Left + Convert.ToSingle(panel.CustomData), 512 - itemBox_ColumnInterval_Float * 2 - 4, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
-            PanelWriteText(ref frame, panels_Overall[0].GetOwnerFactionTag(), 512 / 2, 2 + Convert.ToSingle(panel.CustomData), 2.3f, TextAlignment.CENTER);
+            RectangleF
+                logo_Left_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X + border_Float, viewport_RectangleF.Y + border_Float),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                logo_Left_Content_RectangleF = ScalingViewport
+                (
+                    logo_Left_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                ),
+                logo_Right_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Right - logo_Left_BackGround_RectangleF.Width - border_Float, logo_Left_BackGround_RectangleF.Y),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                logo_Right_Content_RectangleF = ScalingViewport
+                (
+                    logo_Right_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                ),
+                title_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(logo_Left_BackGround_RectangleF.X + height_Row_Float, viewport_RectangleF.Y + border_Float),
+                    title_BackGround_Size_Vector2
+                );
+            DrawIcon(ref frame, "SquareSimple", logo_Left_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "SquareSimple", title_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "SquareSimple", logo_Right_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawLogo(ref frame, logo_Left_Content_RectangleF);
+            DrawLogo(ref frame, logo_Right_Content_RectangleF);
+            PanelWriteText
+            (
+                ref frame,
+                panel.GetOwnerFactionTag(),
+                title_BackGround_RectangleF,
+                2.3f * fontsize_ScalingFactor_Float, 
+                font_Color_Overall,
+                TextAlignment.CENTER
+            );
 
-            DrawLogo(ref frame, x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float);
-            DrawLogo(ref frame, 512 - x_Left, x_Left + Convert.ToSingle(panel.CustomData), itemBox_ColumnInterval_Float);
-
-            for (int i = 1; i <= 5; i++)
-            {
-                float y = i * itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2f + 1.5f + Convert.ToSingle(panel.CustomData);
-
-                DrawBox(ref frame, x_Left, y, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
-                DrawBox(ref frame, x_Right, y, (512 - itemBox_ColumnInterval_Float - 4), itemBox_ColumnInterval_Float, card_Background_Color_Overall);
-            }
-
-            for (int i = 1; i <= 7; i++)
-            {
-                float y = 6f * itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2f + 1.5f + Convert.ToSingle(panel.CustomData);
-                float x = x_Left + itemBox_ColumnInterval_Float * (i - 1);
-                DrawBox(ref frame, x, y, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, card_Background_Color_Overall);
-
-            }
-
-            //  All Cargo
-            float y1 = itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2 + 1.5f + Convert.ToSingle(panel.CustomData);
-            MySprite sprite = new MySprite()
-            {
-                Data = "Textures\\FactionLogo\\Builders\\BuilderIcon_1.dds",
-                Position = new Vector2(x_Left, y1),
-                Size = new Vector2(itemBox_ColumnInterval_Float - 2, itemBox_ColumnInterval_Float - 2),
-                Alignment = TextAlignment.CENTER,
-                Color = font_Color_Overall,
-            };
-            frame.Add(sprite);
-            string percentage_String, finalValue_String;
-            CalculateAll(out percentage_String, out finalValue_String);
-            ProgressBar(frame, x_Right, y1 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
-            PanelWriteText(ref frame, cargoContainers.Count.ToString(), x_Title, y_Title, 0.55f, TextAlignment.RIGHT);
-            PanelWriteText(ref frame, percentage_String, x_Right, y_Title, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-            PanelWriteText(ref frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-
-            //  H2
-            float y2 = y1 + itemBox_ColumnInterval_Float;
-            sprite = new MySprite()
-            {
-                Data = "IconHydrogen",
-                Position = new Vector2(x_Left, y2),
-                Size = new Vector2(itemBox_ColumnInterval_Float - 2, itemBox_ColumnInterval_Float - 2),
-                Alignment = TextAlignment.CENTER,
-                Color = font_Color_Overall,
-            };
-            frame.Add(sprite);
-            CalcualateGasTank(hydrogenTanks, out percentage_String, out finalValue_String);
-            PanelWriteText(ref frame, hydrogenTanks.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float, 0.55f, TextAlignment.RIGHT);
-            ProgressBar(frame, x_Right, y2 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
-            PanelWriteText(ref frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-            PanelWriteText(ref frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-
-            //  O2
-            float y3 = y2 + itemBox_ColumnInterval_Float;
-            sprite = new MySprite()
-            {
-                Data = "IconOxygen",
-                Position = new Vector2(x_Left, y3),
-                Size = new Vector2(itemBox_ColumnInterval_Float - 2, itemBox_ColumnInterval_Float - 2),
-                Alignment = TextAlignment.CENTER,
-                Color = font_Color_Overall,
-            };
-            frame.Add(sprite);
-            CalcualateGasTank(oxygenTanks, out percentage_String, out finalValue_String);
-            PanelWriteText(ref frame, oxygenTanks.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 2, 0.55f, TextAlignment.RIGHT);
-            ProgressBar(frame, x_Right, y3 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
-            PanelWriteText(ref frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-            PanelWriteText(ref frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 2 + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-
-            //  Power
-            float y4 = y3 + itemBox_ColumnInterval_Float;
-            sprite = new MySprite()
-            {
-                Data = "IconEnergy",
-                Position = new Vector2(x_Left, y4),
-                Size = new Vector2(itemBox_ColumnInterval_Float - 2, itemBox_ColumnInterval_Float - 2),
-                Alignment = TextAlignment.CENTER,
-                Color = font_Color_Overall,
-            };
-            frame.Add(sprite);
-            CalculatePowerProducer(out percentage_String, out finalValue_String);
-            PanelWriteText(ref frame, powerProducers.Count.ToString(), x_Title, y_Title + itemBox_ColumnInterval_Float * 3, 0.55f, TextAlignment.RIGHT);
-            ProgressBar(frame, x_Right, y4 + progressBar_YCorrect, progressBarWidth, progressBarHeight, percentage_String);
-            PanelWriteText(ref frame, percentage_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 3, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-            PanelWriteText(ref frame, finalValue_String, x_Right, y_Title + itemBox_ColumnInterval_Float * 3 + itemBox_ColumnInterval_Float / 2, fontsize_ProgressBar_Float, TextAlignment.CENTER);
-
-            //  IGC
-            float y_6thRow_Float = 5f * itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2f + 1.5f + Convert.ToSingle(panel.CustomData);
-            float x_IGCTag_Float = x_Left + itemBox_ColumnInterval_Float / 2f + 5f;
-            float y_IGCTag_Float = y_6thRow_Float - itemBox_ColumnInterval_Float / 2f + 2f;
-            float y_IGCTag2_Float = y_6thRow_Float + 2f;
-            string igcTag_String = GetValue_from_CustomData(information_Section, "IGCTAG");
-
-            IGCSignifier(ref frame, x_Left, y_6thRow_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
-            PanelWriteText(ref frame, igcTag_String, x_IGCTag_Float, y_IGCTag_Float, fontsize_ProgressBar_Float, TextAlignment.LEFT);
-            PanelWriteText(ref frame, AntennaDistance(), x_IGCTag_Float, y_IGCTag2_Float, fontsize_ProgressBar_Float, TextAlignment.LEFT);
-
-            //  Facility
-            float y_7thRow_Float = 6f * itemBox_ColumnInterval_Float + itemBox_ColumnInterval_Float / 2f + 1.5f + Convert.ToSingle(panel.CustomData);
-
-            FacilitySignifier(ref frame, x_Left, y_7thRow_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
-
-            //  Inventory
-            float x_7thRow_2ndColumn_Float = x_Left + itemBox_ColumnInterval_Float * 1f;
-            InventorySignifier(ref frame, x_7thRow_2ndColumn_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
-
-            //  Cargo Residues
-            float x_Residues_Float = x_Left + itemBox_ColumnInterval_Float * 2f;
-            float x_PercentageSign_Float = x_Residues_Float + itemBox_ColumnInterval_Float / 2f - 3f;
-            float y_PercentageSign_Float = y_7thRow_Float - itemBox_ColumnInterval_Float / 2f - 1f;
-            DrawIcon(ref frame, "Textures\\FactionLogo\\Builders\\BuilderIcon_1.dds", x_Residues_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
-            PanelWriteText(ref frame, "%", x_PercentageSign_Float, y_PercentageSign_Float, 0.95f, TextAlignment.RIGHT);
-
-            //  Refresh Rate
-            float x_RefreshRate_Float = x_Left + itemBox_ColumnInterval_Float * 3f;
-            RefreshRateSignifier(ref frame, x_RefreshRate_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, 3f, font_Color_Overall, card_Background_Color_Overall);
-
-            //  Combined_Refining
-            float x_Combined_Refining_Float = x_Left + itemBox_ColumnInterval_Float * 4f;
-            float x_Combined_Refining_Mode_Float = x_PercentageSign_Float + itemBox_ColumnInterval_Float * 2f;
-            string combined_Refining_Mode_String = GetValue_from_CustomData(ore_Section, combinedMode_Key);
-            DrawIcon(ref frame, "MyObjectBuilder_Ore/Stone", x_Combined_Refining_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
-            PanelWriteText(ref frame, combined_Refining_Mode_String, x_Combined_Refining_Mode_Float, y_PercentageSign_Float, 0.95f, TextAlignment.RIGHT);
-
-            //  AutoProdcution
-            float x_AutoProduction_Float = x_Left + itemBox_ColumnInterval_Float * 5f;
-            DrawIcon(ref frame, "MyObjectBuilder_PhysicalGunObject/WelderItem", x_AutoProduction_Float, y_7thRow_Float, itemBox_ColumnInterval_Float, itemBox_ColumnInterval_Float, font_Color_Overall);
-
-
-            //  FunctionalSign
-            float width_DangerSign_Float = itemBox_ColumnInterval_Float * 0.7f;
+            //  Cargo
+            RectangleF
+                cargo_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(logo_Left_BackGround_RectangleF.X, logo_Left_BackGround_RectangleF.Y + height_Row_Float),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                cargo_Icon_Content_RectangleF = ScalingViewport
+                (
+                    cargo_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                ),
+                cargo_ProgressBar_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(cargo_Icon_BackGround_RectangleF.X + height_Row_Float, cargo_Icon_BackGround_RectangleF.Y),
+                    progressBar_BackGround_Size_Vector2
+                ),
+                cargo_ProgressBar_Text_Ratio_RectangleF = new RectangleF
+                (
+                    new Vector2(cargo_ProgressBar_BackGround_RectangleF.X, cargo_ProgressBar_BackGround_RectangleF.Y),
+                    progressBar_Text_Size_Vector2
+                ),
+                cargo_ProgressBar_Text_Actual_RectangleF = new RectangleF
+                (
+                    new Vector2(cargo_ProgressBar_BackGround_RectangleF.X, cargo_ProgressBar_BackGround_RectangleF.Center.Y),
+                    progressBar_Text_Size_Vector2
+                );
+            DrawIcon(ref frame, "SquareSimple", cargo_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "Textures\\FactionLogo\\Builders\\BuilderIcon_1.dds", cargo_Icon_Content_RectangleF, font_Color_Overall);
+            PanelWriteText
+            (
+                ref frame,
+                cargoContainers.Count.ToString(),
+                cargo_Icon_Content_RectangleF, 
+                fontsize_Tag_Float * fontsize_ScalingFactor_Float, 
+                font_Color_Overall, 
+                TextAlignment.RIGHT
+            );
             if (function_ShowItems_Bool == false)
             {
-                DrawIcon(ref frame, "Danger", x_Left, y1, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
+                DrawIcon(ref frame, "Danger", cargo_Icon_Content_RectangleF, font_Color_Overall);
             }
-            if (function_ShowFacilities_Bool == false)
-            {
-                DrawIcon(ref frame, "Danger", x_Left, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
-            }
-            if (function_InventoryManagement_Bool == false)
-            {
-                DrawIcon(ref frame, "Danger", x_7thRow_2ndColumn_Float, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
-            }
+
+            DrawIcon(ref frame, "SquareSimple", cargo_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
+            string percentage_String, finalValue_String;
+            CalculateAll(out percentage_String, out finalValue_String);
+            ProgressBar(ref frame, cargo_ProgressBar_BackGround_RectangleF, percentage_String);
+            PanelWriteText
+            (
+                ref frame,
+                percentage_String,
+                cargo_ProgressBar_Text_Ratio_RectangleF,
+                fontsize_ProgressBar_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.CENTER
+            );
+            PanelWriteText
+            (
+                ref frame,
+                finalValue_String,
+                cargo_ProgressBar_Text_Actual_RectangleF,
+                fontsize_ProgressBar_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.CENTER
+            );
+
+            //  H2
+            RectangleF
+                hydrogen_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(cargo_Icon_BackGround_RectangleF.X, cargo_Icon_BackGround_RectangleF.Y + height_Row_Float),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                hydrogen_Icon_Content_RectangleF = ScalingViewport
+                (
+                    hydrogen_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                ),
+                hydrogen_ProgressBar_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(hydrogen_Icon_BackGround_RectangleF.X + height_Row_Float, hydrogen_Icon_BackGround_RectangleF.Y),
+                    progressBar_BackGround_Size_Vector2
+                ),
+                hydrogen_ProgressBar_Text_Ratio_RectangleF = new RectangleF
+                (
+                    new Vector2(hydrogen_ProgressBar_BackGround_RectangleF.X, hydrogen_ProgressBar_BackGround_RectangleF.Y),
+                    progressBar_Text_Size_Vector2
+                ),
+                hydrogen_ProgressBar_Text_Actual_RectangleF = new RectangleF
+                (
+                    new Vector2(hydrogen_ProgressBar_BackGround_RectangleF.X, hydrogen_ProgressBar_BackGround_RectangleF.Center.Y),
+                    progressBar_Text_Size_Vector2
+                );
+            DrawIcon(ref frame, "SquareSimple", hydrogen_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "SquareSimple", hydrogen_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "IconHydrogen", hydrogen_Icon_Content_RectangleF, font_Color_Overall);
+            PanelWriteText
+            (
+                ref frame, 
+                hydrogenTanks.Count.ToString(), 
+                hydrogen_Icon_Content_RectangleF, 
+                fontsize_Tag_Float * fontsize_ScalingFactor_Float, 
+                font_Color_Overall, 
+                TextAlignment.RIGHT
+            );
+
+            CalcualateGasTank(hydrogenTanks, out percentage_String, out finalValue_String);
+            ProgressBar(ref frame, hydrogen_ProgressBar_BackGround_RectangleF, percentage_String);
+            PanelWriteText
+            (
+                ref frame,
+                percentage_String,
+                hydrogen_ProgressBar_Text_Ratio_RectangleF,
+                fontsize_ProgressBar_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.CENTER
+            );
+            PanelWriteText
+            (
+                ref frame,
+                finalValue_String,
+                hydrogen_ProgressBar_Text_Actual_RectangleF,
+                fontsize_ProgressBar_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.CENTER
+            );
+
+            //  O2
+            RectangleF
+                oxydrogen_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(hydrogen_Icon_BackGround_RectangleF.X, hydrogen_Icon_BackGround_RectangleF.Y + height_Row_Float),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                oxydrogen_Icon_Content_RectangleF = ScalingViewport
+                (
+                    oxydrogen_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                ),
+                oxydrogen_ProgressBar_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(oxydrogen_Icon_BackGround_RectangleF.X + height_Row_Float, oxydrogen_Icon_BackGround_RectangleF.Y),
+                    progressBar_BackGround_Size_Vector2
+                ),
+                oxydrogen_ProgressBar_Text_Ratio_RectangleF = new RectangleF
+                (
+                    new Vector2(oxydrogen_ProgressBar_BackGround_RectangleF.X, oxydrogen_Icon_BackGround_RectangleF.Y),
+                    progressBar_Text_Size_Vector2
+                ),
+                oxydrogen_ProgressBar_Text_Actual_RectangleF = new RectangleF
+                (
+                    new Vector2(oxydrogen_ProgressBar_BackGround_RectangleF.X, oxydrogen_Icon_BackGround_RectangleF.Center.Y),
+                    progressBar_Text_Size_Vector2
+                );
+            DrawIcon(ref frame, "SquareSimple", oxydrogen_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "SquareSimple", oxydrogen_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "IconOxygen", oxydrogen_Icon_Content_RectangleF, font_Color_Overall);
+            PanelWriteText
+            (
+                ref frame, 
+                oxygenTanks.Count.ToString(),
+                oxydrogen_Icon_Content_RectangleF, 
+                fontsize_Tag_Float * fontsize_ScalingFactor_Float, 
+                font_Color_Overall, 
+                TextAlignment.RIGHT
+            );
+
+            CalcualateGasTank(oxygenTanks, out percentage_String, out finalValue_String);
+            ProgressBar(ref frame, oxydrogen_ProgressBar_BackGround_RectangleF, percentage_String);
+            PanelWriteText
+            (
+                ref frame,
+                percentage_String,
+                oxydrogen_ProgressBar_Text_Ratio_RectangleF,
+                fontsize_ProgressBar_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.CENTER
+            );
+            PanelWriteText
+            (
+                ref frame,
+                finalValue_String,
+                oxydrogen_ProgressBar_Text_Actual_RectangleF,
+                fontsize_ProgressBar_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.CENTER
+            );
+
+            //  Power
+            RectangleF
+                power_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(oxydrogen_Icon_BackGround_RectangleF.X, oxydrogen_Icon_BackGround_RectangleF.Y + height_Row_Float),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                power_Icon_Content_RectangleF = ScalingViewport
+                (
+                    power_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                ),
+                power_ProgressBar_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(power_Icon_BackGround_RectangleF.X + height_Row_Float, power_Icon_BackGround_RectangleF.Y),
+                    progressBar_BackGround_Size_Vector2
+                ),
+                power_ProgressBar_Text_Ratio_RectangleF = new RectangleF
+                (
+                    new Vector2(power_ProgressBar_BackGround_RectangleF.X, power_ProgressBar_BackGround_RectangleF.Y),
+                    progressBar_Text_Size_Vector2
+                ),
+                power_ProgressBar_Text_Actual_RectangleF = new RectangleF
+                (
+                    new Vector2(power_ProgressBar_BackGround_RectangleF.X, power_ProgressBar_BackGround_RectangleF.Center.Y),
+                    progressBar_Text_Size_Vector2
+                );
+            DrawIcon(ref frame, "SquareSimple", power_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "SquareSimple", power_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "IconEnergy", power_Icon_Content_RectangleF, font_Color_Overall);
+            PanelWriteText
+            (
+                ref frame, 
+                powerProducers.Count.ToString(), 
+                power_Icon_Content_RectangleF, 
+                fontsize_Tag_Float * fontsize_ScalingFactor_Float, 
+                font_Color_Overall, 
+                TextAlignment.RIGHT
+            );
+
+            CalculatePowerProducer(out percentage_String, out finalValue_String);
+            ProgressBar(ref frame, power_ProgressBar_BackGround_RectangleF, percentage_String);
+            PanelWriteText
+            (
+                ref frame,
+                percentage_String,
+                power_ProgressBar_Text_Ratio_RectangleF,
+                fontsize_ProgressBar_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.CENTER
+            );
+            PanelWriteText
+            (
+                ref frame,
+                finalValue_String,
+                power_ProgressBar_Text_Actual_RectangleF,
+                fontsize_ProgressBar_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.CENTER
+            );
+
+            //  Antenna
+            RectangleF
+                antenna_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(power_Icon_BackGround_RectangleF.X, power_Icon_BackGround_RectangleF.Y + height_Row_Float),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                antenna_Icon_Content_RectangleF = ScalingViewport
+                (
+                    antenna_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                ),
+                antenna_ProgressBar_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(antenna_Icon_BackGround_RectangleF.X + height_Row_Float, antenna_Icon_BackGround_RectangleF.Y),
+                    progressBar_BackGround_Size_Vector2
+                ),
+                antenna_ProgressBar_Text_Ratio_RectangleF = new RectangleF
+                (
+                    new Vector2(antenna_ProgressBar_BackGround_RectangleF.X, antenna_ProgressBar_BackGround_RectangleF.Y),
+                    progressBar_Text_Size_Vector2
+                ),
+                antenna_ProgressBar_Text_Actual_RectangleF = new RectangleF
+                (
+                    new Vector2(antenna_ProgressBar_BackGround_RectangleF.X, antenna_ProgressBar_BackGround_RectangleF.Center.Y),
+                    progressBar_Text_Size_Vector2
+                );
+            DrawIcon(ref frame, "SquareSimple", antenna_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "SquareSimple", antenna_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
+            IGCSignifier(ref frame, antenna_Icon_Content_RectangleF, font_Color_Overall);
             if (function_BroadCastConnectorGPS_Bool == false)
             {
-                DrawIcon(ref frame, "Danger", x_Left, y_6thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
+                DrawIcon(ref frame, "Danger", antenna_Icon_Content_RectangleF, font_Color_Overall);
             }
+
+            string igcTag_String = GetValue_from_CustomData(information_Section, "IGCTAG");
+            PanelWriteText
+            (
+                ref frame,
+                " " + igcTag_String,
+                antenna_ProgressBar_Text_Ratio_RectangleF,
+                fontsize_ProgressBar_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.LEFT
+            );
+            PanelWriteText
+            (
+                ref frame,
+                " " + AntennaDistance(),
+                antenna_ProgressBar_Text_Actual_RectangleF,
+                fontsize_ProgressBar_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.LEFT
+            );
+
+            //  Facility
+            RectangleF
+                showFacilities_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(antenna_Icon_BackGround_RectangleF.X, antenna_Icon_BackGround_RectangleF.Y + height_Row_Float),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                showFacilities_Icon_Content_RectangleF = ScalingViewport
+                (
+                    showFacilities_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                );
+            DrawIcon(ref frame, "SquareSimple", showFacilities_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            FacilitySignifier(ref frame, showFacilities_Icon_Content_RectangleF, font_Color_Overall);
+            if (function_ShowFacilities_Bool == false)
+            {
+                DrawIcon(ref frame, "Danger", showFacilities_Icon_Content_RectangleF, font_Color_Overall);
+            }
+
+            //  Inventory
+            RectangleF
+                inventory_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(showFacilities_Icon_BackGround_RectangleF.X + height_Row_Float, showFacilities_Icon_BackGround_RectangleF.Y),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                inventory_Icon_Content_RectangleF = ScalingViewport
+                (
+                    inventory_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                ),
+                inventory_WarningSign_RectangleF = ScalingViewport
+                (
+                    inventory_Icon_BackGround_RectangleF,
+                    warningSign_ScalingFactor_Float
+                );
+
+            DrawIcon(ref frame, "SquareSimple", inventory_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            InventorySignifier(ref frame, inventory_Icon_Content_RectangleF, font_Color_Overall, card_Background_Color_Overall);
+            if (function_InventoryManagement_Bool == false)
+            {
+                DrawIcon(ref frame, "Danger", inventory_WarningSign_RectangleF, font_Color_Overall);
+            }
+
+            //  Cargo Residues
+            RectangleF
+                cargoResidues_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(inventory_Icon_BackGround_RectangleF.X + height_Row_Float, inventory_Icon_BackGround_RectangleF.Y),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                cargoResidues_Icon_Content_RectangleF = ScalingViewport
+                (
+                    cargoResidues_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                ),
+                cargoResidues_WarningSign_RectangleF = ScalingViewport
+                (
+                    cargoResidues_Icon_BackGround_RectangleF,
+                    warningSign_ScalingFactor_Float
+                );
+            DrawIcon(ref frame, "SquareSimple", cargoResidues_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "Textures\\FactionLogo\\Builders\\BuilderIcon_1.dds", cargoResidues_Icon_Content_RectangleF, font_Color_Overall);
             if (function_ShowCargoContainerRatio_Bool == false)
             {
-                DrawIcon(ref frame, "Danger", x_Residues_Float, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
+                DrawIcon(ref frame, "Danger", cargoResidues_WarningSign_RectangleF, font_Color_Overall);
             }
-            if(function_AutoProduction_Bool == false)
+            PanelWriteText
+            (
+                ref frame,
+                "%",
+                cargoResidues_Icon_Content_RectangleF,
+                fontsize_Tag_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.RIGHT
+            );
+
+            //  Refresh Rate
+            RectangleF
+                refreshRate_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(cargoResidues_Icon_BackGround_RectangleF.X + height_Row_Float, cargoResidues_Icon_BackGround_RectangleF.Y),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                refreshRate_Icon_Content_RectangleF = ScalingViewport
+                (
+                    refreshRate_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                );
+            DrawIcon(ref frame, "SquareSimple", refreshRate_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            RefreshRateSignifier(ref frame, refreshRate_Icon_Content_RectangleF, font_Color_Overall, card_Background_Color_Overall);
+
+            //  Combined_Refining
+            RectangleF
+                combinedRefining_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(refreshRate_Icon_BackGround_RectangleF.X + height_Row_Float, refreshRate_Icon_BackGround_RectangleF.Y),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                combinedRefining_Icon_Content_RectangleF = ScalingViewport
+                (
+                    combinedRefining_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                );
+            DrawIcon(ref frame, "SquareSimple", combinedRefining_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "MyObjectBuilder_Ore/Stone", combinedRefining_Icon_Content_RectangleF, font_Color_Overall);
+            string combined_Refining_Mode_String = GetValue_from_CustomData(ore_Section, combinedMode_Key);
+            PanelWriteText
+            (
+                ref frame,
+                combined_Refining_Mode_String,
+                combinedRefining_Icon_Content_RectangleF,
+                fontsize_Tag_Float * fontsize_ScalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.RIGHT
+            );
+
+            //  AutoProduction
+            RectangleF
+                autoProdcution_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(combinedRefining_Icon_BackGround_RectangleF.X + height_Row_Float, combinedRefining_Icon_BackGround_RectangleF.Y),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                autoProdcution_Icon_Content_RectangleF = ScalingViewport
+                (
+                    autoProdcution_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                ),
+                autoProdcution_WarningSign_RectangleF = ScalingViewport
+                (
+                    autoProdcution_Icon_BackGround_RectangleF,
+                    warningSign_ScalingFactor_Float
+                );
+            DrawIcon(ref frame, "SquareSimple", autoProdcution_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawIcon(ref frame, "MyObjectBuilder_PhysicalGunObject/WelderItem", autoProdcution_Icon_Content_RectangleF, font_Color_Overall);
+            if (function_AutoProduction_Bool == false)
             {
-                DrawIcon(ref frame, "Danger", x_AutoProduction_Float, y_7thRow_Float, width_DangerSign_Float, width_DangerSign_Float, font_Color_Overall);
+                DrawIcon(ref frame, "Danger", autoProdcution_WarningSign_RectangleF, font_Color_Overall);
             }
+
+            //  Empty_Slot
+            RectangleF
+                emptySlot_Icon_BackGround_RectangleF = new RectangleF
+                (
+                    new Vector2(autoProdcution_Icon_BackGround_RectangleF.X + height_Row_Float, autoProdcution_Icon_BackGround_RectangleF.Y),
+                    iconBox_BackGround_Size_Vector2
+                ),
+                emptySlot_Icon_Content_RectangleF = ScalingViewport
+                (
+                    emptySlot_Icon_BackGround_RectangleF,
+                    contentArea_ScalingFactor_Float
+                );
+            DrawIcon(ref frame, "SquareSimple", emptySlot_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+
         }
 
-        public void ProgressBar(MySpriteDrawFrame frame, float x, float y, float width, float height, string ratio)
+        public RectangleF ScalingViewport(RectangleF datumPoint_RectangleF, float content_ScalingFactor_Float, int ratio_Pixel_1_2_Int = 1)
+        {
+            float 
+                width_Float = datumPoint_RectangleF.Width,
+                height_Float = datumPoint_RectangleF.Height;
+
+            if(ratio_Pixel_1_2_Int == 1)
+            {
+                width_Float = width_Float * content_ScalingFactor_Float;
+                height_Float = height_Float * content_ScalingFactor_Float;
+            }
+            else
+            {
+                if(width_Float < height_Float)
+                {
+                    width_Float = width_Float * content_ScalingFactor_Float;
+                    height_Float -= width_Float * (1f - content_ScalingFactor_Float);
+                }
+                else
+                {
+                    height_Float = height_Float * content_ScalingFactor_Float;
+                    width_Float -= height_Float * (1f - content_ScalingFactor_Float);
+                }
+            }
+
+            float
+                x_Float = datumPoint_RectangleF.Center.X - width_Float / 2f,
+                y_Float = datumPoint_RectangleF.Center.Y - height_Float / 2f;
+
+            return new RectangleF(new Vector2(x_Float, y_Float), new Vector2(width_Float, height_Float));
+        }
+
+        public void ProgressBar(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, string ratio)
         {
             string[] ratiogroup = ratio.Split('%');
             float ratio_Float = Convert.ToSingle(ratiogroup[0]);
-            float currentWidth = width * ratio_Float / 100;
-            float currentX = x - width / 2 + currentWidth / 2;
+            float currentWidth = viewport_RectangleF.Width * ratio_Float / 100;
+            float currentX = viewport_RectangleF.Center.X - viewport_RectangleF.Width / 2 + currentWidth / 2;
 
             if (ratio_Float == 0) return;
 
-            DrawBox(ref frame, currentX, y, currentWidth, height, progressbar_Color);
+            DrawIcon(ref frame, "SquareSimple", currentX, viewport_RectangleF.Center.Y, currentWidth, viewport_RectangleF.Height, progressbar_Color);
         }
 
-        public void DrawLogo(ref MySpriteDrawFrame frame, float x, float y, float width)
+        public void DrawLogo(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF)
         {
+            float
+                x_Float = viewport_RectangleF.Center.X,
+                y_Float = viewport_RectangleF.Center.Y,
+                width_Float = viewport_RectangleF.Width,
+                height_Float = viewport_RectangleF.Height;
+
+            if (width_Float > height_Float) width_Float = height_Float;
+
             MySprite sprite = new MySprite()
             {
                 Type = SpriteType.TEXTURE,
                 Data = "Screen_LoadingBar",
-                Position = new Vector2(x, y),
-                Size = new Vector2(width - 6, width - 6),
-                RotationOrScale = Convert.ToSingle(counter_Logo / 360 * 2 * Math.PI),
+                Position = new Vector2(x_Float, y_Float),
+                Size = new Vector2(width_Float, width_Float),
+                RotationOrScale = Convert.ToSingle(counter_Logo_Float / 360 * 2 * Math.PI),
                 Alignment = TextAlignment.CENTER,
                 Color = font_Color_Overall,
             };
@@ -805,9 +1260,9 @@ namespace IngameScript
             {
                 Type = SpriteType.TEXTURE,
                 Data = "Screen_LoadingBar",
-                Position = new Vector2(x, y),
-                Size = new Vector2(width / 2, width / 2),
-                RotationOrScale = Convert.ToSingle(2 * Math.PI - counter_Logo / 360 * 2 * Math.PI),
+                Position = new Vector2(x_Float, y_Float),
+                Size = new Vector2(width_Float * 0.6f, width_Float * 0.6f),
+                RotationOrScale = Convert.ToSingle(2 * Math.PI - counter_Logo_Float / 360 * 2 * Math.PI),
                 Alignment = TextAlignment.CENTER,
                 Color = font_Color_Overall,
 
@@ -818,9 +1273,9 @@ namespace IngameScript
             {
                 Type = SpriteType.TEXTURE,
                 Data = "Screen_LoadingBar",
-                Position = new Vector2(x, y),
-                Size = new Vector2(width / 4, width / 4),
-                RotationOrScale = Convert.ToSingle(Math.PI + counter_Logo / 360 * 2 * Math.PI),
+                Position = new Vector2(x_Float, y_Float),
+                Size = new Vector2(width_Float * 0.33f, width_Float * 0.33f),
+                RotationOrScale = Convert.ToSingle(Math.PI + counter_Logo_Float / 360 * 2 * Math.PI),
                 Alignment = TextAlignment.CENTER,
                 Color = font_Color_Overall,
             };
@@ -949,7 +1404,7 @@ namespace IngameScript
             frame.Add(sprite);
         }
 
-        public void PanelWriteText(ref MySpriteDrawFrame frame, string text, float x, float y, float width_Float, float height_Float, float fontSize, TextAlignment alignment)
+        public void PanelWriteText(ref MySpriteDrawFrame frame, string text, float x, float y, float width_Float, float height_Float, float fontSize, Color font_Color, TextAlignment alignment = TextAlignment.LEFT)
         {
 
             float x_Clip_Float = x,
@@ -977,7 +1432,45 @@ namespace IngameScript
                     Data = text,
                     Position = new Vector2(x, y),
                     RotationOrScale = fontSize,
-                    Color = font_Color_Overall,
+                    Color = font_Color,
+                    Alignment = alignment,
+                    FontId = "LoadingScreen"
+                    //FontId = "Monospace"
+                };
+
+                frame.Add(sprite);
+            }
+        }
+
+        public void PanelWriteText(ref MySpriteDrawFrame frame, string text, RectangleF viewport_REctangleF, float fontSize, Color font_Color, TextAlignment alignment = TextAlignment.LEFT)
+        {
+
+            float 
+                x_Float, 
+                y_Float = viewport_REctangleF.Y;
+
+            if(alignment == TextAlignment.LEFT) x_Float = viewport_REctangleF.X;
+            else if(alignment == TextAlignment.CENTER) x_Float = viewport_REctangleF.Center.X;
+            else x_Float = viewport_REctangleF.Right;
+
+            using 
+            (
+                frame.Clip
+                    (
+                        (int)(viewport_REctangleF.X - viewport_REctangleF.Width * 0.05f), 
+                        (int)viewport_REctangleF.Y, 
+                        (int)(viewport_REctangleF.Width * 1.1f),
+                        (int)viewport_REctangleF.Height
+                    )
+            )
+            {
+                MySprite sprite = new MySprite()
+                {
+                    Type = SpriteType.TEXT,
+                    Data = text,
+                    Position = new Vector2(x_Float, y_Float),
+                    RotationOrScale = fontSize,
+                    Color = font_Color,
                     Alignment = alignment,
                     FontId = "LoadingScreen"
                     //FontId = "Monospace"
@@ -1002,24 +1495,44 @@ namespace IngameScript
             frame.Add(sprite);
         }
 
-        public void IGCSignifier(ref MySpriteDrawFrame frame, float x, float y, float width, Color co)
+        public void IGCSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color)
         {
+            float
+                width_Float = viewport_RectangleF.Width / 8f,
+                height_Float = viewport_RectangleF.Height / 3f;
 
-            float x1_Float = x - width / 4f;
-            float y_Triangle_Float = y - width * 0.2f;
-            float width_Triangle_Float = width * 0.35f;
-            float border_Float = 7f;
-            float interval_Float = 14f, heightInterval_Float = 16f;
-            float height1_Float = width * 0.7f, height2_Float = height1_Float - heightInterval_Float, height3_Float = height2_Float - heightInterval_Float;
-            float y_Bar1_Float = y + heightInterval_Float / 2f, y_Bar2_Float = y + heightInterval_Float;
+            RectangleF
+                bar1_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Right - width_Float, viewport_RectangleF.Y),
+                    new Vector2(width_Float, height_Float * 3f)
+                ),
+                bar2_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Right - width_Float * 3f, viewport_RectangleF.Y + height_Float),
+                    new Vector2(width_Float, height_Float * 2f)
+                ),
+                bar3_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Right - width_Float * 5f, viewport_RectangleF.Y + height_Float * 2f),
+                    new Vector2(width_Float, height_Float)
+                ),
+                bar4_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Right - width_Float * 7f, viewport_RectangleF.Y + height_Float * 0.5f),
+                    new Vector2(width_Float, height_Float * 3f - height_Float * 0.5f)
+                ),
+                triangle_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X, viewport_RectangleF.Y),
+                    new Vector2(width_Float * 3f, height_Float * 1.5f)
+                );
 
-            DrawIcon(ref frame, "Triangle", x1_Float, y_Triangle_Float, width_Triangle_Float, width_Triangle_Float, co, 180f);
-            DrawIcon(ref frame, "SquareSimple", x1_Float, y, border_Float, height1_Float, co);
-            DrawIcon(ref frame, "SquareSimple", x1_Float + interval_Float * 1f, y_Bar2_Float, border_Float, height3_Float, co);
-            DrawIcon(ref frame, "SquareSimple", x1_Float + interval_Float * 2f, y_Bar1_Float, border_Float, height2_Float, co);
-            DrawIcon(ref frame, "SquareSimple", x1_Float + interval_Float * 3f, y, border_Float, height1_Float, co);
-
-
+            DrawIcon(ref frame, "SquareSimple", bar1_RectangleF, icon_Color);
+            DrawIcon(ref frame, "SquareSimple", bar2_RectangleF, icon_Color);
+            DrawIcon(ref frame, "SquareSimple", bar3_RectangleF, icon_Color);
+            DrawIcon(ref frame, "SquareSimple", bar4_RectangleF, icon_Color);
+            DrawIcon(ref frame, "Triangle", triangle_RectangleF, icon_Color, 180f);
         }
 
         public string AntennaDistance()
@@ -1042,23 +1555,7 @@ namespace IngameScript
             return AmountUnitConversion(distance_Float, false) + "m";
         }
 
-        public void DrawIcon(ref MySpriteDrawFrame frame, string icon, float x, float y, float width, float height, Color picture_Color)
-        {
-            var sprite = new MySprite
-            {
-                Type = SpriteType.TEXTURE,
-                Data = icon,
-                Position = new Vector2(x, y),
-                RotationOrScale = 0,
-                Size = new Vector2(width, height),
-                Color = picture_Color,
-                Alignment = TextAlignment.CENTER
-            };
-
-            frame.Add(sprite);
-        }
-
-        public void DrawIcon(ref MySpriteDrawFrame frame, string icon, float x, float y, float width, float height, Color picture_Color, float rotation)
+        public void DrawIcon(ref MySpriteDrawFrame frame, string icon, float x, float y, float width, float height, Color picture_Color, float rotation = 0)
         {
             var sprite = new MySprite
             {
@@ -1074,70 +1571,304 @@ namespace IngameScript
             frame.Add(sprite);
         }
 
-        public void FacilitySignifier(ref MySpriteDrawFrame frame, float x, float y, float width, Color co)
+        public void DrawIcon(ref MySpriteDrawFrame frame, string icon, RectangleF viewport_RectagnleF, Color picture_Color, float rotation = 0)
         {
-            float width_LargeBox_Float = width * 0.8f;
-            float interval_Float = width * 0.145f;
-            float y1_Interval_Float = y - width * 0.17f * 0.5f - interval_Float * 0.5f;
-            float y2_Interval_Float = y + width * 0.17f * 0.5f + interval_Float * 0.5f;
-            float x_Interval_Float = x - width * 0.17f * 0.5f - interval_Float * 0.5f;
+            var sprite = new MySprite
+            {
+                Type = SpriteType.TEXTURE,
+                Data = icon,
+                Position = new Vector2(viewport_RectagnleF.Center.X, viewport_RectagnleF.Center.Y),
+                RotationOrScale = Convert.ToSingle(rotation / 360f * 2f * Math.PI),
+                Size = new Vector2(viewport_RectagnleF.Width, viewport_RectagnleF.Height),
+                Color = picture_Color,
+                Alignment = TextAlignment.CENTER
+            };
 
+            frame.Add(sprite);
+        }
 
-            DrawBox(ref frame, x, y, width_LargeBox_Float, width_LargeBox_Float, co);
-            DrawBox(ref frame, x, y1_Interval_Float, width_LargeBox_Float, interval_Float, card_Background_Color_Overall);
-            DrawBox(ref frame, x, y2_Interval_Float, width_LargeBox_Float, interval_Float, card_Background_Color_Overall);
-            DrawBox(ref frame, x_Interval_Float, y, interval_Float, width_LargeBox_Float, card_Background_Color_Overall);
+        public void FacilitySignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color)
+        {
+            float
+                width_SmallBox_Float = viewport_RectangleF.Height / 3f,
+                width_LargeBox_Float = viewport_RectangleF.Width - width_SmallBox_Float,
+                scalingFactor_Float = 0.7f;
+
+            RectangleF
+                box_Small_Up_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X, viewport_RectangleF.Y),
+                    new Vector2(width_SmallBox_Float, width_SmallBox_Float)
+                ),
+                box_Small_Middle_RectangleF = new RectangleF
+                (
+                    new Vector2(box_Small_Up_RectangleF.X, box_Small_Up_RectangleF.Y + width_SmallBox_Float),
+                    new Vector2(width_SmallBox_Float, width_SmallBox_Float)
+                ),
+                box_Small_Down_RectangleF = new RectangleF
+                (
+                    new Vector2(box_Small_Middle_RectangleF.X, box_Small_Middle_RectangleF.Y + width_SmallBox_Float),
+                    new Vector2(width_SmallBox_Float, width_SmallBox_Float)
+                ),
+
+                box_Large_Up_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X + width_SmallBox_Float, viewport_RectangleF.Y),
+                    new Vector2(width_LargeBox_Float, width_SmallBox_Float)
+                ),
+                box_Large_Middle_RectangleF = new RectangleF
+                (
+                    new Vector2(box_Large_Up_RectangleF.X, box_Large_Up_RectangleF.Y + width_SmallBox_Float),
+                    new Vector2(width_LargeBox_Float, width_SmallBox_Float)
+                ),
+                box_Large_Down_RectangleF = new RectangleF
+                (
+                    new Vector2(box_Large_Middle_RectangleF.X, box_Large_Middle_RectangleF.Y + width_SmallBox_Float),
+                    new Vector2(width_LargeBox_Float, width_SmallBox_Float)
+                );
+
+            List<RectangleF> viewport_List = new List<RectangleF>()
+            {
+                box_Small_Up_RectangleF,
+                box_Small_Middle_RectangleF,
+                box_Small_Down_RectangleF,
+                box_Large_Up_RectangleF,
+                box_Large_Middle_RectangleF,
+                box_Large_Down_RectangleF
+            };
+
+            for(int i = 0; i <= 2; i++)
+            {
+                RectangleF viewport_Temp = viewport_List[i];
+                viewport_Temp = ScalingViewport(viewport_Temp, scalingFactor_Float);
+                DrawIcon(ref frame, "SquareSimple", viewport_Temp, icon_Color);
+            }
+
+            for(int i = 3; i <= 5; i++)
+            {
+                RectangleF viewport_Temp = viewport_List[i];
+                viewport_Temp = ScalingViewport(viewport_Temp, scalingFactor_Float, 2);
+                DrawIcon(ref frame, "SquareSimple", viewport_Temp, icon_Color);
+            }
+
 
         }
 
-        public void InventorySignifier(ref MySpriteDrawFrame frame, float x, float y, float width, Color co)
+        public void InventorySignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color front_Color, Color backGround_Color)
         {
-            float width_LargeBox_Float = width * 0.8f;
-            float height_LargeBox_Float = width_LargeBox_Float * 0.5f;
-            float width_SmallBox_Float = width_LargeBox_Float - 16f;
-            float height_SmallBox_Float = height_LargeBox_Float - 8f;
-            float width_Arrow_Float = height_SmallBox_Float * 1.5f;
-            float width_Square_Float = width_Arrow_Float * 0.5f;
-            float y_LargeBox_Float = y + height_LargeBox_Float * 0.5f;
-            float y_SmallBox_Float = y + height_SmallBox_Float * 0.5f;
-            float y_Arraw_Float = y;
-            float y_Square_Float = y_Arraw_Float - width_Arrow_Float * 0.5f - width_Square_Float * 0.5f;
+            RectangleF
+                box_Exterior_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X, viewport_RectangleF.Center.Y),
+                    new Vector2(viewport_RectangleF.Width, viewport_RectangleF.Height / 2f)
+                ),
+                box_Inner_RectangleF = ScalingViewport
+                (
+                    viewport_RectangleF,
+                    0.7f
+                ),
+                arrow_Box_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        viewport_RectangleF.Center.X - viewport_RectangleF.Width * 0.125f, 
+                        viewport_RectangleF.Y
+                    ),
+                    new Vector2(viewport_RectangleF.Width * 0.25f, viewport_RectangleF.Height * 0.25f)
+                ),
+                arrow_Triangle_RectangleF = ScalingViewport
+                (
+                    viewport_RectangleF,
+                    0.6f
+                );
 
-            DrawBox(ref frame, x, y_LargeBox_Float, width_LargeBox_Float, height_LargeBox_Float, co);
-            DrawBox(ref frame, x, y_SmallBox_Float, width_SmallBox_Float, height_SmallBox_Float, card_Background_Color_Overall);
-            DrawIcon(ref frame, "Triangle", x, y_Arraw_Float, width_Arrow_Float, width_Arrow_Float, co, 180f);
-            DrawIcon(ref frame, "SquareSimple", x, y_Square_Float, width_Square_Float, width_Square_Float, co);
+            DrawIcon(ref frame, "SquareSimple", box_Exterior_RectangleF, front_Color);
+            DrawIcon(ref frame, "SquareSimple", box_Inner_RectangleF, backGround_Color);
+            DrawIcon(ref frame, "SquareSimple", arrow_Box_RectangleF, front_Color);
+            DrawIcon(ref frame, "Triangle", arrow_Triangle_RectangleF, front_Color, 180f);
         }
 
-        public void RefreshRateSignifier(ref MySpriteDrawFrame frame, float x, float y, float width, float border_Float, Color border_Color, Color background_Color)
+        public void RefreshRateSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color border_Color, Color background_Color)
         {
-            x++;
-            float width_SingleTriangle_Float = width / 3f;
-            float height_SingleTriangle_Float = width * 0.65f;
-            float width_InnerSingleTriangle_Float = width_SingleTriangle_Float - border_Float * 2f;
-            float height_InnerSingleTriangle_Float = height_SingleTriangle_Float - border_Float * 2f;
-            float x_LeftTriangle_Float = x - width_SingleTriangle_Float + 5f;
-            float x_RightTriangle_Float = x + width_SingleTriangle_Float - 5f;
-            float x_InnerMiddleTriangle_Float = x - 1f;
-            float x_InnerRightTriangle_Float = x_RightTriangle_Float - 1f;
+            float
+                scalingFactor_Float = 0.85f,
+                width_Triangle_Exterior_Float = viewport_RectangleF.Width / 3f,
+                width_Triagnle_Inner_Float = width_Triangle_Exterior_Float * scalingFactor_Float,
+                height_Triangle_Exterior_Float = viewport_RectangleF.Height,
+                height_Triangle_Inner_Float = viewport_RectangleF.Height * scalingFactor_Float;
 
 
-            DrawIcon(ref frame, "Triangle", x_LeftTriangle_Float, y, height_SingleTriangle_Float, width_SingleTriangle_Float, border_Color, 90f);
-            DrawIcon(ref frame, "Triangle", x, y, height_SingleTriangle_Float, width_SingleTriangle_Float, border_Color, 90f);
-            DrawIcon(ref frame, "Triangle", x_RightTriangle_Float, y, height_SingleTriangle_Float, width_SingleTriangle_Float, border_Color, 90f);
+            Vector2
+                size_Triangle_Exterior_Float = new Vector2(width_Triangle_Exterior_Float, height_Triangle_Exterior_Float),
+                size_Triangle_Inner_Float = new Vector2(width_Triagnle_Inner_Float, height_Triangle_Inner_Float);
+
+
+            RectangleF
+                triangle_Exterior_Left_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        viewport_RectangleF.X + width_Triangle_Exterior_Float * (1 - scalingFactor_Float) * 2f, 
+                        viewport_RectangleF.Y
+                    ),
+                    size_Triangle_Exterior_Float
+                ),
+                triangle_Exterior_Middle_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        triangle_Exterior_Left_RectangleF.X + width_Triangle_Exterior_Float - width_Triangle_Exterior_Float * (1 - scalingFactor_Float), 
+                        viewport_RectangleF.Y
+                        ),
+                    size_Triangle_Exterior_Float
+                ),
+                triangle_Exterior_Right_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        triangle_Exterior_Middle_RectangleF.X + width_Triangle_Exterior_Float - width_Triangle_Exterior_Float * (1 - scalingFactor_Float), 
+                        viewport_RectangleF.Y
+                    ),
+                    size_Triangle_Exterior_Float
+                ),
+
+
+                triangle_Inner_Left_RectangleF = ScalingViewport
+                (
+                    triangle_Exterior_Left_RectangleF,
+                    scalingFactor_Float
+                ),
+                triangle_Inner_Middle_RectangleF = ScalingViewport
+                (
+                    triangle_Exterior_Middle_RectangleF,
+                    scalingFactor_Float
+                ),
+                triangle_Inner_Right_RectangleF = ScalingViewport
+                (
+                    triangle_Exterior_Right_RectangleF,
+                    scalingFactor_Float
+                );
+
+
+
+            DrawIcon
+            (
+                ref frame,
+                "Triangle",
+                triangle_Exterior_Left_RectangleF.Center.X, 
+                triangle_Exterior_Left_RectangleF.Center.Y, 
+                triangle_Exterior_Left_RectangleF.Height * scalingFactor_Float, 
+                triangle_Exterior_Left_RectangleF.Width, 
+                border_Color, 
+                90f
+            );
+            DrawIcon
+            (
+                ref frame,
+                "Triangle",
+                triangle_Exterior_Middle_RectangleF.Center.X,
+                triangle_Exterior_Middle_RectangleF.Center.Y,
+                triangle_Exterior_Middle_RectangleF.Height * scalingFactor_Float,
+                triangle_Exterior_Middle_RectangleF.Width, 
+                border_Color, 
+                90f
+            );
+            DrawIcon
+            (
+                ref frame,
+                "Triangle",
+                triangle_Exterior_Right_RectangleF.Center.X,
+                triangle_Exterior_Right_RectangleF.Center.Y,
+                triangle_Exterior_Right_RectangleF.Height * scalingFactor_Float,
+                triangle_Exterior_Right_RectangleF.Width, 
+                border_Color, 
+                90f
+            );
+
+
 
             string refreshRate_String = GetValue_from_CustomData(information_Section, refreshRate_Key);
 
-            switch (refreshRate_String)
+            if (refreshRate_String == "FFF")
             {
-                case "F":
-                    DrawIcon(ref frame, "Triangle", x_InnerMiddleTriangle_Float, y, height_InnerSingleTriangle_Float, width_InnerSingleTriangle_Float, background_Color, 90f);
-                    DrawIcon(ref frame, "Triangle", x_InnerRightTriangle_Float, y, height_InnerSingleTriangle_Float, width_InnerSingleTriangle_Float, background_Color, 90f);
-                    break;
-                case "FF":
-                    DrawIcon(ref frame, "Triangle", x_InnerRightTriangle_Float, y, height_InnerSingleTriangle_Float, width_InnerSingleTriangle_Float, background_Color, 90f);
-                    break;
+                return;
             }
+            else if (refreshRate_String == "FF")
+            {
+                DrawIcon
+                (
+                    ref frame,
+                    "Triangle",
+                    triangle_Inner_Right_RectangleF.Center.X,
+                    triangle_Inner_Right_RectangleF.Center.Y,
+                    triangle_Inner_Right_RectangleF.Height * scalingFactor_Float,
+                    triangle_Inner_Right_RectangleF.Width,
+                    background_Color,
+                    90f
+                );
+            }
+            else if (refreshRate_String == "F")
+            {
+                DrawIcon
+                (
+                    ref frame,
+                    "Triangle",
+                    triangle_Inner_Right_RectangleF.Center.X,
+                    triangle_Inner_Right_RectangleF.Center.Y,
+                    triangle_Inner_Right_RectangleF.Height * scalingFactor_Float,
+                    triangle_Inner_Right_RectangleF.Width,
+                    background_Color,
+                    90f
+                );
+                DrawIcon
+                (
+                    ref frame,
+                    "Triangle",
+                    triangle_Inner_Middle_RectangleF.Center.X,
+                    triangle_Inner_Middle_RectangleF.Center.Y,
+                    triangle_Inner_Middle_RectangleF.Height * scalingFactor_Float,
+                    triangle_Inner_Middle_RectangleF.Width,
+                    background_Color,
+                    90f
+                );
+            }
+            else
+            {
+                DrawIcon
+                (
+                    ref frame,
+                    "Triangle",
+                    triangle_Inner_Right_RectangleF.Center.X,
+                    triangle_Inner_Right_RectangleF.Center.Y,
+                    triangle_Inner_Right_RectangleF.Height * scalingFactor_Float,
+                    triangle_Inner_Right_RectangleF.Width,
+                    background_Color,
+                    90f
+                );
+                DrawIcon
+                (
+                    ref frame,
+                    "Triangle",
+                    triangle_Inner_Middle_RectangleF.Center.X,
+                    triangle_Inner_Middle_RectangleF.Center.Y,
+                    triangle_Inner_Middle_RectangleF.Height * scalingFactor_Float,
+                    triangle_Inner_Middle_RectangleF.Width,
+                    background_Color,
+                    90f
+                );
+                DrawIcon
+                (
+                    ref frame,
+                    "Triangle",
+                    triangle_Inner_Right_RectangleF.Center.X,
+                    triangle_Inner_Right_RectangleF.Center.Y,
+                    triangle_Inner_Right_RectangleF.Height * scalingFactor_Float,
+                    triangle_Inner_Right_RectangleF.Width,
+                    background_Color,
+                    90f
+                );
+            }
+
         }
         /*###############     Overall     ###############*/
         /*###############################################*/
@@ -1586,23 +2317,23 @@ namespace IngameScript
 
             //  Main box
             float refreshCounter_Float = Convert.ToSingle(GetValue_from_CustomData(panel, panelInformation_Section, counter_Key));
-            float x1 = Convert.ToSingle((x - 1) * itemBox_ColumnInterval_Float + (itemBox_ColumnInterval_Float - 1) / 2 + 1.25f);
+            float x1 = Convert.ToSingle((x - 1) * itemBox_LongitudianlInterval_Float + (itemBox_LongitudianlInterval_Float - 1) / 2 + 1.25f);
             float y1 = Convert.ToSingle((y - 1) * (itemBox_RowInterval_Float + 1) + (itemBox_RowInterval_Float) / 2 + 2f) + refreshCounter_Float;
-            DrawBox(ref frame, x1, y1, itemBox_ColumnInterval_Float, itemBox_RowInterval_Float, cardColor);
+            DrawBox(ref frame, x1, y1, itemBox_LongitudianlInterval_Float, itemBox_RowInterval_Float, cardColor);
 
             //  Name text
-            float x_Name = x1 - (itemBox_ColumnInterval_Float - 3) / 2 + 1;
+            float x_Name = x1 - (itemBox_LongitudianlInterval_Float - 3) / 2 + 1;
             float y_Name = y1 - (itemBox_RowInterval_Float - 3) / 2 + 1;
-            PanelWriteText(ref frame, TranslateName(itemName_String), x_Name, y_Name, itemBox_ColumnInterval_Float - 3f, 15f, 0.55f, TextAlignment.LEFT);
+            PanelWriteText(ref frame, TranslateName(itemName_String), x_Name, y_Name, itemBox_LongitudianlInterval_Float - 3f, 15f, 0.55f, font_Color_Overall, TextAlignment.LEFT);
 
             //  Picture box
-            float y_Picture_Float = y_Name + 12 + itemBox_ColumnInterval_Float / 2f;
-            MySprite sprite = MySprite.CreateSprite(itemName_String, new Vector2(x1, y_Picture_Float), new Vector2(itemBox_ColumnInterval_Float - 2, itemBox_ColumnInterval_Float - 2));
+            float y_Picture_Float = y_Name + 12 + itemBox_LongitudianlInterval_Float / 2f;
+            MySprite sprite = MySprite.CreateSprite(itemName_String, new Vector2(x1, y_Picture_Float), new Vector2(itemBox_LongitudianlInterval_Float - 2, itemBox_LongitudianlInterval_Float - 2));
             frame.Add(sprite);
 
             //  Amount text
-            float x_Text_Amount = x1 + (itemBox_ColumnInterval_Float - 3) / 2 - 1;
-            float y_Text_Amount = y_Picture_Float + itemBox_ColumnInterval_Float / 2f - 6f;
+            float x_Text_Amount = x1 + (itemBox_LongitudianlInterval_Float - 3) / 2 - 1;
+            float y_Text_Amount = y_Picture_Float + itemBox_LongitudianlInterval_Float / 2f - 6f;
             PanelWriteText(ref frame, AmountUnitConversion(amount_Double / 1000000, false), x_Text_Amount, y_Text_Amount, 0.8f, TextAlignment.RIGHT);
 
             //  AutoProductionAmount text
@@ -1614,7 +2345,7 @@ namespace IngameScript
 
             //  Time remaining
             float y_TimeRemaining_Float = y_Text_Amount + 25f;
-            PanelWriteText(ref frame, time_String, x_Text_Amount, y_TimeRemaining_Float, itemBox_ColumnInterval_Float - 4f, 15f, 0.57f, TextAlignment.RIGHT);
+            PanelWriteText(ref frame, time_String, x_Text_Amount, y_TimeRemaining_Float, itemBox_LongitudianlInterval_Float - 4f, 15f, 0.57f, font_Color_Overall,TextAlignment.RIGHT);
         }
 
         public string ShortName(string name)
@@ -1938,7 +2669,14 @@ namespace IngameScript
             float nameBoxWidth = Convert.ToSingle((512 - x3 - h / 2) - 2);
             float x4 = x3 + h / 2 + nameBoxWidth / 2 + 0.5f;
             //DrawBox(frame, x4, y1, nameBoxWidth, h, background_Color);
-            PanelWriteText(ref frame, Name, x4 - nameBoxWidth / 2 + 1f, textY, textSize, TextAlignment.LEFT);
+            PanelWriteText
+            (
+                ref frame, 
+                Name, 
+                x4 - nameBoxWidth / 2 + 1f, 
+                textY, 
+                textSize, 
+                TextAlignment.LEFT);
         }
 
         public string TranslateSpriteName(string name)
@@ -2899,7 +3637,7 @@ namespace IngameScript
 
             foreach(var lcd in all_LCDs)
             {
-                float heightOffset_Float = Convert.ToSingle(counter_Logo);
+                float heightOffset_Float = Convert.ToSingle(counter_Logo_Float);
 
                 if (lcd.ContentType != ContentType.SCRIPT) lcd.ContentType = ContentType.SCRIPT;
                 MySpriteDrawFrame frame = lcd.DrawFrame();
