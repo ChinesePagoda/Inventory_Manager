@@ -1135,7 +1135,7 @@ namespace IngameScript
                     contentArea_ScalingFactor_Float
                 );
             DrawBox(ref frame, combinedRefining_Icon_BackGround_RectangleF, card_Background_Color_Overall);
-            DrawIcon(ref frame, "MyObjectBuilder_Ore/Stone", combinedRefining_Icon_Content_RectangleF, font_Color_Overall);
+            RefinerySignifier(ref frame, combinedRefining_Icon_Content_RectangleF, font_Color_Overall, card_Background_Color_Overall);
             string combined_Refining_Mode_String = GetValue_from_CustomData(ore_Section, combinedMode_Key);
             PanelWriteText
             (
@@ -1165,7 +1165,7 @@ namespace IngameScript
                     warningSign_ScalingFactor_Float
                 );
             DrawBox(ref frame, autoProdcution_Icon_BackGround_RectangleF, card_Background_Color_Overall);
-            DrawIcon(ref frame, "MyObjectBuilder_PhysicalGunObject/WelderItem", autoProdcution_Icon_Content_RectangleF, font_Color_Overall);
+            AssemblerSignifier(ref frame, autoProdcution_Icon_Content_RectangleF, font_Color_Overall);            
             if (function_AutoProduction_Bool == false)
             {
                 DrawIcon(ref frame, "Danger", autoProdcution_WarningSign_RectangleF, font_Color_Overall);
@@ -1546,21 +1546,19 @@ namespace IngameScript
                 box_Large_Down_RectangleF
             };
 
-            for(int i = 0; i <= 2; i++)
+            for (int i = 0; i <= 2; i++)
             {
                 RectangleF viewport_Temp = viewport_List[i];
                 viewport_Temp = ScalingViewport(viewport_Temp, scalingFactor_Float);
                 DrawBox(ref frame, viewport_Temp, icon_Color);
             }
 
-            for(int i = 3; i <= 5; i++)
+            for (int i = 3; i <= 5; i++)
             {
                 RectangleF viewport_Temp = viewport_List[i];
                 viewport_Temp = ScalingViewport(viewport_Temp, scalingFactor_Float, 2);
                 DrawBox(ref frame, viewport_Temp, icon_Color);
             }
-
-
         }
 
         public void InventorySignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color front_Color, Color backGround_Color)
@@ -1580,7 +1578,7 @@ namespace IngameScript
                 (
                     new Vector2
                     (
-                        viewport_RectangleF.Center.X - viewport_RectangleF.Width * 0.125f, 
+                        viewport_RectangleF.Center.X - viewport_RectangleF.Width * 0.125f,
                         viewport_RectangleF.Y
                     ),
                     new Vector2(viewport_RectangleF.Width * 0.25f, viewport_RectangleF.Height * 0.25f)
@@ -1617,7 +1615,7 @@ namespace IngameScript
                 (
                     new Vector2
                     (
-                        viewport_RectangleF.X + width_Triangle_Exterior_Float * (1 - scalingFactor_Float) * 2f, 
+                        viewport_RectangleF.X + width_Triangle_Exterior_Float * (1 - scalingFactor_Float) * 2f,
                         viewport_RectangleF.Y
                     ),
                     size_Triangle_Exterior_Float
@@ -1626,7 +1624,7 @@ namespace IngameScript
                 (
                     new Vector2
                     (
-                        triangle_Exterior_Left_RectangleF.X + width_Triangle_Exterior_Float - width_Triangle_Exterior_Float * (1 - scalingFactor_Float), 
+                        triangle_Exterior_Left_RectangleF.X + width_Triangle_Exterior_Float - width_Triangle_Exterior_Float * (1 - scalingFactor_Float),
                         viewport_RectangleF.Y
                         ),
                     size_Triangle_Exterior_Float
@@ -1635,7 +1633,7 @@ namespace IngameScript
                 (
                     new Vector2
                     (
-                        triangle_Exterior_Middle_RectangleF.X + width_Triangle_Exterior_Float - width_Triangle_Exterior_Float * (1 - scalingFactor_Float), 
+                        triangle_Exterior_Middle_RectangleF.X + width_Triangle_Exterior_Float - width_Triangle_Exterior_Float * (1 - scalingFactor_Float),
                         viewport_RectangleF.Y
                     ),
                     size_Triangle_Exterior_Float
@@ -1664,11 +1662,11 @@ namespace IngameScript
             (
                 ref frame,
                 "Triangle",
-                triangle_Exterior_Left_RectangleF.Center.X, 
-                triangle_Exterior_Left_RectangleF.Center.Y, 
-                triangle_Exterior_Left_RectangleF.Height * scalingFactor_Float, 
-                triangle_Exterior_Left_RectangleF.Width, 
-                border_Color, 
+                triangle_Exterior_Left_RectangleF.Center.X,
+                triangle_Exterior_Left_RectangleF.Center.Y,
+                triangle_Exterior_Left_RectangleF.Height * scalingFactor_Float,
+                triangle_Exterior_Left_RectangleF.Width,
+                border_Color,
                 90f
             );
             DrawIcon
@@ -1678,8 +1676,8 @@ namespace IngameScript
                 triangle_Exterior_Middle_RectangleF.Center.X,
                 triangle_Exterior_Middle_RectangleF.Center.Y,
                 triangle_Exterior_Middle_RectangleF.Height * scalingFactor_Float,
-                triangle_Exterior_Middle_RectangleF.Width, 
-                border_Color, 
+                triangle_Exterior_Middle_RectangleF.Width,
+                border_Color,
                 90f
             );
             DrawIcon
@@ -1689,8 +1687,8 @@ namespace IngameScript
                 triangle_Exterior_Right_RectangleF.Center.X,
                 triangle_Exterior_Right_RectangleF.Center.Y,
                 triangle_Exterior_Right_RectangleF.Height * scalingFactor_Float,
-                triangle_Exterior_Right_RectangleF.Width, 
-                border_Color, 
+                triangle_Exterior_Right_RectangleF.Width,
+                border_Color,
                 90f
             );
 
@@ -1779,6 +1777,116 @@ namespace IngameScript
             }
 
         }
+
+        public void RefinerySignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color, Color background_Color)
+        {
+            float 
+                box_Float = viewport_RectangleF.Width / 4f,
+                scalingFactor_Float = 0.8f;
+
+            RectangleF
+                box_Small_1_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position,
+                    new Vector2(box_Float, box_Float)
+                ),
+                box_Small_1_Content_RectangleF = ScalingViewport(box_Small_1_RectangleF, scalingFactor_Float),
+
+                box_Small_2_RectangleF = new RectangleF
+                (
+                    new Vector2(box_Small_1_RectangleF.X, box_Small_1_RectangleF.Y + box_Float),
+                    new Vector2(box_Float, box_Float)
+                ),
+                box_Small_2_Content_RectangleF = ScalingViewport(box_Small_2_RectangleF, scalingFactor_Float),
+
+                box_Small_3_RectangleF = new RectangleF
+                (
+                    new Vector2(box_Small_2_RectangleF.X, box_Small_2_RectangleF.Y + box_Float),
+                    new Vector2(box_Float, box_Float)
+                ),
+                box_Small_3_Content_RectangleF = ScalingViewport(box_Small_3_RectangleF, scalingFactor_Float),
+
+                box_Small_4_RectangleF = new RectangleF
+                (
+                    new Vector2(box_Small_3_RectangleF.X, box_Small_3_RectangleF.Y + box_Float),
+                    new Vector2(box_Float, box_Float)
+                ),
+                box_Small_4_Content_RectangleF = ScalingViewport(box_Small_4_RectangleF, scalingFactor_Float),
+
+                box_Large_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X + box_Float * 1.2f, box_Small_1_Content_RectangleF.Y),
+                    new Vector2(box_Float * 2.5f, box_Small_4_Content_RectangleF.Bottom - box_Small_1_Content_RectangleF.Y)
+                ),
+
+                triangle_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Right - viewport_RectangleF.Width * 0.4f, viewport_RectangleF.Y),
+                    new Vector2(viewport_RectangleF.Width * 0.4f, viewport_RectangleF.Height * 0.4f)
+                );
+
+
+            DrawBox(ref frame, box_Small_1_Content_RectangleF, font_Color_Overall);
+            DrawBox(ref frame, box_Small_2_Content_RectangleF, font_Color_Overall);
+            DrawBox(ref frame, box_Small_3_Content_RectangleF, font_Color_Overall);
+            DrawBox(ref frame, box_Small_4_Content_RectangleF, font_Color_Overall);
+            DrawBox(ref frame, box_Large_RectangleF, font_Color_Overall);
+            DrawIcon(ref frame, "RightTriangle", triangle_RectangleF, background_Color, 180f);
+
+
+        }
+
+        public void AssemblerSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color)
+        {
+            float 
+                box_Float = viewport_RectangleF.Width / 3f,
+                scalingFactor_Float = 0.8f;
+
+            RectangleF
+                box_Central_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Center.X - box_Float / 2f, viewport_RectangleF.Center.Y - box_Float / 2f),
+                    new Vector2(box_Float, box_Float)
+                ),
+                box_Central_Content_RectangleF = ScalingViewport(box_Central_RectangleF, scalingFactor_Float),
+
+                box_Up_RectangleF = new RectangleF
+                (
+                    new Vector2(box_Central_RectangleF.X, box_Central_RectangleF.Y - box_Float),
+                    new Vector2(box_Float, box_Float)
+                ),
+                box_Up_Content_RectangleF = ScalingViewport(box_Up_RectangleF, scalingFactor_Float),
+
+                box_Down_RectangleF = new RectangleF
+                (
+                    new Vector2(box_Central_RectangleF.X, box_Central_RectangleF.Y + box_Float),
+                    new Vector2(box_Float, box_Float)
+                ),
+                box_Down_Content_RectangleF = ScalingViewport(box_Down_RectangleF, scalingFactor_Float),
+
+                box_Left_RectangleF = new RectangleF
+                (
+                    new Vector2(box_Central_RectangleF.X - box_Float, box_Central_RectangleF.Y),
+                    new Vector2(box_Float, box_Float)
+                ),
+                box_Left_Content_RectangleF = ScalingViewport(box_Left_RectangleF, scalingFactor_Float),
+
+                box_Right_RectangleF = new RectangleF
+                (
+                    new Vector2(box_Central_RectangleF.X + box_Float, box_Central_RectangleF.Y),
+                    new Vector2(box_Float, box_Float)
+                ),
+                box_Right_Content_RectangleF = ScalingViewport(box_Right_RectangleF, scalingFactor_Float);
+
+            DrawBox(ref frame, box_Central_Content_RectangleF, icon_Color);
+            DrawBox(ref frame, box_Up_Content_RectangleF, icon_Color);
+            DrawBox(ref frame, box_Down_Content_RectangleF, icon_Color);
+            DrawBox(ref frame, box_Left_Content_RectangleF, icon_Color);
+            DrawBox(ref frame, box_Right_Content_RectangleF, icon_Color);
+
+        }
+
+
         /*###############     Overall     ###############*/
         /*###############################################*/
 
@@ -2717,16 +2825,22 @@ namespace IngameScript
             float fontsize_Float = 0.75f;
 
             //  ItemAmount box
-            RectangleF 
+            RectangleF
                 itemAmount_Box_RectangleF = new RectangleF
                 (
                     viewport_RectangleF.Position,
                     new Vector2(row_Interval * 4f, row_Interval)
                 ),
                 itemAmount_Box_Background_RectangleF = ScalingViewport(itemAmount_Box_RectangleF, background_ScalingFactor_Float, 2),
-                itemAmount_Box_Content_RectangleF = ScalingViewport(itemAmount_Box_Background_RectangleF, 0.93f, 2);
+                itemAmount_Box_Content_RectangleF = ScalingViewport(itemAmount_Box_Background_RectangleF, 0.93f, 2),
+                recycle_Icon_RectangleF = new RectangleF
+                (
+                    itemAmount_Box_Background_RectangleF.Position,
+                    new Vector2(row_Interval * 0.75f, row_Interval)
+                ),
+                recycle_Icon_Content_RectangleF = ScalingViewport(recycle_Icon_RectangleF, background_ScalingFactor_Float);
             DrawBox(ref frame, itemAmount_Box_Background_RectangleF, card_Color);
-            if (isRepeating) PanelWriteText(ref frame, "RE", itemAmount_Box_Content_RectangleF, fontsize_Float * fontsize_ScalingFactor_Float, font_Color_Overall, TextAlignment.LEFT);
+            if (isRepeating) RecycleSignifier(ref frame, recycle_Icon_Content_RectangleF, font_Color_Overall);
             PanelWriteText(ref frame, itemAmount, itemAmount_Box_Content_RectangleF, fontsize_Float * fontsize_ScalingFactor_Float, font_Color_Overall,  TextAlignment.RIGHT);
 
             //  picture box
@@ -2748,7 +2862,7 @@ namespace IngameScript
                     new Vector2(row_Interval, row_Interval)
                 ),
                 production_Box_Background_RectangleF = ScalingViewport(production_Box_RectangleF, background_ScalingFactor_Float),
-                production_Box_Content_RectangleF = ScalingViewport(production_Box_Background_RectangleF, 0.9f);
+                production_Box_Content_RectangleF = ScalingViewport(production_Box_Background_RectangleF, 0.7f);
             if (isEnabled)
             {
                 if (isProducing) DrawBox(ref frame, production_Box_Background_RectangleF, new Color(0, 140, 0));
@@ -2758,7 +2872,7 @@ namespace IngameScript
             {
                 DrawBox(ref frame, production_Box_Background_RectangleF, new Color(178, 9, 9));
             }
-            if (isCooperative) DrawIcon(ref frame, "Circle", production_Box_Content_RectangleF, new Color(0, 0, 255));
+            if (isCooperative) CooperativeModeSignifier(ref frame, production_Box_Content_RectangleF, Color.White);
 
             //  name box
             RectangleF
@@ -2797,6 +2911,70 @@ namespace IngameScript
                 }
             }
             return temp;
+        }
+
+        public void CooperativeModeSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color)
+        {
+            Vector2 size_Vector2 = new Vector2(viewport_RectangleF.Width * 0.5f, viewport_RectangleF.Height);
+
+            DrawIcon
+            (
+                ref frame, 
+                "Triangle",
+                viewport_RectangleF.Center.X - size_Vector2.X * 0.6f,
+                viewport_RectangleF.Center.Y,
+                size_Vector2.Y, 
+                size_Vector2.X, 
+                icon_Color,
+                270f
+            );
+            DrawIcon
+            (
+                ref frame, 
+                "Triangle",
+                viewport_RectangleF.Center.X - size_Vector2.X * 0.1f,
+                viewport_RectangleF.Center.Y,
+                size_Vector2.Y, 
+                size_Vector2.X, 
+                icon_Color,
+                270f
+            );
+            DrawIcon
+            (
+                ref frame, 
+                "Triangle",
+                viewport_RectangleF.Center.X + size_Vector2.X * 0.4f,
+                viewport_RectangleF.Center.Y,
+                size_Vector2.Y, 
+                size_Vector2.X, 
+                icon_Color,
+                270f
+            );
+        }
+
+        public void RecycleSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color)
+        {
+            RectangleF
+                box_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X, viewport_RectangleF.Y + viewport_RectangleF.Height * 0.25f),
+                    new Vector2(viewport_RectangleF.Width, viewport_RectangleF.Height * 0.5f)
+                ),
+                arrow_Right_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Right - viewport_RectangleF.Width * 0.5f, viewport_RectangleF.Y),
+                    new Vector2(viewport_RectangleF.Width * 0.5f, viewport_RectangleF.Height * 0.5f)
+                ),
+                arrow_Left_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X, viewport_RectangleF.Bottom - viewport_RectangleF.Height * 0.5f),
+                    new Vector2(viewport_RectangleF.Width * 0.5f, viewport_RectangleF.Height * 0.5f)
+                );
+
+            DrawIcon(ref frame, "SquareHollow", box_RectangleF, icon_Color);
+            DrawIcon(ref frame, "AH_BoreSight", arrow_Right_RectangleF, icon_Color);
+            DrawIcon(ref frame, "AH_BoreSight", arrow_Left_RectangleF, icon_Color, 180f);
+
         }
 
         /*###############   Refinery_And_Assembler    ###############*/
