@@ -204,6 +204,9 @@ namespace IngameScript
         Color progressbar_Color = new Color(30, 50, 90);
         Color oreCard_Background_Color = new Color(50, 40, 20);
         Color ingotCard_Background_Color = new Color(35, 25, 45);
+        Color ammo_Background_Color = new Color(11, 25, 25);
+        Color ammoCard_Background_Color = new Color(0, 60, 60);
+
 
 
         public Program()
@@ -2260,7 +2263,7 @@ namespace IngameScript
             foreach (var panel in panels_Items_Ore) DrawSinglePanel(panel, oreCard_Background_Color, ore_Background_Color);
             foreach (var panel in panels_Items_Ingot) DrawSinglePanel(panel, ingotCard_Background_Color, ingot_Background_Color);
             foreach (var panel in panels_Items_Component) DrawSinglePanel(panel, progressbar_Color, card_Background_Color_Overall);
-            foreach (var panel in panels_Items_AmmoMagazine) DrawSinglePanel(panel, progressbar_Color, card_Background_Color_Overall);
+            foreach (var panel in panels_Items_AmmoMagazine) DrawSinglePanel(panel, ammoCard_Background_Color, ammo_Background_Color);
         }
 
         public void DrawSinglePanel(IMyTextPanel panel, Color cardColor, Color backgroundColor)
