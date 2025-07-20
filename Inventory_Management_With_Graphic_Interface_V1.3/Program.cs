@@ -20,6 +20,7 @@ using System.Collections.Immutable;
 using VRageRender;
 using Sandbox.Game.Entities;
 using VRage.Game.VisualScripting.Utils;
+using VRage.Library.Compiler;
 
 namespace IngameScript
 {
@@ -74,14 +75,18 @@ namespace IngameScript
             counter_CombiningLikeTerms_Int = 1, counter_CombiningLikeTerms_CargoContainer_Int = 1,
             counter_Sub_Function_Interval_Int = 1;
 
-        const int itemAmountInEachScreen = 28,
+        const int 
+            itemBox_RowNumbers_Int = 4,
+            itemBox_ColumnNumbers_Int = 7,
+            itemAmountInEachScreen = itemBox_RowNumbers_Int * itemBox_ColumnNumbers_Int,
             facilityAmountInEachScreen = 20,
             method_Total_Int = 10;
-        const float itemBox_LongitudianlInterval_Float = 73,
-            itemBox_RowInterval_Float = 125,
-            amountBox_Height_Float = 24,
+        const float 
+            itemBox_Column_Interval_Float = 73,
+            itemBox_Row_Interval_Float = 125,
             facilityBox_RowInterval_Float = 25.5f;
-        const string information_Section = "Information",
+        const string 
+            information_Section = "Information",
             function_On_Off_Section = "Function_On_Off(Y/N)",
             translateList_Section = "Translate_List",
             autoProductionList_Section = "AutoProduction_List",
@@ -1206,12 +1211,12 @@ namespace IngameScript
                 if(width_Float < height_Float)
                 {
                     width_Float = width_Float * content_ScalingFactor_Float;
-                    height_Float -= width_Float * (1f - content_ScalingFactor_Float);
+                    height_Float -= 2f * width_Float * (1f - content_ScalingFactor_Float);
                 }
                 else
                 {
                     height_Float = height_Float * content_ScalingFactor_Float;
-                    width_Float -= height_Float * (1f - content_ScalingFactor_Float);
+                    width_Float -= 2f * height_Float * (1f - content_ScalingFactor_Float);
                 }
             }
 
@@ -1478,21 +1483,6 @@ namespace IngameScript
 
                 frame.Add(sprite);
             }
-        }
-
-        public void PanelWriteText(ref MySpriteDrawFrame frame, string text, float x, float y, float fontSize, TextAlignment alignment, Color co)
-        {
-            MySprite sprite = new MySprite()
-            {
-                Type = SpriteType.TEXT,
-                Data = text,
-                Position = new Vector2(x, y),
-                RotationOrScale = fontSize,
-                Color = co,
-                Alignment = alignment,
-                FontId = "LoadingScreen"
-            };
-            frame.Add(sprite);
         }
 
         public void IGCSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color)
@@ -2132,11 +2122,11 @@ namespace IngameScript
                     string[] arry = panel.CustomName.Split(':');
                     if (Convert.ToInt16(arry[1]) < FindMax(index_Array))
                     {
-                        WriteSinglePanelCustomData(panel, arry[1], true, itemList);
+                        WriteSinglePanelInfo(panel, arry[1], true, itemList);
                     }
                     else
                     {
-                        WriteSinglePanelCustomData(panel, arry[1], false, itemList);
+                        WriteSinglePanelInfo(panel, arry[1], false, itemList);
                     }
                 }
             }
@@ -2146,7 +2136,7 @@ namespace IngameScript
                 {
                     if (panel_UI_Info_Dic.ContainsKey(panel.CustomName)) continue;
                     string[] arry = panel.CustomName.Split(':');
-                    WriteSinglePanelCustomData(panel, arry[1], true, itemList);
+                    WriteSinglePanelInfo(panel, arry[1], true, itemList);
                 }
             }
         }
@@ -2163,7 +2153,7 @@ namespace IngameScript
             return p;
         }
 
-        public void WriteSinglePanelCustomData(IMyTextPanel panel, string groupNumber, bool isEnoughScreen, ItemList[] itemList)
+        public void WriteSinglePanelInfo(IMyTextPanel panel, string groupNumber, bool isEnoughScreen, ItemList[] itemList)
         {
             panel.WriteText("", false);
 
@@ -2187,17 +2177,17 @@ namespace IngameScript
                     {
                         if (isEnoughScreen)
                         {
-                            WriteSingleItemCustomData(ref ini_Temp, i + 1, itemList[itemIndex_Int]);
+                            WriteSingleItemInfo(ref ini_Temp, i + 1, itemList[itemIndex_Int]);
                         }
                         else
                         {
                             double residus = itemList.Length - itemAmountInEachScreen * Convert.ToInt16(groupNumber) + 1;
-                            WriteTheLastItemCustomData(ref ini_Temp, i + 1, residus);
+                            WriteTheLastItemInfo(ref ini_Temp, i + 1, residus);
                         }
                     }
                     else
                     {
-                        WriteSingleItemCustomData(ref ini_Temp, i + 1, itemList[itemIndex_Int]);
+                        WriteSingleItemInfo(ref ini_Temp, i + 1, itemList[itemIndex_Int]);
                     }
 
                     ini_Temp.Set(panelInformation_Section, Amount_Key, (i + 1).ToString());
@@ -2213,7 +2203,7 @@ namespace IngameScript
 
         }
         
-        public void WriteSingleItemCustomData(ref MyIni panelUI_Info_Ini, int index_Int, ItemList item_IL)
+        public void WriteSingleItemInfo(ref MyIni panelUI_Info_Ini, int index_Int, ItemList item_IL)
         {
             string itemType_String = item_IL.Name;
             double amount1_Double = item_IL.Amount1;
@@ -2256,7 +2246,7 @@ namespace IngameScript
 
         }
 
-        public void WriteTheLastItemCustomData(ref MyIni panelUI_Info_Ini, int index_Int, double residue_Double)
+        public void WriteTheLastItemInfo(ref MyIni panelUI_Info_Ini, int index_Int, double residue_Double)
         {
             panelUI_Info_Ini.Set(index_Int.ToString(), itemType_Key, "AH_BoreSight");
             panelUI_Info_Ini.Set(index_Int.ToString(), itemAmount2_Key, residue_Double.ToString());
@@ -2277,6 +2267,7 @@ namespace IngameScript
         {
             panel.ContentType = ContentType.SCRIPT;
             panel.ScriptBackgroundColor = card_Background_Color_Overall;
+
             MySpriteDrawFrame frame = panel.DrawFrame();
 
             string refreshCounter_String = GetValue_from_CustomData(panel, panelInformation_Section, counter_Key);
@@ -2291,22 +2282,60 @@ namespace IngameScript
 
             float refreshCounter_Float = Convert.ToInt16(refreshCounter_String);
 
-            DrawBox(ref frame, 512 / 2, 512 / 2 + refreshCounter_Float, 520, 520, backgroundColor);
+            RectangleF visibleArea_RectangleF = new RectangleF
+                (
+                    (panel.TextureSize - panel.SurfaceSize) / 2f + new Vector2(0, refreshCounter_Float),
+                    panel.SurfaceSize
+                );
 
-            for (int i = 0; i < itemAmountInEachScreen; i++)
+            float sideLength_Float;
+
+            if (visibleArea_RectangleF.Width <= visibleArea_RectangleF.Height) sideLength_Float = visibleArea_RectangleF.Width;
+            else sideLength_Float = visibleArea_RectangleF.Height;
+
+            float scalingFactor_Float = sideLength_Float / 512f;
+
+            RectangleF viewport_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        visibleArea_RectangleF.Center.X - sideLength_Float / 2,
+                        visibleArea_RectangleF.Center.Y - sideLength_Float / 2
+                    ),
+                    new Vector2(sideLength_Float, sideLength_Float)
+                );
+            DrawIcon(ref frame, "SquareSimple", viewport_RectangleF, backgroundColor);
+
+
+            for (int itemIndex_Int = 0; itemIndex_Int < itemAmountInEachScreen; itemIndex_Int++)
             {
-                int x = (i + 1) % 7;
-                if (x == 0) x = 7;
-                int y = Convert.ToInt16(Math.Ceiling(Convert.ToDecimal(Convert.ToDouble(i + 1) / 7)));
+                int x = (itemIndex_Int + 1) % itemBox_ColumnNumbers_Int;
+                if (x == 0) x = itemBox_ColumnNumbers_Int;
+                int y = Convert.ToInt16(Math.Ceiling(Convert.ToDecimal(Convert.ToDouble(itemIndex_Int + 1) / itemBox_ColumnNumbers_Int)));
 
-                if (i > indexMax_Int - 1) break;
-                else DrawSingleItemUnit(panel, ref frame, i + 1, x, y, cardColor);
+                RectangleF card_Range_RectangleF = new RectangleF
+                    (
+                        viewport_RectangleF.Position +
+                        new Vector2
+                            (
+                                viewport_RectangleF.Width / itemBox_ColumnNumbers_Int * Convert.ToSingle(x - 1),
+                                viewport_RectangleF.Height / itemBox_RowNumbers_Int * Convert.ToSingle(y - 1)
+                            ),
+                        new Vector2
+                            (
+                                viewport_RectangleF.Width / itemBox_ColumnNumbers_Int, 
+                                viewport_RectangleF.Height / itemBox_RowNumbers_Int
+                            )
+                    );
+
+                if (itemIndex_Int > indexMax_Int - 1) break;
+                else DrawSingleItemUnit(panel, ref frame, itemIndex_Int + 1, card_Range_RectangleF, scalingFactor_Float, cardColor);
             }
 
             frame.Dispose();
         }
 
-        public void DrawSingleItemUnit(IMyTextPanel panel, ref MySpriteDrawFrame frame, int index_Int, float x, float y, Color cardColor)
+        public void DrawSingleItemUnit(IMyTextPanel panel, ref MySpriteDrawFrame frame, int index_Int, RectangleF viewport_RectangleF, float scalingFactor_Float, Color cardColor)
         {
             MyIni panelUI_Ini = panel_UI_Info_Dic[panel.CustomName];
 
@@ -2316,36 +2345,79 @@ namespace IngameScript
             double amount_Production_Double = Convert.ToDouble(panelUI_Ini.Get(index_Int.ToString(), productionAmount_Key).ToString());
 
             //  Main box
-            float refreshCounter_Float = Convert.ToSingle(GetValue_from_CustomData(panel, panelInformation_Section, counter_Key));
-            float x1 = Convert.ToSingle((x - 1) * itemBox_LongitudianlInterval_Float + (itemBox_LongitudianlInterval_Float - 1) / 2 + 1.25f);
-            float y1 = Convert.ToSingle((y - 1) * (itemBox_RowInterval_Float + 1) + (itemBox_RowInterval_Float) / 2 + 2f) + refreshCounter_Float;
-            DrawBox(ref frame, x1, y1, itemBox_LongitudianlInterval_Float, itemBox_RowInterval_Float, cardColor);
+            RectangleF card_BackGround_RectangleF = ScalingViewport(viewport_RectangleF, 0.96f, 2);
+            DrawIcon(ref frame, "SquareSimple", card_BackGround_RectangleF, cardColor);
 
             //  Name text
-            float x_Name = x1 - (itemBox_LongitudianlInterval_Float - 3) / 2 + 1;
-            float y_Name = y1 - (itemBox_RowInterval_Float - 3) / 2 + 1;
-            PanelWriteText(ref frame, TranslateName(itemName_String), x_Name, y_Name, itemBox_LongitudianlInterval_Float - 3f, 15f, 0.55f, font_Color_Overall, TextAlignment.LEFT);
+            RectangleF text_Name_RectangleF = ScalingViewport(card_BackGround_RectangleF, 0.95f, 2);
+            PanelWriteText(ref frame, TranslateName(itemName_String), text_Name_RectangleF, 0.55f * scalingFactor_Float, font_Color_Overall);
 
             //  Picture box
-            float y_Picture_Float = y_Name + 12 + itemBox_LongitudianlInterval_Float / 2f;
-            MySprite sprite = MySprite.CreateSprite(itemName_String, new Vector2(x1, y_Picture_Float), new Vector2(itemBox_LongitudianlInterval_Float - 2, itemBox_LongitudianlInterval_Float - 2));
-            frame.Add(sprite);
+            RectangleF
+                picture_RectangleF = new RectangleF
+                (
+                    card_BackGround_RectangleF.Position + new Vector2(0, card_BackGround_RectangleF.Height * 0.12f),
+                    new Vector2(card_BackGround_RectangleF.Width, card_BackGround_RectangleF.Width)
+                );
+            DrawIcon(ref frame, itemName_String, picture_RectangleF, font_Color_Overall);
 
             //  Amount text
-            float x_Text_Amount = x1 + (itemBox_LongitudianlInterval_Float - 3) / 2 - 1;
-            float y_Text_Amount = y_Picture_Float + itemBox_LongitudianlInterval_Float / 2f - 6f;
-            PanelWriteText(ref frame, AmountUnitConversion(amount_Double / 1000000, false), x_Text_Amount, y_Text_Amount, 0.8f, TextAlignment.RIGHT);
+            RectangleF
+                text_Amount_RectangleF = new RectangleF
+                (
+                    picture_RectangleF.Position + new Vector2(0, picture_RectangleF.Height * 0.96f),
+                    new Vector2(card_BackGround_RectangleF.Width, card_BackGround_RectangleF.Height * 0.2f)
+                ),
+                text_Amount_Content_RectangleF = ScalingViewport(text_Amount_RectangleF, 0.93f, 2);
+            PanelWriteText
+                (
+                    ref frame,
+                    AmountUnitConversion(amount_Double / 1000000, false),
+                    text_Amount_Content_RectangleF,
+                    0.8f * scalingFactor_Float,
+                    font_Color_Overall,
+                    TextAlignment.RIGHT
+                );
 
             //  AutoProductionAmount text
-            float y_Text_Production_Amount = y_Text_Amount - 12f;
+            RectangleF
+                text_AutoProduction_RectangleF = new RectangleF
+                (
+                    new Vector2(picture_RectangleF.X, picture_RectangleF.Bottom - card_BackGround_RectangleF.Height * 0.1f),
+                    new Vector2(card_BackGround_RectangleF.Width, card_BackGround_RectangleF.Height * 0.11f)
+                ),
+                text_AutoProduction_Content_RectangleF = ScalingViewport(text_AutoProduction_RectangleF, 0.96f, 2);
             if (amount_Production_Double != 0)
             {
-                PanelWriteText(ref frame, AmountUnitConversion(amount_Production_Double / 1000000, false), x_Text_Amount, y_Text_Production_Amount, 0.5f, TextAlignment.RIGHT);
+                PanelWriteText
+                (
+                    ref frame,
+                    AmountUnitConversion(amount_Production_Double / 1000000, false),
+                    text_AutoProduction_Content_RectangleF,
+                    0.5f * scalingFactor_Float,
+                    font_Color_Overall,
+                    TextAlignment.RIGHT
+                );
             }
 
             //  Time remaining
-            float y_TimeRemaining_Float = y_Text_Amount + 25f;
-            PanelWriteText(ref frame, time_String, x_Text_Amount, y_TimeRemaining_Float, itemBox_LongitudianlInterval_Float - 4f, 15f, 0.57f, font_Color_Overall,TextAlignment.RIGHT);
+            RectangleF
+                text_Time_RectangleF = new RectangleF
+                (
+                    new Vector2(card_BackGround_RectangleF.X, card_BackGround_RectangleF.Bottom - card_BackGround_RectangleF.Height * 0.13f),
+                    new Vector2(card_BackGround_RectangleF.Width, card_BackGround_RectangleF.Height * 0.14f)
+                );
+            PanelWriteText
+            (
+                ref frame,
+                time_String,
+                text_Time_RectangleF,
+                0.57f * scalingFactor_Float,
+                font_Color_Overall,
+                TextAlignment.RIGHT
+            );
+
+
         }
 
         public string ShortName(string name)
