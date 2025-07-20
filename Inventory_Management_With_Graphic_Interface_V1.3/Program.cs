@@ -21,6 +21,7 @@ using VRageRender;
 using Sandbox.Game.Entities;
 using VRage.Game.VisualScripting.Utils;
 using VRage.Library.Compiler;
+using System.Diagnostics;
 
 namespace IngameScript
 {
@@ -78,13 +79,9 @@ namespace IngameScript
         const int 
             itemBox_RowNumbers_Int = 4,
             itemBox_ColumnNumbers_Int = 7,
-            itemAmountInEachScreen = itemBox_RowNumbers_Int * itemBox_ColumnNumbers_Int,
-            facilityAmountInEachScreen = 20,
+            itemAmountInEachScreen_Int = itemBox_RowNumbers_Int * itemBox_ColumnNumbers_Int,
+            facilityAmountInEachScreen_Int = 20,
             method_Total_Int = 10;
-        const float 
-            itemBox_Column_Interval_Float = 73,
-            itemBox_Row_Interval_Float = 125,
-            facilityBox_RowInterval_Float = 25.5f;
         const string 
             information_Section = "Information",
             function_On_Off_Section = "Function_On_Off(Y/N)",
@@ -606,14 +603,6 @@ namespace IngameScript
 
         }
 
-        public void Assemblers_CooperativeMode(bool true_False)
-        {
-            foreach (var assembler in assemblers)
-            {
-                if (!assembler.CooperativeMode == true_False) assembler.CooperativeMode = true_False;
-            }
-        }
-
         /*###############################################*/
         /*###############     Overall     ###############*/
         public void OverallDisplay()
@@ -659,8 +648,8 @@ namespace IngameScript
                     ),
                     new Vector2(sideLength_Float, sideLength_Float)
                 );
-            DrawIcon(ref frame, "SquareSimple", viewport_RectangleF, font_Color_Overall);
-
+            DrawBox(ref frame, viewport_RectangleF, font_Color_Overall);
+            
             float
                 fontsize_ScalingFactor_Float = sideLength_Float / 512f,
                 fontsize_Tag_Float = 0.6f,
@@ -722,9 +711,9 @@ namespace IngameScript
                     new Vector2(logo_Left_BackGround_RectangleF.X + height_Row_Float, viewport_RectangleF.Y + border_Float),
                     title_BackGround_Size_Vector2
                 );
-            DrawIcon(ref frame, "SquareSimple", logo_Left_BackGround_RectangleF, card_Background_Color_Overall);
-            DrawIcon(ref frame, "SquareSimple", title_BackGround_RectangleF, card_Background_Color_Overall);
-            DrawIcon(ref frame, "SquareSimple", logo_Right_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, logo_Left_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, title_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, logo_Right_BackGround_RectangleF, card_Background_Color_Overall);
             DrawLogo(ref frame, logo_Left_Content_RectangleF);
             DrawLogo(ref frame, logo_Right_Content_RectangleF);
             PanelWriteText
@@ -764,7 +753,7 @@ namespace IngameScript
                     new Vector2(cargo_ProgressBar_BackGround_RectangleF.X, cargo_ProgressBar_BackGround_RectangleF.Center.Y),
                     progressBar_Text_Size_Vector2
                 );
-            DrawIcon(ref frame, "SquareSimple", cargo_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, cargo_Icon_BackGround_RectangleF, card_Background_Color_Overall);
             DrawIcon(ref frame, "Textures\\FactionLogo\\Builders\\BuilderIcon_1.dds", cargo_Icon_Content_RectangleF, font_Color_Overall);
             PanelWriteText
             (
@@ -780,7 +769,7 @@ namespace IngameScript
                 DrawIcon(ref frame, "Danger", cargo_Icon_Content_RectangleF, font_Color_Overall);
             }
 
-            DrawIcon(ref frame, "SquareSimple", cargo_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, cargo_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
             string percentage_String, finalValue_String;
             CalculateAll(out percentage_String, out finalValue_String);
             ProgressBar(ref frame, cargo_ProgressBar_BackGround_RectangleF, percentage_String);
@@ -830,8 +819,8 @@ namespace IngameScript
                     new Vector2(hydrogen_ProgressBar_BackGround_RectangleF.X, hydrogen_ProgressBar_BackGround_RectangleF.Center.Y),
                     progressBar_Text_Size_Vector2
                 );
-            DrawIcon(ref frame, "SquareSimple", hydrogen_Icon_BackGround_RectangleF, card_Background_Color_Overall);
-            DrawIcon(ref frame, "SquareSimple", hydrogen_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, hydrogen_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, hydrogen_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
             DrawIcon(ref frame, "IconHydrogen", hydrogen_Icon_Content_RectangleF, font_Color_Overall);
             PanelWriteText
             (
@@ -891,8 +880,8 @@ namespace IngameScript
                     new Vector2(oxydrogen_ProgressBar_BackGround_RectangleF.X, oxydrogen_Icon_BackGround_RectangleF.Center.Y),
                     progressBar_Text_Size_Vector2
                 );
-            DrawIcon(ref frame, "SquareSimple", oxydrogen_Icon_BackGround_RectangleF, card_Background_Color_Overall);
-            DrawIcon(ref frame, "SquareSimple", oxydrogen_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, oxydrogen_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, oxydrogen_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
             DrawIcon(ref frame, "IconOxygen", oxydrogen_Icon_Content_RectangleF, font_Color_Overall);
             PanelWriteText
             (
@@ -952,8 +941,8 @@ namespace IngameScript
                     new Vector2(power_ProgressBar_BackGround_RectangleF.X, power_ProgressBar_BackGround_RectangleF.Center.Y),
                     progressBar_Text_Size_Vector2
                 );
-            DrawIcon(ref frame, "SquareSimple", power_Icon_BackGround_RectangleF, card_Background_Color_Overall);
-            DrawIcon(ref frame, "SquareSimple", power_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, power_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, power_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
             DrawIcon(ref frame, "IconEnergy", power_Icon_Content_RectangleF, font_Color_Overall);
             PanelWriteText
             (
@@ -1013,8 +1002,8 @@ namespace IngameScript
                     new Vector2(antenna_ProgressBar_BackGround_RectangleF.X, antenna_ProgressBar_BackGround_RectangleF.Center.Y),
                     progressBar_Text_Size_Vector2
                 );
-            DrawIcon(ref frame, "SquareSimple", antenna_Icon_BackGround_RectangleF, card_Background_Color_Overall);
-            DrawIcon(ref frame, "SquareSimple", antenna_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, antenna_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, antenna_ProgressBar_BackGround_RectangleF, card_Background_Color_Overall);
             IGCSignifier(ref frame, antenna_Icon_Content_RectangleF, font_Color_Overall);
             if (function_BroadCastConnectorGPS_Bool == false)
             {
@@ -1053,7 +1042,7 @@ namespace IngameScript
                     showFacilities_Icon_BackGround_RectangleF,
                     contentArea_ScalingFactor_Float
                 );
-            DrawIcon(ref frame, "SquareSimple", showFacilities_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, showFacilities_Icon_BackGround_RectangleF, card_Background_Color_Overall);
             FacilitySignifier(ref frame, showFacilities_Icon_Content_RectangleF, font_Color_Overall);
             if (function_ShowFacilities_Bool == false)
             {
@@ -1078,7 +1067,7 @@ namespace IngameScript
                     warningSign_ScalingFactor_Float
                 );
 
-            DrawIcon(ref frame, "SquareSimple", inventory_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, inventory_Icon_BackGround_RectangleF, card_Background_Color_Overall);
             InventorySignifier(ref frame, inventory_Icon_Content_RectangleF, font_Color_Overall, card_Background_Color_Overall);
             if (function_InventoryManagement_Bool == false)
             {
@@ -1102,7 +1091,7 @@ namespace IngameScript
                     cargoResidues_Icon_BackGround_RectangleF,
                     warningSign_ScalingFactor_Float
                 );
-            DrawIcon(ref frame, "SquareSimple", cargoResidues_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, cargoResidues_Icon_BackGround_RectangleF, card_Background_Color_Overall);
             DrawIcon(ref frame, "Textures\\FactionLogo\\Builders\\BuilderIcon_1.dds", cargoResidues_Icon_Content_RectangleF, font_Color_Overall);
             if (function_ShowCargoContainerRatio_Bool == false)
             {
@@ -1130,7 +1119,7 @@ namespace IngameScript
                     refreshRate_Icon_BackGround_RectangleF,
                     contentArea_ScalingFactor_Float
                 );
-            DrawIcon(ref frame, "SquareSimple", refreshRate_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, refreshRate_Icon_BackGround_RectangleF, card_Background_Color_Overall);
             RefreshRateSignifier(ref frame, refreshRate_Icon_Content_RectangleF, font_Color_Overall, card_Background_Color_Overall);
 
             //  Combined_Refining
@@ -1145,7 +1134,7 @@ namespace IngameScript
                     combinedRefining_Icon_BackGround_RectangleF,
                     contentArea_ScalingFactor_Float
                 );
-            DrawIcon(ref frame, "SquareSimple", combinedRefining_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, combinedRefining_Icon_BackGround_RectangleF, card_Background_Color_Overall);
             DrawIcon(ref frame, "MyObjectBuilder_Ore/Stone", combinedRefining_Icon_Content_RectangleF, font_Color_Overall);
             string combined_Refining_Mode_String = GetValue_from_CustomData(ore_Section, combinedMode_Key);
             PanelWriteText
@@ -1175,7 +1164,7 @@ namespace IngameScript
                     autoProdcution_Icon_BackGround_RectangleF,
                     warningSign_ScalingFactor_Float
                 );
-            DrawIcon(ref frame, "SquareSimple", autoProdcution_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, autoProdcution_Icon_BackGround_RectangleF, card_Background_Color_Overall);
             DrawIcon(ref frame, "MyObjectBuilder_PhysicalGunObject/WelderItem", autoProdcution_Icon_Content_RectangleF, font_Color_Overall);
             if (function_AutoProduction_Bool == false)
             {
@@ -1194,7 +1183,7 @@ namespace IngameScript
                     emptySlot_Icon_BackGround_RectangleF,
                     contentArea_ScalingFactor_Float
                 );
-            DrawIcon(ref frame, "SquareSimple", emptySlot_Icon_BackGround_RectangleF, card_Background_Color_Overall);
+            DrawBox(ref frame, emptySlot_Icon_BackGround_RectangleF, card_Background_Color_Overall);
 
         }
 
@@ -1372,82 +1361,9 @@ namespace IngameScript
             return result;
         }
 
-        public void DrawBox(ref MySpriteDrawFrame frame, float x, float y, float width, float height, Color border_Color, Color background_Color)
+        public void DrawBox(ref MySpriteDrawFrame frame, RectangleF viewPort_RectangleF, Color background_Color)
         {
-            //Echo($"width={width} | height={height}");
-
-
-            MySprite sprite;
-
-            sprite = MySprite.CreateSprite("SquareSimple", new Vector2(x, y), new Vector2(width - 1, height - 1));
-            sprite.Color = border_Color;
-            frame.Add(sprite);
-
-            sprite = MySprite.CreateSprite("SquareSimple", new Vector2(x, y), new Vector2(width - 3, height - 3));
-            sprite.Color = background_Color;
-            frame.Add(sprite);
-        }
-
-        public void DrawBox(ref MySpriteDrawFrame frame, float x, float y, float width, float height, Color background_Color)
-        {
-            MySprite sprite;
-            sprite = MySprite.CreateSprite("SquareSimple", new Vector2(x, y), new Vector2(width - 2, height - 2));
-            sprite.Color = background_Color;
-            frame.Add(sprite);
-        }
-
-        public void PanelWriteText(ref MySpriteDrawFrame frame, string text, float x, float y, float fontSize, TextAlignment alignment)
-        {
-            MySprite sprite = new MySprite()
-            {
-                Type = SpriteType.TEXT,
-                Data = text,
-                Position = new Vector2(x, y),
-                RotationOrScale = fontSize,
-                Color = font_Color_Overall,
-                Alignment = alignment,
-                FontId = "LoadingScreen"
-                //FontId = "Monospace"
-            };
-            frame.Add(sprite);
-        }
-
-        public void PanelWriteText(ref MySpriteDrawFrame frame, string text, float x, float y, float width_Float, float height_Float, float fontSize, Color font_Color, TextAlignment alignment = TextAlignment.LEFT)
-        {
-
-            float x_Clip_Float = x,
-                y_Clip_Float = y;
-
-            switch (alignment)
-            {
-                case TextAlignment.LEFT:
-                    x_Clip_Float = x;
-                    break;
-                case TextAlignment.CENTER:
-                    x_Clip_Float = x - width_Float / 2f;
-                    break;
-                case TextAlignment.RIGHT:
-                    x_Clip_Float = x - width_Float;
-                    break;
-            }
-
-
-            using (frame.Clip((int)x_Clip_Float, (int)y_Clip_Float, (int)width_Float, (int)height_Float))
-            {
-                MySprite sprite = new MySprite()
-                {
-                    Type = SpriteType.TEXT,
-                    Data = text,
-                    Position = new Vector2(x, y),
-                    RotationOrScale = fontSize,
-                    Color = font_Color,
-                    Alignment = alignment,
-                    FontId = "LoadingScreen"
-                    //FontId = "Monospace"
-                };
-
-                frame.Add(sprite);
-            }
+            DrawIcon(ref frame, "SquareSimple", viewPort_RectangleF, background_Color);
         }
 
         public void PanelWriteText(ref MySpriteDrawFrame frame, string text, RectangleF viewport_REctangleF, float fontSize, Color font_Color, TextAlignment alignment = TextAlignment.LEFT)
@@ -1521,10 +1437,10 @@ namespace IngameScript
                     new Vector2(width_Float * 3f, height_Float * 1.5f)
                 );
 
-            DrawIcon(ref frame, "SquareSimple", bar1_RectangleF, icon_Color);
-            DrawIcon(ref frame, "SquareSimple", bar2_RectangleF, icon_Color);
-            DrawIcon(ref frame, "SquareSimple", bar3_RectangleF, icon_Color);
-            DrawIcon(ref frame, "SquareSimple", bar4_RectangleF, icon_Color);
+            DrawBox(ref frame, bar1_RectangleF, icon_Color);
+            DrawBox(ref frame, bar2_RectangleF, icon_Color);
+            DrawBox(ref frame, bar3_RectangleF, icon_Color);
+            DrawBox(ref frame, bar4_RectangleF, icon_Color);
             DrawIcon(ref frame, "Triangle", triangle_RectangleF, icon_Color, 180f);
         }
 
@@ -1634,14 +1550,14 @@ namespace IngameScript
             {
                 RectangleF viewport_Temp = viewport_List[i];
                 viewport_Temp = ScalingViewport(viewport_Temp, scalingFactor_Float);
-                DrawIcon(ref frame, "SquareSimple", viewport_Temp, icon_Color);
+                DrawBox(ref frame, viewport_Temp, icon_Color);
             }
 
             for(int i = 3; i <= 5; i++)
             {
                 RectangleF viewport_Temp = viewport_List[i];
                 viewport_Temp = ScalingViewport(viewport_Temp, scalingFactor_Float, 2);
-                DrawIcon(ref frame, "SquareSimple", viewport_Temp, icon_Color);
+                DrawBox(ref frame, viewport_Temp, icon_Color);
             }
 
 
@@ -1675,9 +1591,9 @@ namespace IngameScript
                     0.6f
                 );
 
-            DrawIcon(ref frame, "SquareSimple", box_Exterior_RectangleF, front_Color);
-            DrawIcon(ref frame, "SquareSimple", box_Inner_RectangleF, backGround_Color);
-            DrawIcon(ref frame, "SquareSimple", arrow_Box_RectangleF, front_Color);
+            DrawBox(ref frame, box_Exterior_RectangleF, front_Color);
+            DrawBox(ref frame, box_Inner_RectangleF, backGround_Color);
+            DrawBox(ref frame, arrow_Box_RectangleF, front_Color);
             DrawIcon(ref frame, "Triangle", arrow_Triangle_RectangleF, front_Color, 180f);
         }
 
@@ -2117,7 +2033,7 @@ namespace IngameScript
                 k++;
             }
 
-            if (itemList.Length > FindMax(index_Array) * itemAmountInEachScreen)
+            if (itemList.Length > FindMax(index_Array) * itemAmountInEachScreen_Int)
             {
                 foreach (var panel in panels_Items)
                 {
@@ -2162,9 +2078,9 @@ namespace IngameScript
 
             MyIni ini_Temp = new MyIni();
 
-            for (int i = 0; i < itemAmountInEachScreen; i++)
+            for (int i = 0; i < itemAmountInEachScreen_Int; i++)
             {
-                int itemIndex_Int = (Convert.ToInt16(groupNumber) - 1) * itemAmountInEachScreen + i;
+                int itemIndex_Int = (Convert.ToInt16(groupNumber) - 1) * itemAmountInEachScreen_Int + i;
                 int x = (i + 1) % 7;
                 if (x == 0) x = 7;
                 int y = Convert.ToInt16(Math.Ceiling(Convert.ToDecimal(Convert.ToDouble(i + 1) / 7)));
@@ -2184,7 +2100,7 @@ namespace IngameScript
                         }
                         else
                         {
-                            double residus = itemList.Length - itemAmountInEachScreen * Convert.ToInt16(groupNumber) + 1;
+                            double residus = itemList.Length - itemAmountInEachScreen_Int * Convert.ToInt16(groupNumber) + 1;
                             WriteTheLastItemInfo(ref ini_Temp, i + 1, residus);
                         }
                     }
@@ -2307,10 +2223,10 @@ namespace IngameScript
                     ),
                     new Vector2(sideLength_Float, sideLength_Float)
                 );
-            DrawIcon(ref frame, "SquareSimple", viewport_RectangleF, backgroundColor);
+            DrawBox(ref frame, viewport_RectangleF, backgroundColor);
 
 
-            for (int itemIndex_Int = 0; itemIndex_Int < itemAmountInEachScreen; itemIndex_Int++)
+            for (int itemIndex_Int = 0; itemIndex_Int < itemAmountInEachScreen_Int; itemIndex_Int++)
             {
                 int x = (itemIndex_Int + 1) % itemBox_ColumnNumbers_Int;
                 if (x == 0) x = itemBox_ColumnNumbers_Int;
@@ -2349,7 +2265,7 @@ namespace IngameScript
 
             //  Main box
             RectangleF card_BackGround_RectangleF = ScalingViewport(viewport_RectangleF, 0.96f, 2);
-            DrawIcon(ref frame, "SquareSimple", card_BackGround_RectangleF, cardColor);
+            DrawBox(ref frame, card_BackGround_RectangleF, cardColor);
 
             //  Name text
             RectangleF text_Name_RectangleF = ScalingViewport(card_BackGround_RectangleF, 0.95f, 2);
@@ -2489,13 +2405,13 @@ namespace IngameScript
             {
                 Echo("Ref");
                 counter_Panel_Int = counter_ShowFacilities_Int - 3;
-                if (refineries.Count > 0) FacilitiesDivideIntoGroup(refineryList, panels_Refineries, maxNumber_RefineryPanel_Int, ore_Background_Color, oreCard_Background_Color);
+                if (refineries.Count > 0) FacilitiesDivideIntoGroup(refineryList, panels_Refineries, maxNumber_RefineryPanel_Int, oreCard_Background_Color, ore_Background_Color);
             }
             else
             {
                 Echo("Ass");
                 counter_Panel_Int = counter_ShowFacilities_Int - panels_Refineries.Count - 3;
-                if (assemblers.Count > 0) FacilitiesDivideIntoGroup(assemblerList, panels_Assemblers, maxNumber_AssemblerPanel_Int, ingot_Background_Color, ingotCard_Background_Color);
+                if (assemblers.Count > 0) FacilitiesDivideIntoGroup(assemblerList, panels_Assemblers, maxNumber_AssemblerPanel_Int, ingotCard_Background_Color, ingot_Background_Color);
             }
 
 
@@ -2599,30 +2515,59 @@ namespace IngameScript
             return FindMax(findMax);
         }
 
-        public void FacilitiesDivideIntoGroup(Facility_Struct[] facilityList, List<IMyTextPanel> facilityPanels, int maxNumber_Panel_Int, Color borderColor, Color backgroundColor)
+        public void FacilitiesDivideIntoGroup(Facility_Struct[] facilityList, List<IMyTextPanel> facilityPanels, int maxNumber_Panel_Int, Color card_Color, Color background_Color)
         {
             if (facilityList.Length == 0 || facilityPanels.Count == 0) return;
 
             Echo($"{counter_Panel_Int + 1}/{facilityPanels.Count}");
 
-            if (facilityList.Length > maxNumber_Panel_Int * facilityAmountInEachScreen)
+            if (facilityList.Length > maxNumber_Panel_Int * facilityAmountInEachScreen_Int)
             {
                 //  Not enough panel
                 var panel = facilityPanels[counter_Panel_Int];
 
                 if (panel.CustomData != "0") panel.CustomData = "0";
                 else panel.CustomData = "1";
+                float refreshCounter_Float = Convert.ToSingle(panel.CustomData);
 
                 if (panel.ContentType != ContentType.SCRIPT) panel.ContentType = ContentType.SCRIPT;
+                panel.ScriptBackgroundColor = card_Background_Color_Overall;
+
+                RectangleF visibleArea_RectangleF = new RectangleF
+                (
+                    (panel.TextureSize - panel.SurfaceSize) / 2f + new Vector2(0, refreshCounter_Float),
+                    panel.SurfaceSize
+                );
+
+                float sideLength_Float;
+
+                if (visibleArea_RectangleF.Width <= visibleArea_RectangleF.Height) sideLength_Float = visibleArea_RectangleF.Width;
+                else sideLength_Float = visibleArea_RectangleF.Height;
+
+                float scalingFactor_Float = sideLength_Float / 512f;
+
+                RectangleF viewport_RectangleF = new RectangleF
+                    (
+                        new Vector2
+                        (
+                            visibleArea_RectangleF.Center.X - sideLength_Float / 2,
+                            visibleArea_RectangleF.Center.Y - sideLength_Float / 2
+                        ),
+                        new Vector2(sideLength_Float, sideLength_Float)
+                    );
+
                 MySpriteDrawFrame frame = panel.DrawFrame();
+
+                DrawBox(ref frame, viewport_RectangleF, background_Color);
+
                 string[] arry = panel.CustomName.Split(':');
                 if (Convert.ToInt16(arry[1]) < maxNumber_Panel_Int)
                 {
-                    DrawFullFacilityScreen(panel, ref frame, arry[1], true, facilityList, borderColor, backgroundColor);
+                    DrawFullFacilityScreen(panel, ref frame, viewport_RectangleF, arry[1], true, facilityList, background_Color, card_Color);
                 }
                 else
                 {
-                    DrawFullFacilityScreen(panel, ref frame, arry[1], false, facilityList, borderColor, backgroundColor);
+                    DrawFullFacilityScreen(panel, ref frame, viewport_RectangleF, arry[1], false, facilityList, background_Color, card_Color);
                 }
                 frame.Dispose();
 
@@ -2635,123 +2580,197 @@ namespace IngameScript
 
                 if (panel.CustomData != "0") panel.CustomData = "0";
                 else panel.CustomData = "1";
+                float refreshCounter_Float = Convert.ToSingle(panel.CustomData);
 
                 if (panel.ContentType != ContentType.SCRIPT) panel.ContentType = ContentType.SCRIPT;
+                panel.ScriptBackgroundColor = card_Background_Color_Overall;
+
+                RectangleF visibleArea_RectangleF = new RectangleF
+                (
+                    (panel.TextureSize - panel.SurfaceSize) / 2f + new Vector2(0, refreshCounter_Float),
+                    panel.SurfaceSize
+                );
+
+                float sideLength_Float;
+
+                if (visibleArea_RectangleF.Width <= visibleArea_RectangleF.Height) sideLength_Float = visibleArea_RectangleF.Width;
+                else sideLength_Float = visibleArea_RectangleF.Height;
+
+                float scalingFactor_Float = sideLength_Float / 512f;
+
+                RectangleF viewport_RectangleF = new RectangleF
+                    (
+                        new Vector2
+                        (
+                            visibleArea_RectangleF.Center.X - sideLength_Float / 2,
+                            visibleArea_RectangleF.Center.Y - sideLength_Float / 2
+                        ),
+                        new Vector2(sideLength_Float, sideLength_Float)
+                    );
+
                 MySpriteDrawFrame frame = panel.DrawFrame();
+
+                DrawBox(ref frame, viewport_RectangleF, background_Color);
+
                 string[] arry = panel.CustomName.Split(':');
-                DrawFullFacilityScreen(panel, ref frame, arry[1], true, facilityList, borderColor, backgroundColor);
+                DrawFullFacilityScreen(panel, ref frame, viewport_RectangleF, arry[1], true, facilityList, background_Color, card_Color);
                 frame.Dispose();
 
                 Echo(panel.CustomName);
             }
-
-
         }
 
-        public void DrawFullFacilityScreen(IMyTextPanel panel, ref MySpriteDrawFrame frame, string groupNumber, bool isEnoughScreen, Facility_Struct[] facilityList, Color borderColor, Color backgroundColor)
+        public void DrawFullFacilityScreen(IMyTextPanel panel, ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, string groupNumber, bool isEnoughScreen, Facility_Struct[] facilityList, Color background_Color, Color card_Color)
         {
             panel.WriteText("", false);
 
-            DrawFacilityScreenFrame(panel, ref frame, borderColor, backgroundColor);
+            float height_SingleUnit_Float = viewport_RectangleF.Height / facilityAmountInEachScreen_Int;
 
-            for (int i = 0; i < facilityAmountInEachScreen; i++)
+            for (int facility_Index_Local_Int = 0; facility_Index_Local_Int < facilityAmountInEachScreen_Int; facility_Index_Local_Int++)
             {
-                int k = (Convert.ToInt16(groupNumber) - 1) * facilityAmountInEachScreen + i;
+                int facility_Index_WholeList_Int = (Convert.ToInt16(groupNumber) - 1) * facilityAmountInEachScreen_Int + facility_Index_Local_Int;
 
-                if (k > facilityList.Length - 1) return;//Last facility is finished.
+                if (facility_Index_WholeList_Int > facilityList.Length - 1) return;//Last facility is finished.
 
-                if (i == facilityAmountInEachScreen - 1)
+                RectangleF singleUnit_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position + new Vector2(0, height_SingleUnit_Float * facility_Index_Local_Int),
+                    new Vector2(viewport_RectangleF.Width, height_SingleUnit_Float)
+                );
+
+                if (facility_Index_Local_Int == facilityAmountInEachScreen_Int - 1)
                 {
                     if (isEnoughScreen)
                     {
-                        DrawSingleFacilityUnit(panel, ref frame, (k + 1).ToString() + ". " + facilityList[k].Name + " ×" + facilityList[k].Productivity + "%", facilityList[k].IsProducing_Bool, AmountUnitConversion(facilityList[k].ItemAmount, false), facilityList[k].Picture, facilityList[k].IsRepeatMode_Bool, facilityList[k].IsCooperativeMode_Bool, facilityList[k].IsEnabled_Bool, i);
+                        DrawSingleFacilityUnit
+                        (
+                            panel,
+                            ref frame, 
+                            singleUnit_RectangleF, 
+                            (facility_Index_WholeList_Int + 1).ToString() + ". " + 
+                            facilityList[facility_Index_WholeList_Int].Name + " ×" + 
+                            facilityList[facility_Index_WholeList_Int].Productivity + "%", 
+                            facilityList[facility_Index_WholeList_Int].IsProducing_Bool, 
+                            AmountUnitConversion(facilityList[facility_Index_WholeList_Int].ItemAmount, false), 
+                            facilityList[facility_Index_WholeList_Int].Picture, 
+                            facilityList[facility_Index_WholeList_Int].IsRepeatMode_Bool, 
+                            facilityList[facility_Index_WholeList_Int].IsCooperativeMode_Bool, 
+                            facilityList[facility_Index_WholeList_Int].IsEnabled_Bool, 
+                            facility_Index_Local_Int,
+                            card_Color
+                        );
                     }
                     else
                     {
-                        double residus = facilityList.Length - facilityAmountInEachScreen * Convert.ToInt16(groupNumber) + 1;
-                        DrawSingleFacilityUnit(panel, ref frame, "+ " + residus.ToString() + " Facilities", false, "0", "Empty", false, false, false, i);
+                        double residus = facilityList.Length - facilityAmountInEachScreen_Int * Convert.ToInt16(groupNumber) + 1;
+                        DrawSingleFacilityUnit
+                        (
+                            panel, 
+                            ref frame, 
+                            singleUnit_RectangleF, 
+                            "+ " + residus.ToString() + " Facilities",
+                            false, 
+                            "0",
+                            "Empty", 
+                            false,
+                            false,
+                            false,
+                            facility_Index_Local_Int,
+                            card_Color
+                            
+                        );
                     }
                 }
                 else
                 {
-                    DrawSingleFacilityUnit(panel, ref frame, (k + 1).ToString() + ". " + facilityList[k].Name + " ×" + facilityList[k].Productivity + "%", facilityList[k].IsProducing_Bool, AmountUnitConversion(facilityList[k].ItemAmount, false), facilityList[k].Picture, facilityList[k].IsRepeatMode_Bool, facilityList[k].IsCooperativeMode_Bool, facilityList[k].IsEnabled_Bool, i);
+                    DrawSingleFacilityUnit
+                    (
+                        panel, 
+                        ref frame,
+                        singleUnit_RectangleF, 
+                        (facility_Index_WholeList_Int + 1).ToString() + ". " + 
+                        facilityList[facility_Index_WholeList_Int].Name + " ×" + 
+                        facilityList[facility_Index_WholeList_Int].Productivity + "%", 
+                        facilityList[facility_Index_WholeList_Int].IsProducing_Bool, 
+                        AmountUnitConversion(facilityList[facility_Index_WholeList_Int].ItemAmount, false), 
+                        facilityList[facility_Index_WholeList_Int].Picture,
+                        facilityList[facility_Index_WholeList_Int].IsRepeatMode_Bool, 
+                        facilityList[facility_Index_WholeList_Int].IsCooperativeMode_Bool, 
+                        facilityList[facility_Index_WholeList_Int].IsEnabled_Bool, 
+                        facility_Index_Local_Int,
+                        card_Color
+                    );
                 }
 
-                panel.WriteText($"{(k + 1).ToString() + ".\n"}{facilityList[k].Name}", true);
-                panel.WriteText($"\n{facilityList[k].Picture}", true);
+                panel.WriteText($"{(facility_Index_WholeList_Int + 1).ToString() + ".\n"}{facilityList[facility_Index_WholeList_Int].Name}", true);
+                panel.WriteText($"\n{facilityList[facility_Index_WholeList_Int].Picture}", true);
                 panel.WriteText("\n\n", true);
             }
         }
 
-        public void DrawFacilityScreenFrame(IMyTextPanel panel, ref MySpriteDrawFrame frame, Color borderColor, Color backgroundColor)
+        public void DrawSingleFacilityUnit(IMyTextPanel panel, ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, string Name, bool isProducing, string itemAmount, string picture, bool isRepeating, bool isCooperative, bool isEnabled, int index, Color card_Color)
         {
-            float lineWith_Float = 1f, screenCenter_Float = 512 / 2;
+            float
+                fontsize_ScalingFactor_Float = viewport_RectangleF.Width / 512f,
+                background_ScalingFactor_Float = 0.92f;
+            float row_Interval = viewport_RectangleF.Height;
+            float fontsize_Float = 0.75f;
 
-            //DrawBox(frame, 512 / 2, 512 / 2 + Convert.ToSingle(panel.CustomData), 514, 514, Color.Black);
-            DrawBox(ref frame, screenCenter_Float, screenCenter_Float + Convert.ToSingle(panel.CustomData), 514, 514, backgroundColor);
-
-            for (int i = 0; i <= 20; i++)
-            {
-                DrawBox(ref frame, screenCenter_Float, 1 + facilityBox_RowInterval_Float * i, 512, lineWith_Float, borderColor);
-            }
-
-            float x1 = 1, x2 = x1 + 92, x3 = x2 + facilityBox_RowInterval_Float, x4 = x3 + facilityBox_RowInterval_Float, x5 = 512, x31 = (x3 + x4) / 2;
-            float[] linePosition_X_Float = { x1, x2, x3, x4, x5 };
-            foreach (var x in linePosition_X_Float)
-            {
-                DrawBox(ref frame, x, screenCenter_Float, lineWith_Float, 512, borderColor);
-            }
-        }
-
-        public void DrawSingleFacilityUnit(IMyTextPanel panel, ref MySpriteDrawFrame frame, string Name, bool isProducing, string itemAmount, string picture, bool isRepeating, bool isCooperative, bool isEnabled, int index)
-        {
             //  ItemAmount box
-            float h = facilityBox_RowInterval_Float;
-            float width = 92f;
-            float x1 = Convert.ToSingle(1 + width / 2);
-            float y1 = Convert.ToSingle(1 + h / 2 + h * index) + Convert.ToSingle(panel.CustomData);
-            float textY = y1 - h / 2 + 2F, textSize = 0.75f;
-            //DrawBox(frame, x1, y1, width, h, background_Color);
-            if (isRepeating) PanelWriteText(ref frame, "RE", x1 - width / 2 + 2f, textY, textSize, TextAlignment.LEFT);
-            PanelWriteText(ref frame, itemAmount, x1 + width / 2 - 2f, textY, textSize, TextAlignment.RIGHT);
+            RectangleF 
+                itemAmount_Box_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position,
+                    new Vector2(row_Interval * 4f, row_Interval)
+                ),
+                itemAmount_Box_Background_RectangleF = ScalingViewport(itemAmount_Box_RectangleF, background_ScalingFactor_Float, 2),
+                itemAmount_Box_Content_RectangleF = ScalingViewport(itemAmount_Box_Background_RectangleF, 0.93f, 2);
+            DrawBox(ref frame, itemAmount_Box_Background_RectangleF, card_Color);
+            if (isRepeating) PanelWriteText(ref frame, "RE", itemAmount_Box_Content_RectangleF, fontsize_Float * fontsize_ScalingFactor_Float, font_Color_Overall, TextAlignment.LEFT);
+            PanelWriteText(ref frame, itemAmount, itemAmount_Box_Content_RectangleF, fontsize_Float * fontsize_ScalingFactor_Float, font_Color_Overall,  TextAlignment.RIGHT);
 
             //  picture box
-            float x2 = x1 + width / 2 + h / 2 + 0.5f;
-            float boxWH_Float = h - 1;
-            //DrawBox(frame, x2, y1, h, h, background_Color);
-            MySprite sprite;
-            if (picture != "Empty")
-            {
-                sprite = MySprite.CreateSprite(TranslateSpriteName(picture), new Vector2(x2, y1), new Vector2(boxWH_Float, boxWH_Float));
-                frame.Add(sprite);
-            }
+            RectangleF 
+                picture_Box_RectangleF = new RectangleF
+                (
+                    itemAmount_Box_RectangleF.Position + new Vector2(itemAmount_Box_RectangleF.Width, 0),
+                    new Vector2(row_Interval, row_Interval)
+                ),
+                picture_Box_Background_RectangleF = ScalingViewport(picture_Box_RectangleF, background_ScalingFactor_Float);
+            DrawBox(ref frame, picture_Box_Background_RectangleF, card_Color);
+            if(picture != "Empty") DrawIcon(ref frame, TranslateSpriteName(picture), picture_Box_Background_RectangleF, font_Color_Overall);
 
-            //  isproduction box
-            float x3 = x2 + h - 0.5f;
+            //  production box
+            RectangleF
+                production_Box_RectangleF = new RectangleF
+                (
+                    picture_Box_RectangleF.Position + new Vector2(picture_Box_RectangleF.Width, 0),
+                    new Vector2(row_Interval, row_Interval)
+                ),
+                production_Box_Background_RectangleF = ScalingViewport(production_Box_RectangleF, background_ScalingFactor_Float),
+                production_Box_Content_RectangleF = ScalingViewport(production_Box_Background_RectangleF, 0.9f);
             if (isEnabled)
             {
-                if (isProducing) DrawBox(ref frame, x3, y1, boxWH_Float, boxWH_Float, new Color(0, 140, 0));
-                else DrawBox(ref frame, x3, y1, boxWH_Float, boxWH_Float, new Color(130, 100, 0));
+                if (isProducing) DrawBox(ref frame, production_Box_Background_RectangleF, new Color(0, 140, 0));
+                else DrawBox(ref frame, production_Box_Background_RectangleF, new Color(130, 100, 0));
             }
             else
             {
-                DrawBox(ref frame, x3, y1, boxWH_Float, boxWH_Float, new Color(178, 9, 9));
+                DrawBox(ref frame, production_Box_Background_RectangleF, new Color(178, 9, 9));
             }
-            if (isCooperative) DrawImage(frame, "Circle", x3, y1, h - 7, new Color(0, 0, 255));
-
+            if (isCooperative) DrawIcon(ref frame, "Circle", production_Box_Content_RectangleF, new Color(0, 0, 255));
 
             //  name box
-            float nameBoxWidth = Convert.ToSingle((512 - x3 - h / 2) - 2);
-            float x4 = x3 + h / 2 + nameBoxWidth / 2 + 0.5f;
-            //DrawBox(frame, x4, y1, nameBoxWidth, h, background_Color);
-            PanelWriteText
-            (
-                ref frame, 
-                Name, 
-                x4 - nameBoxWidth / 2 + 1f, 
-                textY, 
-                textSize, 
-                TextAlignment.LEFT);
+            RectangleF
+                name_Box_RectangleF = new RectangleF
+                (
+                    production_Box_RectangleF.Position + new Vector2(production_Box_RectangleF.Width, 0),
+                    new Vector2(viewport_RectangleF.Width - production_Box_RectangleF.Width - picture_Box_RectangleF.Width - itemAmount_Box_RectangleF.Width, row_Interval)
+                ),
+                name_Box_Background_RectangleF = ScalingViewport(name_Box_RectangleF, background_ScalingFactor_Float, 2),
+                name_Box_Content_RectangleF = ScalingViewport(name_Box_Background_RectangleF, 0.93f, 2);
+            DrawBox(ref frame, name_Box_Background_RectangleF, card_Color);
+            PanelWriteText(ref frame, Name, name_Box_Content_RectangleF, fontsize_Float * fontsize_ScalingFactor_Float, font_Color_Overall);
         }
 
         public string TranslateSpriteName(string name)
@@ -2778,20 +2797,6 @@ namespace IngameScript
                 }
             }
             return temp;
-        }
-
-        public void DrawImage(MySpriteDrawFrame frame, string name, float x, float y, float width, Color co)
-        {
-            MySprite sprite = new MySprite()
-            {
-                Type = SpriteType.TEXTURE,
-                Data = name,
-                Position = new Vector2(x, y),
-                Size = new Vector2(width - 6, width - 6),
-                Color = co,
-                Alignment = TextAlignment.CENTER,
-            };
-            frame.Add(sprite);
         }
 
         /*###############   Refinery_And_Assembler    ###############*/
