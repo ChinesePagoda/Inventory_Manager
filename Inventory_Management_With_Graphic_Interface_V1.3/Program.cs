@@ -211,7 +211,7 @@ namespace IngameScript
 
             BuildBlockList();
 
-            SetDefultConfiguration();
+            SetDefaultConfiguration();
 
             Build_TranslateDic();
 
@@ -265,7 +265,7 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(radioAntennas, b => b.IsSameConstructAs(Me));
         }
 
-        public void SetDefultConfiguration()
+        public void SetDefaultConfiguration()
         {
             WriteDefaultItem(information_Section, "LCD_Overall_Display", "LCD_Overall_Display | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "LCD_Inventory_Display", "LCD_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
@@ -278,6 +278,7 @@ namespace IngameScript
             WriteDefaultItem(information_Section, "Assemblers_CooperativeMode", "CO_ON or CO_OFF | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "Clear_Assembler_Queue", "CLS | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "LCD_Refresh", "LCD_REF | Fill In Argument of PB And Press Run");
+            WriteDefaultItem(information_Section, "Reset_CustomData", "DEFAULT | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "IGCTAG", "CHANNEL1");
             WriteDefaultItem(information_Section, volumeThreshold_Key, "6000");
             WriteDefaultItem(information_Section, refreshRate_Key, "FF");
@@ -3791,6 +3792,10 @@ namespace IngameScript
             {
                 RefreshLCD();
             }
+            else if(argument == "DEFAULT")
+            {
+                ResetDefaultData();
+            }
             else
             {
                 string[] argument_Array = argument.Split('=');
@@ -3825,6 +3830,49 @@ namespace IngameScript
         public void AssemblerCO_OFF()
         {
             foreach (var assembler in assemblers) if (assembler.CooperativeMode != false) assembler.CooperativeMode = false;
+        }
+
+        public void RefreshLCD()
+        {
+            List<IMyTextPanel> all_LCDs = new List<IMyTextPanel>();
+
+            all_LCDs.AddRange(panels_Items_All);
+            all_LCDs.AddRange(panels_Items_Ore);
+            all_LCDs.AddRange(panels_Items_Ingot);
+            all_LCDs.AddRange(panels_Items_Component);
+            all_LCDs.AddRange(panels_Items_AmmoMagazine);
+            all_LCDs.AddRange(panels_Refineries);
+            all_LCDs.AddRange(panels_Assemblers);
+            all_LCDs.AddRange(panels_Overall);
+
+            foreach (var lcd in all_LCDs)
+            {
+                float heightOffset_Float = Convert.ToSingle(counter_Logo_Float);
+
+                if (lcd.ContentType != ContentType.SCRIPT) lcd.ContentType = ContentType.SCRIPT;
+                MySpriteDrawFrame frame = lcd.DrawFrame();
+
+                RectangleF viewport_RectangleF = new RectangleF(
+                    (lcd.TextureSize - lcd.SurfaceSize) / 2f,
+                    lcd.SurfaceSize + new Vector2(0, heightOffset_Float)
+                );
+
+                DrawIcon(ref frame, "UVChecker",
+                    viewport_RectangleF.Center.X, viewport_RectangleF.Center.Y,
+                    viewport_RectangleF.Width, viewport_RectangleF.Height,
+                    Color.White);
+
+                frame.Dispose();
+
+
+            }
+
+        }
+
+        public void ResetDefaultData()
+        {
+            Me.CustomData = "";
+            SetDefaultConfiguration();
         }
 
         public void ReNameBlocks(List<IMyRefinery> blocks, string newName_String)
@@ -3879,43 +3927,6 @@ namespace IngameScript
             newName_String = newName_String + "_" + index_String;
 
             return newName_String;
-        }
-
-        public void RefreshLCD()
-        {
-            List<IMyTextPanel> all_LCDs = new List<IMyTextPanel>();
-
-            all_LCDs.AddRange(panels_Items_All);
-            all_LCDs.AddRange(panels_Items_Ore);
-            all_LCDs.AddRange(panels_Items_Ingot);
-            all_LCDs.AddRange(panels_Items_Component);
-            all_LCDs.AddRange(panels_Items_AmmoMagazine);
-            all_LCDs.AddRange(panels_Refineries);
-            all_LCDs.AddRange(panels_Assemblers);
-            all_LCDs.AddRange(panels_Overall);
-
-            foreach(var lcd in all_LCDs)
-            {
-                float heightOffset_Float = Convert.ToSingle(counter_Logo_Float);
-
-                if (lcd.ContentType != ContentType.SCRIPT) lcd.ContentType = ContentType.SCRIPT;
-                MySpriteDrawFrame frame = lcd.DrawFrame();
-
-                RectangleF viewport_RectangleF = new RectangleF(
-                    (lcd.TextureSize - lcd.SurfaceSize) / 2f,
-                    lcd.SurfaceSize + new Vector2(0, heightOffset_Float)
-                );
-
-                DrawIcon(ref frame, "UVChecker",
-                    viewport_RectangleF.Center.X, viewport_RectangleF.Center.Y,
-                    viewport_RectangleF.Width, viewport_RectangleF.Height,
-                    Color.White);
-
-                frame.Dispose();
-
-
-            }
-
         }
 
         /*####################   Argument   ####################*/
