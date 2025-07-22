@@ -275,8 +275,9 @@ namespace IngameScript
             WriteDefaultItem(information_Section, "LCD_AmmoMagazine_Inventory_Display", "LCD_AmmoMagazine_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "LCD_Refinery_Inventory_Display", "LCD_Refinery_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "LCD_Assembler_Inventory_Display", "LCD_Assembler_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
-            WriteDefaultItem(information_Section, "Assemblers_CooperativeMode", "CO_ON or CO_OFF | Fill In Argument of Programmable Block And Press Run");
-            WriteDefaultItem(information_Section, "Clear_Assembler_Queue", "CLS | Fill In Argument of Programmable Block And Press Run");
+            WriteDefaultItem(information_Section, "Assemblers_CooperativeMode", "CO_ON or CO_OFF | Fill In Argument of PB And Press Run");
+            WriteDefaultItem(information_Section, "Clear_Assembler_Queue", "CLS | Fill In Argument of PB And Press Run");
+            WriteDefaultItem(information_Section, "LCD_Refresh", "LCD_REF | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "IGCTAG", "CHANNEL1");
             WriteDefaultItem(information_Section, volumeThreshold_Key, "6000");
             WriteDefaultItem(information_Section, refreshRate_Key, "FF");
