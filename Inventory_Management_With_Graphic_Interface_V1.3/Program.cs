@@ -74,13 +74,14 @@ namespace IngameScript
             maxNumber_AssemblerPanel_Int = 0, maxNumber_RefineryPanel_Int = 0,
             counter_AutoProduction_Int = 1,
             counter_CombiningLikeTerms_Int = 1, counter_CombiningLikeTerms_CargoContainer_Int = 1,
-            counter_Sub_Function_Interval_Int = 1;
+            counter_Sub_Function_Interval_Int = 1,
+            facilityAmountInEachScreen_Int = 20;
 
         const int 
             itemBox_RowNumbers_Int = 4,
             itemBox_ColumnNumbers_Int = 7,
             itemAmountInEachScreen_Int = itemBox_RowNumbers_Int * itemBox_ColumnNumbers_Int,
-            facilityAmountInEachScreen_Int = 20,
+            facilityAmountInEachScreenMax_Int = 20,
             method_Total_Int = 10;
         const string 
             information_Section = "Information",
@@ -117,15 +118,17 @@ namespace IngameScript
             function_AutoProduction_Bool = true;
 
         const string customName_Key = "CustomName";
-        const string volumeThreshold_Key = "VolumeThreshold";
-        const string refreshRate_Key = "Refresh_Rate(F_FF_FFF)";
+        const string 
+            volumeThreshold_Key = "VolumeThreshold",
+            facilityDisplayInEachScreen_Key = "Facility_Display_Amount(2~20)",
+            refreshRate_Key = "Refresh_Rate(F_FF_FFF)";
 
         const string ore_Section = "Ore",
             combinedMode_Key = "Combined_Mode";
 
         const string panelInformation_Section = "Panel_Information",
             counter_Key = "Counter",
-            Amount_Key = "Amount";
+            amount_Key = "Amount";
 
         const string itemType_Key = "Item_Type",
             itemAmount1_Key = "Item_Amount_1",
@@ -227,6 +230,8 @@ namespace IngameScript
 
             SetRefineriesDefalutCustomData();
 
+            FacilityDisplayAmount();
+
         }
 
         public void Save()
@@ -281,6 +286,7 @@ namespace IngameScript
             WriteDefaultItem(information_Section, "Reset_CustomData", "DEFAULT | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "IGCTAG", "CHANNEL1");
             WriteDefaultItem(information_Section, volumeThreshold_Key, "6000");
+            WriteDefaultItem(information_Section, facilityDisplayInEachScreen_Key, "20");
             WriteDefaultItem(information_Section, refreshRate_Key, "FF");
 
             FunctionOnOff(true);
@@ -602,6 +608,25 @@ namespace IngameScript
                     TextAlignment.CENTER
                 );
             frame.Dispose();
+
+        }
+
+        public void FacilityDisplayAmount()
+        {
+            string facilityAmount_String = GetValue_from_CustomData(information_Section, facilityDisplayInEachScreen_Key);
+
+            int result_Int;
+
+            if(int.TryParse(facilityAmount_String, out result_Int))
+            {
+                if (result_Int < 2) facilityAmountInEachScreen_Int = 2;
+                else if (result_Int > 20) facilityAmountInEachScreen_Int = 20;
+                else facilityAmountInEachScreen_Int = result_Int;
+            }
+            else
+            {
+                facilityAmountInEachScreen_Int = 20;
+            }
 
         }
 
@@ -2197,7 +2222,7 @@ namespace IngameScript
 
                 if (itemIndex_Int > itemList.Length - 1)
                 {
-                    ini_Temp.Set(panelInformation_Section, Amount_Key, i.ToString());
+                    ini_Temp.Set(panelInformation_Section, amount_Key, i.ToString());
                     break;
                 }
                 else
@@ -2219,7 +2244,7 @@ namespace IngameScript
                         WriteSingleItemInfo(ref ini_Temp, i + 1, itemList[itemIndex_Int]);
                     }
 
-                    ini_Temp.Set(panelInformation_Section, Amount_Key, (i + 1).ToString());
+                    ini_Temp.Set(panelInformation_Section, amount_Key, (i + 1).ToString());
 
                     panel.WriteText(itemList[itemIndex_Int].Name, true);
                     panel.WriteText("\n", true);
@@ -2300,7 +2325,7 @@ namespace IngameScript
             MySpriteDrawFrame frame = panel.DrawFrame();
 
             string refreshCounter_String = GetValue_from_CustomData(panel, panelInformation_Section, counter_Key);
-            int indexMax_Int = Convert.ToInt16(panel_UI_Info_Dic[panel.CustomName].Get(panelInformation_Section, Amount_Key).ToString());
+            int indexMax_Int = Convert.ToInt16(panel_UI_Info_Dic[panel.CustomName].Get(panelInformation_Section, amount_Key).ToString());
 
             if (refreshCounter_String == null || refreshCounter_String != "0")
             {
@@ -2509,19 +2534,33 @@ namespace IngameScript
                 counter_ShowFacilities_Int++;
                 return;
             }
-
-
-            if (counter_ShowFacilities_Int <= panels_Refineries.Count + 2)
-            {
-                Echo("Ref");
-                counter_Panel_Int = counter_ShowFacilities_Int - 3;
-                if (refineries.Count > 0) FacilitiesDivideIntoGroup(refineryList, panels_Refineries, maxNumber_RefineryPanel_Int, oreCard_Background_Color, ore_Background_Color);
-            }
-            else
+            else if (counter_ShowFacilities_Int > panels_Refineries.Count + 2)
             {
                 Echo("Ass");
                 counter_Panel_Int = counter_ShowFacilities_Int - panels_Refineries.Count - 3;
-                if (assemblers.Count > 0) FacilitiesDivideIntoGroup(assemblerList, panels_Assemblers, maxNumber_AssemblerPanel_Int, ingotCard_Background_Color, ingot_Background_Color);
+                if (assemblers.Count > 0)
+                    FacilitiesDivideIntoGroup
+                    (
+                        assemblerList,
+                        panels_Assemblers,
+                        maxNumber_AssemblerPanel_Int,
+                        ingotCard_Background_Color,
+                        ingot_Background_Color
+                    );
+            }
+            else if (counter_ShowFacilities_Int > 2)
+            {
+                Echo("Ref");
+                counter_Panel_Int = counter_ShowFacilities_Int - 3;
+                if (refineries.Count > 0)
+                    FacilitiesDivideIntoGroup
+                    (
+                        refineryList,
+                        panels_Refineries,
+                        maxNumber_RefineryPanel_Int,
+                        oreCard_Background_Color,
+                        ore_Background_Color
+                    );
             }
 
 
@@ -2734,7 +2773,7 @@ namespace IngameScript
         {
             panel.WriteText("", false);
 
-            float height_SingleUnit_Float = viewport_RectangleF.Height / facilityAmountInEachScreen_Int;
+            float height_SingleUnit_Float = viewport_RectangleF.Height / facilityAmountInEachScreenMax_Int;
 
             for (int facility_Index_Local_Int = 0; facility_Index_Local_Int < facilityAmountInEachScreen_Int; facility_Index_Local_Int++)
             {
