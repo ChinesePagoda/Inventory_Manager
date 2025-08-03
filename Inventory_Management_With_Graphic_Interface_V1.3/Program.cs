@@ -53,6 +53,8 @@ namespace IngameScript
         List<IMyReactor> reactors = new List<IMyReactor>();
         List<IMyGasGenerator> gasGenerators = new List<IMyGasGenerator>();
         List<IMySafeZoneBlock> safeZones = new List<IMySafeZoneBlock>();
+        List<IMyUserControllableGun> weaponBlocks = new List<IMyUserControllableGun>();
+
 
         List<IMyCargoContainer> cargoContainers = new List<IMyCargoContainer>();
 
@@ -263,6 +265,7 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(reactors, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(safeZones, b => b.IsSameConstructAs(Me));
+            GridTerminalSystem.GetBlocksOfType(weaponBlocks, b => b.IsSameConstructAs(Me));
 
 
             GridTerminalSystem.GetBlocksOfType(cargoContainers, b => b.IsSameConstructAs(Me));
@@ -2000,10 +2003,10 @@ namespace IngameScript
             Dictionary<string, double> allItems_Dic = new Dictionary<string, double>();
             panel_UI_Info_Dic = new Dictionary<string, MyIni>();
 
-            foreach (var cargoContainer in cargoContainers)
+            foreach (var block in cargoContainers)
             {
                 var items = new List<MyInventoryItem>();
-                cargoContainer.GetInventory().GetItems(items);
+                block.GetInventory().GetItems(items);
 
                 foreach (var item in items)
                 {
@@ -2017,10 +2020,10 @@ namespace IngameScript
                 }
             }
 
-            foreach (var cargoContainer in oxygenTanks)
+            foreach (var block in oxygenTanks)
             {
                 var items = new List<MyInventoryItem>();
-                cargoContainer.GetInventory().GetItems(items);
+                block.GetInventory().GetItems(items);
 
                 foreach (var item in items)
                 {
@@ -2034,10 +2037,10 @@ namespace IngameScript
                 }
             }
 
-            foreach (var cargoContainer in hydrogenTanks)
+            foreach (var block in hydrogenTanks)
             {
                 var items = new List<MyInventoryItem>();
-                cargoContainer.GetInventory().GetItems(items);
+                block.GetInventory().GetItems(items);
 
                 foreach (var item in items)
                 {
@@ -2051,10 +2054,10 @@ namespace IngameScript
                 }
             }
 
-            foreach (var reactor in reactors)
+            foreach (var block in reactors)
             {
                 var items = new List<MyInventoryItem>();
-                reactor.GetInventory().GetItems(items);
+                block.GetInventory().GetItems(items);
 
                 foreach (var item in items)
                 {
@@ -2068,10 +2071,10 @@ namespace IngameScript
                 }
             }
 
-            foreach (var cargoContainer in assemblers)
+            foreach (var block in assemblers)
             {
                 var items = new List<MyInventoryItem>();
-                cargoContainer.OutputInventory.GetItems(items);
+                block.OutputInventory.GetItems(items);
 
                 foreach (var item in items)
                 {
@@ -2085,10 +2088,10 @@ namespace IngameScript
                 }
             }
 
-            foreach (var cargoContainer in refineries)
+            foreach (var block in refineries)
             {
                 var items = new List<MyInventoryItem>();
-                cargoContainer.InputInventory.GetItems(items);
+                block.InputInventory.GetItems(items);
 
                 foreach (var item in items)
                 {
@@ -2102,10 +2105,10 @@ namespace IngameScript
                 }
             }
 
-            foreach (var gasGenerator in gasGenerators)
+            foreach (var block in gasGenerators)
             {
                 var items = new List<MyInventoryItem>();
-                gasGenerator.GetInventory().GetItems(items);
+                block.GetInventory().GetItems(items);
 
                 foreach (var item in items)
                 {
@@ -2119,10 +2122,10 @@ namespace IngameScript
                 }
             }
 
-            foreach (var safeZone in safeZones)
+            foreach (var block in safeZones)
             {
                 var items = new List<MyInventoryItem>();
-                safeZone.GetInventory().GetItems(items);
+                block.GetInventory().GetItems(items);
 
                 foreach (var item in items)
                 {
@@ -2135,6 +2138,25 @@ namespace IngameScript
                         allItems_Dic.Add(itemName_String, itemAmount_Double);
                 }
             }
+
+            foreach (var block in weaponBlocks)
+            {
+                var items = new List<MyInventoryItem>();
+                block.GetInventory().GetItems(items);
+
+                foreach (var item in items)
+                {
+                    string itemName_String = item.Type.ToString();
+                    double itemAmount_Double = Convert.ToDouble(item.Amount.RawValue);
+
+                    if (allItems_Dic.ContainsKey(itemName_String))
+                        allItems_Dic[itemName_String] += itemAmount_Double;
+                    else
+                        allItems_Dic.Add(itemName_String, itemAmount_Double);
+                }
+            }
+
+            
 
             itemList_All = new ItemList[allItems_Dic.Count];
 
