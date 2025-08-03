@@ -2479,7 +2479,7 @@ namespace IngameScript
 
             //  Name text
             RectangleF text_Name_RectangleF = ScalingViewport(card_BackGround_RectangleF, 0.95f, 2);
-            PanelWriteText(ref frame, TranslateName(itemName_String), text_Name_RectangleF, 0.55f * scalingFactor_Float, font_Color_Overall);
+            PanelWriteText(ref frame, TranslateName(itemName_String), text_Name_RectangleF, 0.53f * scalingFactor_Float, font_Color_Overall);
 
             //  Picture box
             RectangleF
@@ -2513,7 +2513,7 @@ namespace IngameScript
                 text_AutoProduction_RectangleF = new RectangleF
                 (
                     new Vector2(picture_RectangleF.X, picture_RectangleF.Bottom - card_BackGround_RectangleF.Height * 0.1f),
-                    new Vector2(card_BackGround_RectangleF.Width, card_BackGround_RectangleF.Height * 0.11f)
+                    new Vector2(card_BackGround_RectangleF.Width, card_BackGround_RectangleF.Height * 0.12f)
                 ),
                 text_AutoProduction_Content_RectangleF = ScalingViewport(text_AutoProduction_RectangleF, 0.96f, 2);
             if (amount_Production_Double != 0)
@@ -2815,21 +2815,21 @@ namespace IngameScript
                     panel.SurfaceSize
                 );
 
-                float sideLength_Float;
+                float 
+                    width_Float = visibleArea_RectangleF.Width,
+                    height_Float = visibleArea_RectangleF.Height;
 
-                if (visibleArea_RectangleF.Width <= visibleArea_RectangleF.Height) sideLength_Float = visibleArea_RectangleF.Width;
-                else sideLength_Float = visibleArea_RectangleF.Height;
-
-                float scalingFactor_Float = sideLength_Float / 512f;
+                if (visibleArea_RectangleF.Width <= visibleArea_RectangleF.Height)
+                    height_Float = visibleArea_RectangleF.Width;
 
                 RectangleF viewport_RectangleF = new RectangleF
                     (
                         new Vector2
                         (
-                            visibleArea_RectangleF.Center.X - sideLength_Float / 2,
-                            visibleArea_RectangleF.Center.Y - sideLength_Float / 2
+                            visibleArea_RectangleF.Center.X - width_Float / 2,
+                            visibleArea_RectangleF.Center.Y - height_Float / 2
                         ),
-                        new Vector2(sideLength_Float, sideLength_Float)
+                        new Vector2(width_Float, height_Float)
                     );
 
                 MySpriteDrawFrame frame = panel.DrawFrame();
@@ -2935,7 +2935,7 @@ namespace IngameScript
         public void DrawSingleFacilityUnit(IMyTextPanel panel, ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, string Name, bool isProducing, string itemAmount, string picture, bool isRepeating, bool isCooperative, bool isEnabled, int index, Color card_Color)
         {
             float
-                fontsize_ScalingFactor_Float = viewport_RectangleF.Width / 512f,
+                fontsize_ScalingFactor_Float = viewport_RectangleF.Height * facilityAmountInEachScreenMax_Int / 512f,
                 background_ScalingFactor_Float = 0.92f;
             float row_Interval = viewport_RectangleF.Height;
             float fontsize_Float = 0.75f;

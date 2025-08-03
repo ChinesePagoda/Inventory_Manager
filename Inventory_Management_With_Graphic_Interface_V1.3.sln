@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35818.85 d17.13
+VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inventory_Management_With_Graphic_Interface_V1.3", "Inventory_Management_With_Graphic_Interface_V1.3\Inventory_Management_With_Graphic_Interface_V1.3.csproj", "{D9DA8F68-3717-4242-883F-B2105422C1CA}"
 EndProject
