@@ -40,8 +40,6 @@ namespace IngameScript
         List<IMyTextPanel> panels_Refineries = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Assemblers = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Overall = new List<IMyTextPanel>();
-        List<IMyReactor> reactors = new List<IMyReactor>();
-        List<IMyGasGenerator> gasGenerators = new List<IMyGasGenerator>();
 
         Dictionary<string, string> translator = new Dictionary<string, string>();
 
@@ -52,6 +50,9 @@ namespace IngameScript
         List<IMyCockpit> cockpits = new List<IMyCockpit>();
         List<IMyCryoChamber> cryoChambers = new List<IMyCryoChamber>();
         List<IMyConveyorSorter> sorters = new List<IMyConveyorSorter>();
+        List<IMyReactor> reactors = new List<IMyReactor>();
+        List<IMyGasGenerator> gasGenerators = new List<IMyGasGenerator>();
+        List<IMySafeZoneBlock> safeZones = new List<IMySafeZoneBlock>();
 
         List<IMyCargoContainer> cargoContainers = new List<IMyCargoContainer>();
 
@@ -250,9 +251,6 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(panels_Items_AmmoMagazine, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_AmmoMagazine_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Refineries, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Refinery_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Assemblers, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Assembler_Inventory_Display:"));
-            GridTerminalSystem.GetBlocksOfType(powerProducers, b => b.IsSameConstructAs(Me));
-            GridTerminalSystem.GetBlocksOfType(reactors, b => b.IsSameConstructAs(Me));
-            GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
 
 
             GridTerminalSystem.GetBlocksOfType(assemblers, b => b.IsSameConstructAs(Me));
@@ -261,6 +259,11 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(cockpits, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(cryoChambers, b => b.IsSameConstructAs(Me));
             GridTerminalSystem.GetBlocksOfType(sorters, b => b.IsSameConstructAs(Me));
+            GridTerminalSystem.GetBlocksOfType(powerProducers, b => b.IsSameConstructAs(Me));
+            GridTerminalSystem.GetBlocksOfType(reactors, b => b.IsSameConstructAs(Me));
+            GridTerminalSystem.GetBlocksOfType(gasGenerators, b => b.IsSameConstructAs(Me));
+            GridTerminalSystem.GetBlocksOfType(safeZones, b => b.IsSameConstructAs(Me));
+
 
             GridTerminalSystem.GetBlocksOfType(cargoContainers, b => b.IsSameConstructAs(Me));
 
@@ -2004,8 +2007,13 @@ namespace IngameScript
 
                 foreach (var item in items)
                 {
-                    if (allItems_Dic.ContainsKey(item.Type.ToString())) allItems_Dic[item.Type.ToString()] += (double)item.Amount.RawValue;
-                    else allItems_Dic.Add(item.Type.ToString(), (double)item.Amount.RawValue);
+                    string itemName_String = item.Type.ToString();
+                    double itemAmount_Double = Convert.ToDouble(item.Amount.RawValue);
+
+                    if (allItems_Dic.ContainsKey(itemName_String)) 
+                        allItems_Dic[itemName_String] += itemAmount_Double;
+                    else 
+                        allItems_Dic.Add(itemName_String, itemAmount_Double);
                 }
             }
 
@@ -2016,8 +2024,13 @@ namespace IngameScript
 
                 foreach (var item in items)
                 {
-                    if (allItems_Dic.ContainsKey(item.Type.ToString())) allItems_Dic[item.Type.ToString()] += (double)item.Amount.RawValue;
-                    else allItems_Dic.Add(item.Type.ToString(), (double)item.Amount.RawValue);
+                    string itemName_String = item.Type.ToString();
+                    double itemAmount_Double = Convert.ToDouble(item.Amount.RawValue);
+
+                    if (allItems_Dic.ContainsKey(itemName_String))
+                        allItems_Dic[itemName_String] += itemAmount_Double;
+                    else
+                        allItems_Dic.Add(itemName_String, itemAmount_Double);
                 }
             }
 
@@ -2028,8 +2041,13 @@ namespace IngameScript
 
                 foreach (var item in items)
                 {
-                    if (allItems_Dic.ContainsKey(item.Type.ToString())) allItems_Dic[item.Type.ToString()] += (double)item.Amount.RawValue;
-                    else allItems_Dic.Add(item.Type.ToString(), (double)item.Amount.RawValue);
+                    string itemName_String = item.Type.ToString();
+                    double itemAmount_Double = Convert.ToDouble(item.Amount.RawValue);
+
+                    if (allItems_Dic.ContainsKey(itemName_String))
+                        allItems_Dic[itemName_String] += itemAmount_Double;
+                    else
+                        allItems_Dic.Add(itemName_String, itemAmount_Double);
                 }
             }
 
@@ -2040,8 +2058,13 @@ namespace IngameScript
 
                 foreach (var item in items)
                 {
-                    if (allItems_Dic.ContainsKey(item.Type.ToString())) allItems_Dic[item.Type.ToString()] += (double)item.Amount.RawValue;
-                    else allItems_Dic.Add(item.Type.ToString(), (double)item.Amount.RawValue);
+                    string itemName_String = item.Type.ToString();
+                    double itemAmount_Double = Convert.ToDouble(item.Amount.RawValue);
+
+                    if (allItems_Dic.ContainsKey(itemName_String))
+                        allItems_Dic[itemName_String] += itemAmount_Double;
+                    else
+                        allItems_Dic.Add(itemName_String, itemAmount_Double);
                 }
             }
 
@@ -2052,8 +2075,13 @@ namespace IngameScript
 
                 foreach (var item in items)
                 {
-                    if (allItems_Dic.ContainsKey(item.Type.ToString())) allItems_Dic[item.Type.ToString()] += (double)item.Amount.RawValue;
-                    else allItems_Dic.Add(item.Type.ToString(), (double)item.Amount.RawValue);
+                    string itemName_String = item.Type.ToString();
+                    double itemAmount_Double = Convert.ToDouble(item.Amount.RawValue);
+
+                    if (allItems_Dic.ContainsKey(itemName_String))
+                        allItems_Dic[itemName_String] += itemAmount_Double;
+                    else
+                        allItems_Dic.Add(itemName_String, itemAmount_Double);
                 }
             }
 
@@ -2064,8 +2092,13 @@ namespace IngameScript
 
                 foreach (var item in items)
                 {
-                    if (allItems_Dic.ContainsKey(item.Type.ToString())) allItems_Dic[item.Type.ToString()] += (double)item.Amount.RawValue;
-                    else allItems_Dic.Add(item.Type.ToString(), (double)item.Amount.RawValue);
+                    string itemName_String = item.Type.ToString();
+                    double itemAmount_Double = Convert.ToDouble(item.Amount.RawValue);
+
+                    if (allItems_Dic.ContainsKey(itemName_String))
+                        allItems_Dic[itemName_String] += itemAmount_Double;
+                    else
+                        allItems_Dic.Add(itemName_String, itemAmount_Double);
                 }
             }
 
@@ -2076,12 +2109,32 @@ namespace IngameScript
 
                 foreach (var item in items)
                 {
-                    if (allItems_Dic.ContainsKey(item.Type.ToString())) allItems_Dic[item.Type.ToString()] += (double)item.Amount.RawValue;
-                    else allItems_Dic.Add(item.Type.ToString(), (double)item.Amount.RawValue);
-                }
+                    string itemName_String = item.Type.ToString();
+                    double itemAmount_Double = Convert.ToDouble(item.Amount.RawValue);
 
+                    if (allItems_Dic.ContainsKey(itemName_String))
+                        allItems_Dic[itemName_String] += itemAmount_Double;
+                    else
+                        allItems_Dic.Add(itemName_String, itemAmount_Double);
+                }
             }
 
+            foreach (var safeZone in safeZones)
+            {
+                var items = new List<MyInventoryItem>();
+                safeZone.GetInventory().GetItems(items);
+
+                foreach (var item in items)
+                {
+                    string itemName_String = item.Type.ToString();
+                    double itemAmount_Double = Convert.ToDouble(item.Amount.RawValue);
+
+                    if (allItems_Dic.ContainsKey(itemName_String))
+                        allItems_Dic[itemName_String] += itemAmount_Double;
+                    else
+                        allItems_Dic.Add(itemName_String, itemAmount_Double);
+                }
+            }
 
             itemList_All = new ItemList[allItems_Dic.Count];
 
