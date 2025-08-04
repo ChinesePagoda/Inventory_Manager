@@ -2284,8 +2284,6 @@ namespace IngameScript
 
         public void WriteSinglePanelInfo(IMyTextPanel panel, string groupNumber, bool isEnoughScreen, ItemList[] itemList)
         {
-            panel.WriteText("", false);
-
             MyIni ini_Temp = new MyIni();
 
             for (int i = 0; i < itemAmountInEachScreen_Int; i++)
@@ -2310,8 +2308,8 @@ namespace IngameScript
                         }
                         else
                         {
-                            double residus = itemList.Length - itemAmountInEachScreen_Int * Convert.ToInt16(groupNumber) + 1;
-                            WriteTheLastItemInfo(ref ini_Temp, i + 1, residus);
+                            int residus_Int = itemList.Length - itemAmountInEachScreen_Int * Convert.ToInt16(groupNumber) + 1;
+                            WriteTheLastItemInfo(ref ini_Temp, i + 1, residus_Int * 1000000);
                         }
                     }
                     else
@@ -2320,10 +2318,6 @@ namespace IngameScript
                     }
 
                     ini_Temp.Set(panelInformation_Section, amount_Key, (i + 1).ToString());
-
-                    panel.WriteText(itemList[itemIndex_Int].Name, true);
-                    panel.WriteText("\n", true);
-
                 }
             }
 
@@ -2375,10 +2369,10 @@ namespace IngameScript
 
         }
 
-        public void WriteTheLastItemInfo(ref MyIni panelUI_Info_Ini, int index_Int, double residue_Double)
+        public void WriteTheLastItemInfo(ref MyIni panelUI_Info_Ini, int index_Int, int residue_Int)
         {
             panelUI_Info_Ini.Set(index_Int.ToString(), itemType_Key, "AH_BoreSight");
-            panelUI_Info_Ini.Set(index_Int.ToString(), itemAmount2_Key, residue_Double.ToString());
+            panelUI_Info_Ini.Set(index_Int.ToString(), itemAmount2_Key, residue_Int.ToString());
             panelUI_Info_Ini.Set(index_Int.ToString(), time_Key, "");
             panelUI_Info_Ini.Set(index_Int.ToString(), productionAmount_Key, "0");
         }
@@ -2396,8 +2390,11 @@ namespace IngameScript
         {
             panel.ContentType = ContentType.SCRIPT;
             panel.ScriptBackgroundColor = card_Background_Color_Overall;
+            panel.WriteText("", false);
+
 
             MySpriteDrawFrame frame = panel.DrawFrame();
+
 
             string refreshCounter_String = GetValue_from_CustomData(panel, panelInformation_Section, counter_Key);
             int indexMax_Int = Convert.ToInt16(panel_UI_Info_Dic[panel.CustomName].Get(panelInformation_Section, amount_Key).ToString());
@@ -2411,6 +2408,7 @@ namespace IngameScript
 
             float refreshCounter_Float = Convert.ToInt16(refreshCounter_String);
 
+
             RectangleF visibleArea_RectangleF = new RectangleF
                 (
                     (panel.TextureSize - panel.SurfaceSize) / 2f + new Vector2(0, refreshCounter_Float),
@@ -2418,7 +2416,6 @@ namespace IngameScript
                 );
 
             float sideLength_Float;
-
             if (visibleArea_RectangleF.Width <= visibleArea_RectangleF.Height) sideLength_Float = visibleArea_RectangleF.Width;
             else sideLength_Float = visibleArea_RectangleF.Height;
 
@@ -2458,10 +2455,19 @@ namespace IngameScript
                     );
 
                 if (itemIndex_Int > indexMax_Int - 1) break;
-                else DrawSingleItemUnit(panel, ref frame, itemIndex_Int + 1, card_Range_RectangleF, scalingFactor_Float, cardColor);
+                
+                
+                DrawSingleItemUnit(panel, ref frame, itemIndex_Int + 1, card_Range_RectangleF, scalingFactor_Float, cardColor);
+
+                MyIni panelUI_Ini = panel_UI_Info_Dic[panel.CustomName];
+                string itemName_String = panelUI_Ini.Get((itemIndex_Int + 1).ToString(), itemType_Key).ToString();
+                panel.WriteText(itemName_String, true);
+                panel.WriteText("\n", true);
             }
 
             frame.Dispose();
+
+
         }
 
         public void DrawSingleItemUnit(IMyTextPanel panel, ref MySpriteDrawFrame frame, int index_Int, RectangleF viewport_RectangleF, float scalingFactor_Float, Color cardColor)
