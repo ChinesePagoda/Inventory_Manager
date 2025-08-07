@@ -22,6 +22,8 @@ using Sandbox.Game.Entities;
 using VRage.Game.VisualScripting.Utils;
 using VRage.Library.Compiler;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
+using Sandbox.Game.Entities.Cube;
 
 namespace IngameScript
 {
@@ -40,6 +42,8 @@ namespace IngameScript
         List<IMyTextPanel> panels_Refineries = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Assemblers = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Overall = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_Combined_Refining = new List<IMyTextPanel>();
+        List<IMyCockpit> cockpits_Combined_Refining = new List<IMyCockpit>();
 
         Dictionary<string, string> translator = new Dictionary<string, string>();
 
@@ -63,11 +67,12 @@ namespace IngameScript
 
         List<IMyRadioAntenna> radioAntennas = new List<IMyRadioAntenna>();
 
+        List<string> ore_List;
+        List<CombinedRefiningUIElement> combinedRefiningUIList;
+
         float counter_Logo_Float = 0;
         DateTime time1_DateTime = DateTime.Now;
         DateTime time2_DateTime = DateTime.Now;
-
-        StringBuilder debug_StringBuilder;
 
         int counter_ShowItems_Int = 0, counter_ShowFacilities_Int = 1, counter_Panel_Int = 0,
             counter_Assembler_Int = 1, counter_Refinery_Int = 1, counter_CombinedRefining_Int = 1,
@@ -84,15 +89,19 @@ namespace IngameScript
             itemBox_RowNumbers_Int = 4,
             itemBox_ColumnNumbers_Int = 7,
             itemAmountInEachScreen_Int = itemBox_RowNumbers_Int * itemBox_ColumnNumbers_Int,
+            combinedRefining_RowNumbers_Int = 3,
+            combinedRefining_ColumnNumbers_Int = 6,
+            combinedRefining_ItemsInEachScreen_Int = combinedRefining_RowNumbers_Int * combinedRefining_ColumnNumbers_Int,
             facilityAmountInEachScreenMax_Int = 20,
-            method_Total_Int = 10;
+            CombinedRefining_method_Total_Int = 10;
         const string 
             information_Section = "Information",
             function_On_Off_Section = "Function_On_Off(Y/N)",
             translateList_Section = "Translate_List",
             autoProductionList_Section = "AutoProduction_List",
             length_Key = "Length";
-        const string stage_ShowItems = "Stage_ShowItems",
+        const string
+            stage_ShowItems = "Stage_ShowItems",
             stage_ShowFacilities = "Stage_ShowFacilities",
             stage_Assembler_Clear = "Stage_Assembler_Clear",
             stage_Refinery_Clear = "Stage_Refinery_Clear",
@@ -104,15 +113,18 @@ namespace IngameScript
             stage_ShowCargoContainerResidues = "Stage_ShowCargoContainerRatio",
             stage_Combined_Refining = "Stage_Combined_Refining",
             stage_AutoProduction = "Stage_AutoProduction",
-            stage_CombiningLikeTerms = "Stage_CombiningLikeTerms";
-        const string function_ShowOverall = "ShowOverall",
+            stage_CombiningLikeTerms = "Stage_CombiningLikeTerms",
+            stage_ShowCombinedRefining = "Stage_ShowCombinedRefining";
+        const string 
+            function_ShowOverall = "ShowOverall",
             function_ShowItems = "ShowItems",
             function_ShowFacilities = "ShowFacilities",
             function_InventoryManagement = "InventoryManagement",
             function_BroadCastConnectorGPS = "BroadCastConnectorGPS",
             function_ShowCargoContainerRatio = "ShowCargoContainerRatio",
             function_AutoProduction = "AutoProduction";
-        bool function_ShowOverall_Bool = true,
+        bool 
+            function_ShowOverall_Bool = true,
             function_ShowItems_Bool = true,
             function_ShowFacilities_Bool = true,
             function_InventoryManagement_Bool = true,
@@ -126,14 +138,21 @@ namespace IngameScript
             facilityDisplayInEachScreen_Key = "Facility_Display_Amount(2~20)",
             refreshRate_Key = "Refresh_Rate(F_FF_FFF)";
 
-        const string ore_Section = "Ore",
-            combinedMode_Key = "Combined_Mode";
+        const string
+            ore_Section = "Ore",
+            combinedMode_Key = "Combined_Mode",
+            defaultAmount_Key = "Default_Amount",
+            refineryID_Key = "Refinery_ID",
+            page_Key = "Page",
+            itemID_Key = "Item_ID";
 
-        const string panelInformation_Section = "Panel_Information",
+        const string 
+            panelInformation_Section = "Panel_Information",
             counter_Key = "Counter",
             amount_Key = "Amount";
 
-        const string itemType_Key = "Item_Type",
+        const string 
+            itemType_Key = "Item_Type",
             itemAmount1_Key = "Item_Amount_1",
             itemAmount2_Key = "Item_Amount_2",
             time_Key = "Time",
@@ -141,7 +160,10 @@ namespace IngameScript
             time2_Key = "Time2",
             productionAmount_Key = "ProductionAmount";
 
-        string stage_Key = "";
+        const string
+            combined_Refining_Key = "Combined_Refining";
+
+        string stage_Value = "";
 
         string[] FunctionName_Array = 
         { 
@@ -191,6 +213,14 @@ namespace IngameScript
         Facility_Struct[] refineryList;
         Facility_Struct[] assemblerList;
 
+        public class CombinedRefiningUIElement
+        {
+            public string Name_String;
+            public int CombinedMode_Int;
+            public Dictionary<string, double> Method_Dic = new Dictionary<string, double>();
+        }
+
+
         Dictionary<string, double> method_Unified_Dic = new Dictionary<string, double>();
         Dictionary<string, double> method_Refinery_Dic;
         Dictionary<string, double> allitems_InAssemblers_Dic;
@@ -235,6 +265,9 @@ namespace IngameScript
 
             FacilityDisplayAmount();
 
+            BuildOreList();
+
+            BuildCombinedRefiningUIList();
         }
 
         public void Save()
@@ -253,6 +286,8 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(panels_Items_AmmoMagazine, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_AmmoMagazine_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Refineries, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Refinery_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Assemblers, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Assembler_Inventory_Display:"));
+            GridTerminalSystem.GetBlocksOfType(panels_Combined_Refining, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Combined_Refining_Display"));
+            GridTerminalSystem.GetBlocksOfType(cockpits_Combined_Refining, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("Cockpit_Combined_Refining"));
 
 
             GridTerminalSystem.GetBlocksOfType(assemblers, b => b.IsSameConstructAs(Me));
@@ -286,6 +321,8 @@ namespace IngameScript
             WriteDefaultItem(information_Section, "LCD_AmmoMagazine_Inventory_Display", "LCD_AmmoMagazine_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "LCD_Refinery_Inventory_Display", "LCD_Refinery_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "LCD_Assembler_Inventory_Display", "LCD_Assembler_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_Combined_Refining_Display", "LCD_Combined_Refining_Display | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "Cockpit_Combined_Refining", "Cockpit_Combined_Refining | Fill In CustomName of Cockpit");
             WriteDefaultItem(information_Section, "Assemblers_CooperativeMode", "CO_ON or CO_OFF | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "Clear_Assembler_Queue", "CLS | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "LCD_Refresh", "LCD_REF | Fill In Argument of PB And Press Run");
@@ -298,8 +335,11 @@ namespace IngameScript
             FunctionOnOff(true);
 
             WriteDefaultItem(ore_Section, combinedMode_Key, "1");
-            for (int index_Int = 1; index_Int <= method_Total_Int; index_Int++) WriteDefaultItem(ore_Section, index_Int.ToString(), "");
-
+            WriteDefaultItem(ore_Section, defaultAmount_Key, "10000");
+            for (int index_Int = 1; index_Int <= CombinedRefining_method_Total_Int; index_Int++) WriteDefaultItem(ore_Section, index_Int.ToString(), "");
+            WriteDefaultItem(ore_Section, refineryID_Key, "1");
+            WriteDefaultItem(ore_Section, page_Key, "1");
+            WriteDefaultItem(ore_Section, itemID_Key, "1");
 
             WriteDefaultItem(translateList_Section, length_Key, "1");
             WriteDefaultItem(translateList_Section, "1", "AH_BoreSight:More");
@@ -317,12 +357,22 @@ namespace IngameScript
             foreach (var panel in panels_Items_Component) panel.CustomData = "";
             foreach (var panel in panels_Items_AmmoMagazine) panel.CustomData = "";
 
+            foreach (var cockpit in cockpits_Combined_Refining)
+            {
+                WriteDefaultItem(cockpit, panelInformation_Section, combined_Refining_Key, "0");
+                WriteDefaultItem(cockpit, panelInformation_Section, counter_Key, "0");
+            }
+            foreach (var panel in panels_Combined_Refining)
+            {
+                WriteDefaultItem(panel, panelInformation_Section, combined_Refining_Key, "0");
+                WriteDefaultItem(panel, panelInformation_Section, counter_Key, "0");
+            }
+
         }
 
         public void Build_MethodDic(Dictionary<string, double> method_Dic)
         {
-
-            for (int index_Int = 1; index_Int <= method_Total_Int; index_Int++)
+            for (int index_Int = 1; index_Int <= CombinedRefining_method_Total_Int; index_Int++)
             {
                 string value_String;
                 value_String = GetValue_from_CustomData(ore_Section, index_Int.ToString());
@@ -333,8 +383,7 @@ namespace IngameScript
 
         public void Build_MethodDic(Dictionary<string, double> method_Dic, IMyRefinery refinery_Block)
         {
-
-            for (int index_Int = 1; index_Int <= method_Total_Int; index_Int++)
+            for (int index_Int = 1; index_Int <= CombinedRefining_method_Total_Int; index_Int++)
             {
                 string value_String;
                 value_String = GetValue_from_CustomData(refinery_Block, ore_Section, index_Int.ToString());
@@ -362,7 +411,8 @@ namespace IngameScript
             foreach (var refinery in refineries)
             {
                 WriteDefaultItem(refinery, ore_Section, combinedMode_Key, "1");
-                for (int index_Int = 1; index_Int <= method_Total_Int; index_Int++) WriteDefaultItem(refinery, ore_Section, index_Int.ToString(), "");
+                for (int index_Int = 1; index_Int <= CombinedRefining_method_Total_Int; index_Int++) 
+                    WriteDefaultItem(refinery, ore_Section, index_Int.ToString(), "");
             }
         }
 
@@ -376,11 +426,25 @@ namespace IngameScript
             }
         }
 
-        public void WriteDefaultItem(IMyRefinery refinery_Block, string section, string key, string value)
+        public void WriteDefaultItem(IMyRefinery block, string section, string key, string value)
         {
-            string valueTemp_String = GetValue_from_CustomData(refinery_Block, section, key);
+            string valueTemp_String = GetValue_from_CustomData(block, section, key);
 
-            if (valueTemp_String == "") WriteValue_to_CustomData(refinery_Block, section, key, value);
+            if (valueTemp_String == "") WriteValue_to_CustomData(block, section, key, value);
+        }
+
+        public void WriteDefaultItem(IMyCockpit block, string section, string key, string value)
+        {
+            string valueTemp_String = GetValue_from_CustomData(block, section, key);
+
+            if (valueTemp_String == "") WriteValue_to_CustomData(block, section, key, value);
+        }
+
+        public void WriteDefaultItem(IMyTextPanel block, string section, string key, string value)
+        {
+            string valueTemp_String = GetValue_from_CustomData(block, section, key);
+
+            if (valueTemp_String == "") WriteValue_to_CustomData(block, section, key, value);
         }
 
         public void FunctionOnOff(bool true_False)
@@ -502,6 +566,18 @@ namespace IngameScript
             block.CustomData = _ini.ToString();
         }
 
+        public void WriteValue_to_CustomData(IMyCockpit block, string section, string key, string value)
+        {
+            _ini = new MyIni();
+            // This time we _must_ check for failure since the user may have written invalid ini.
+            MyIniParseResult result;
+            if (!_ini.TryParse(block.CustomData, out result))
+                throw new Exception(result.ToString());
+
+            _ini.Set(section, key, value);
+            block.CustomData = _ini.ToString();
+        }
+
         public string GetValue_from_CustomData(string section, string key)
         {
             _ini = new MyIni();
@@ -559,6 +635,20 @@ namespace IngameScript
         }
 
         public string GetValue_from_CustomData(IMyRefinery block, string section, string key)
+        {
+            _ini = new MyIni();
+            // This time we _must_ check for failure since the user may have written invalid ini.
+            MyIniParseResult result;
+            if (!_ini.TryParse(block.CustomData, out result))
+                throw new Exception(result.ToString());
+
+            string DefaultValue = "";
+
+            // Read the integer value. If it does not exist, return the default for this value.
+            return _ini.Get(section, key).ToString(DefaultValue);
+        }
+
+        public string GetValue_from_CustomData(IMyCockpit block, string section, string key)
         {
             _ini = new MyIni();
             // This time we _must_ check for failure since the user may have written invalid ini.
@@ -1820,7 +1910,7 @@ namespace IngameScript
             RectangleF
                 box_Small_1_RectangleF = new RectangleF
                 (
-                    viewport_RectangleF.Position,
+                    new Vector2(viewport_RectangleF.X + viewport_RectangleF.Width * 0.1f, viewport_RectangleF.Y),
                     new Vector2(box_Float, box_Float)
                 ),
                 box_Small_1_Content_RectangleF = ScalingViewport(box_Small_1_RectangleF, scalingFactor_Float),
@@ -1848,8 +1938,8 @@ namespace IngameScript
 
                 box_Large_RectangleF = new RectangleF
                 (
-                    new Vector2(viewport_RectangleF.X + box_Float * 1.2f, box_Small_1_Content_RectangleF.Y),
-                    new Vector2(box_Float * 2.5f, box_Small_4_Content_RectangleF.Bottom - box_Small_1_Content_RectangleF.Y)
+                    new Vector2(box_Small_1_RectangleF.X + box_Float * 1.1f, box_Small_1_Content_RectangleF.Y),
+                    new Vector2(box_Float * 2f, box_Small_4_Content_RectangleF.Bottom - box_Small_1_Content_RectangleF.Y)
                 ),
 
                 triangle_RectangleF = new RectangleF
@@ -1933,7 +2023,7 @@ namespace IngameScript
 
             if (!function_ShowItems_Bool)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 counter_ShowItems_Int = 1;
                 return;
             }
@@ -1973,7 +2063,7 @@ namespace IngameScript
 
             if (counter_ShowItems_Int >= counter_TotalCycle_Int)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 counter_ShowItems_Int = 1;
                 return;
             }
@@ -2591,7 +2681,7 @@ namespace IngameScript
         {
             if (!function_ShowFacilities_Bool)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
 
@@ -2648,7 +2738,7 @@ namespace IngameScript
             if (counter_ShowFacilities_Int >= panels_Refineries.Count + panels_Assemblers.Count + 2)
             {
                 counter_ShowFacilities_Int = 1;
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
             counter_ShowFacilities_Int++;
@@ -3109,7 +3199,7 @@ namespace IngameScript
         {
             if (assemblers.Count < 1 || cargoContainers.Count < 1 || !function_InventoryManagement_Bool)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
 
@@ -3122,7 +3212,7 @@ namespace IngameScript
             if (counter_Assembler_Int >= assemblers.Count)
             {
                 counter_Assembler_Int = 1;
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
             counter_Assembler_Int++;
@@ -3174,7 +3264,7 @@ namespace IngameScript
         {
             if (refineries.Count < 1 || cargoContainers.Count < 1 || !function_InventoryManagement_Bool)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
 
@@ -3187,7 +3277,7 @@ namespace IngameScript
             if (counter_Refinery_Int >= refineries.Count)
             {
                 counter_Refinery_Int = 1;
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
             counter_Refinery_Int++;
@@ -3202,7 +3292,7 @@ namespace IngameScript
         {
             if (connectors.Count < 1 || cargoContainers.Count < 1 || !function_InventoryManagement_Bool)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
 
@@ -3215,7 +3305,7 @@ namespace IngameScript
             if (counter_Connector_Int >= connectors.Count)
             {
                 counter_Connector_Int = 1;
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
             counter_Connector_Int++;
@@ -3230,7 +3320,7 @@ namespace IngameScript
         {
             if (cryoChambers.Count < 1 || cargoContainers.Count < 1 || !function_InventoryManagement_Bool)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
 
@@ -3243,7 +3333,7 @@ namespace IngameScript
             if (counter_CryoChamber_Int >= cryoChambers.Count)
             {
                 counter_CryoChamber_Int = 1;
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
             counter_CryoChamber_Int++;
@@ -3258,7 +3348,7 @@ namespace IngameScript
         {
             if (sorters.Count < 1 || cargoContainers.Count < 1 || !function_InventoryManagement_Bool)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
 
@@ -3270,7 +3360,7 @@ namespace IngameScript
             if (counter_Sorter_Int >= sorters.Count)
             {
                 counter_Sorter_Int = 1;
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
             counter_Sorter_Int++;
@@ -3286,7 +3376,7 @@ namespace IngameScript
             if (gasTanks.Count < 1 || cargoContainers.Count < 1 || !function_InventoryManagement_Bool)
             {
                 counter_Int = 1;
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
 
@@ -3299,7 +3389,7 @@ namespace IngameScript
             if (counter_Int >= gasTanks.Count)
             {
                 counter_Int = 1;
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
             counter_Int++;
@@ -3409,7 +3499,7 @@ namespace IngameScript
         {
             if (cargoContainers.Count < 1 || !function_ShowCargoContainerRatio_Bool)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
 
@@ -3424,7 +3514,7 @@ namespace IngameScript
                 if (counter_CargoContainer_Int > cargoContainers.Count)
                 {
                     counter_CargoContainer_Int = 0;
-                    stage_Key = nextStage;
+                    stage_Value = nextStage;
                     return;
                 }
 
@@ -3467,7 +3557,7 @@ namespace IngameScript
         /*###############   Combined_Refining   ###############*/
         public void CheckEachRefinery(string nextStage)
         {
-            stage_Key = nextStage;
+            stage_Value = nextStage;
 
             if (refineries.Count < 1) return;
 
@@ -3557,8 +3647,6 @@ namespace IngameScript
                 CompareOre(refinery_Block, method_Unified_Dic);
 
             }
-
-
         }
 
         public void GetItemsInRefinery(IMyRefinery refinery_Block)
@@ -3647,9 +3735,519 @@ namespace IngameScript
             }
         }
 
+        public void BuildOreList()
+        {
+            ore_List = new List<string>();
+            ore_List.Add(combinedMode_Key);
+            foreach (var name in spritesList)
+            {
+                if(name.IndexOf("MyObjectBuilder_Ore") != -1)
+                {
+                    ore_List.Add(name);
+                }
+            }
+        }        
+
+        public void BuildCombinedRefiningUIList()
+        {
+            combinedRefiningUIList = new List<CombinedRefiningUIElement>();
+
+            CombinedRefiningUIElement element_Temp = new CombinedRefiningUIElement();
+
+            element_Temp.Name_String = Me.CustomName;
+            element_Temp.CombinedMode_Int = Convert.ToInt16(GetValue_from_CustomData(ore_Section, combinedMode_Key));
+            Build_MethodDic(element_Temp.Method_Dic);
+
+            combinedRefiningUIList.Add(element_Temp);
+
+
+            foreach (var refinery in refineries)
+            {
+                element_Temp = new CombinedRefiningUIElement();
+
+                element_Temp.Name_String = refinery.CustomName;
+                element_Temp.CombinedMode_Int = Convert.ToInt16(GetValue_from_CustomData(refinery, ore_Section, combinedMode_Key));
+                Build_MethodDic(element_Temp.Method_Dic, refinery);
+
+                combinedRefiningUIList.Add(element_Temp);
+            }
+
+        }
+
+        public void CockpitControl_CombinedRefining()
+        {
+            int refineryID_Int = Convert.ToInt16(GetValue_from_CustomData(ore_Section, refineryID_Key)),
+                combinedMode_Int = Convert.ToInt16(GetValue_from_CustomData(ore_Section,combinedMode_Key)),
+                itemID_Int = Convert.ToInt16(GetValue_from_CustomData(ore_Section, itemID_Key)),
+                increment_Refinery_Int = 0,
+                increment_Item_Int = 0,
+                increment_Amount_Int = 0;
+
+            string itemName_String = ore_List[itemID_Int - 1];
+
+            double defaultAmount_Double = Convert.ToDouble(GetValue_from_CustomData(ore_Section, defaultAmount_Key));
+            if (defaultAmount_Double < 0) defaultAmount_Double = 0;
+
+
+
+            foreach (var cockpit in cockpits_Combined_Refining)
+            {
+                if (cockpit.MoveIndicator.Y > 0) increment_Amount_Int++;
+                else if (cockpit.MoveIndicator.Y < 0) increment_Amount_Int--;
+                else if (cockpit.MoveIndicator.Z < 0) increment_Refinery_Int--;
+                else if (cockpit.MoveIndicator.Z > 0) increment_Refinery_Int++;
+                else if (cockpit.MoveIndicator.X > 0) increment_Item_Int++;
+                else if (cockpit.MoveIndicator.X < 0) increment_Item_Int--;
+            }
+
+
+
+            if (increment_Amount_Int != 0)
+            {
+                int index_Value_Int;
+
+                if (itemID_Int == 1)
+                {
+                    combinedMode_Int += increment_Amount_Int;
+                    if (combinedMode_Int > 2) combinedMode_Int = 0;
+                    else if (combinedMode_Int < 0) combinedMode_Int = 2;
+
+                    WriteValue_to_CustomData(ore_Section, combinedMode_Key, combinedMode_Int.ToString());
+
+                }
+                else
+                {
+                    if (refineryID_Int == 1)
+                    {
+                        Dictionary<string, double> mehtod_Temp_PB_Dic = new Dictionary<string, double>();
+                        Build_MethodDic(mehtod_Temp_PB_Dic);
+
+                        if (mehtod_Temp_PB_Dic.ContainsKey(itemName_String))
+                        {
+                            mehtod_Temp_PB_Dic[itemName_String] += increment_Amount_Int * defaultAmount_Double * 1000000;
+                            if (mehtod_Temp_PB_Dic[itemName_String] <= 0) mehtod_Temp_PB_Dic.Remove(itemName_String);
+                        }
+                        else if(mehtod_Temp_PB_Dic.Count < 10)
+                        {
+                            mehtod_Temp_PB_Dic.Add(itemName_String, defaultAmount_Double * 1000000);
+                        }
+
+                        for(int index_Int = 1; index_Int<=10; index_Int++)
+                            WriteValue_to_CustomData(ore_Section, index_Int.ToString(), "");
+
+                        index_Value_Int = 1;
+                        foreach (var key in mehtod_Temp_PB_Dic.Keys)
+                        {
+                            WriteValue_to_CustomData
+                                (
+                                ore_Section, 
+                                index_Value_Int.ToString(), 
+                                key + ":" + (mehtod_Temp_PB_Dic[key] / 1000000).ToString()
+                                );
+                            index_Value_Int++;
+                        }
+                    }
+                    else
+                    {
+                        Dictionary<string, double> mehtod_Temp_Refinery_Dic = new Dictionary<string, double>();
+                        Build_MethodDic(mehtod_Temp_Refinery_Dic, refineries[refineryID_Int - 2]);
+
+                        if (mehtod_Temp_Refinery_Dic.ContainsKey(itemName_String))
+                        {
+                            mehtod_Temp_Refinery_Dic[itemName_String] += increment_Amount_Int * defaultAmount_Double * 1000000;
+                            if (mehtod_Temp_Refinery_Dic[itemName_String] <= 0) mehtod_Temp_Refinery_Dic.Remove(itemName_String);
+                        }
+                        else if (mehtod_Temp_Refinery_Dic.Count < 10)
+                        {
+                            mehtod_Temp_Refinery_Dic.Add(itemName_String, defaultAmount_Double * 1000000);
+                        }
+
+                        for (int index_Int = 1; index_Int <= 10; index_Int++)
+                            WriteValue_to_CustomData(refineries[refineryID_Int - 2], ore_Section, index_Int.ToString(), "");
+
+                        index_Value_Int = 1;
+                        foreach (var key in mehtod_Temp_Refinery_Dic.Keys)
+                        {
+                            WriteValue_to_CustomData
+                                (
+                                refineries[refineryID_Int - 2],
+                                ore_Section,
+                                index_Value_Int.ToString(),
+                                key + ":" + (mehtod_Temp_Refinery_Dic[key] / 1000000).ToString()
+                                );
+                            index_Value_Int++;
+                        }
+                    }
+                }
+            }
+
+            if (increment_Refinery_Int != 0)
+            {
+                refineryID_Int += increment_Refinery_Int;
+                if (refineryID_Int > refineries.Count + 1) refineryID_Int = 1;
+                else if (refineryID_Int < 1) refineryID_Int = refineries.Count + 1;
+                WriteValue_to_CustomData(ore_Section, refineryID_Key, refineryID_Int.ToString());
+            }
+
+            if (increment_Item_Int != 0)
+            {
+                itemID_Int += increment_Item_Int;
+                if (itemID_Int > ore_List.Count) itemID_Int = 1;
+                else if (itemID_Int < 1) itemID_Int = ore_List.Count;
+                WriteValue_to_CustomData(ore_Section, itemID_Key, itemID_Int.ToString());
+
+                decimal page_Decimal = Math.Ceiling(Convert.ToDecimal(itemID_Int) / combinedRefining_ItemsInEachScreen_Int);
+                WriteValue_to_CustomData(ore_Section, page_Key, page_Decimal.ToString());
+            }
+
+
+
+            if (increment_Refinery_Int != 0 || increment_Item_Int != 0 || increment_Amount_Int != 0)
+            {
+                BuildCombinedRefiningUIList();
+                ShowCombinedRefiningOnCockpit();
+                ShowCombinedRefiningOnLCD();
+            }
+
+        }
+
+        public void CombinedRefiningUI(string nextStage)
+        {
+            BuildCombinedRefiningUIList();
+            ShowCombinedRefiningOnCockpit();
+            ShowCombinedRefiningOnLCD();
+            stage_Value = nextStage;
+        }
+
+        public void ShowCombinedRefiningOnCockpit()
+        {
+            foreach (var cockpit in cockpits_Combined_Refining)
+            {
+                cockpit.ControlThrusters = false;
+                cockpit.ControlWheels = false;
+                cockpit.SetValue("ControlGyros", false);
+
+                int surfaceMax_Int = cockpit.SurfaceCount;
+
+                if (surfaceMax_Int < 1) continue;
+
+                int surfaceID_Int = Convert.ToInt16(GetValue_from_CustomData(cockpit, panelInformation_Section, combined_Refining_Key));
+
+                if (surfaceID_Int >= surfaceMax_Int) surfaceID_Int = surfaceMax_Int;
+                else if (surfaceID_Int < 0) surfaceID_Int = 0;
+
+
+                IMyTextSurface surface = cockpit.GetSurface(surfaceID_Int);
+
+                if (surface.BackgroundColor != card_Background_Color_Overall) surface.BackgroundColor = card_Background_Color_Overall;
+                if (surface.ContentType != ContentType.SCRIPT) surface.ContentType = ContentType.SCRIPT;
+
+
+
+                MySpriteDrawFrame frame = surface.DrawFrame();
+
+                float refreshCounter_Float = Convert.ToSingle(GetValue_from_CustomData(cockpit, panelInformation_Section, counter_Key));
+                if (refreshCounter_Float == 0) refreshCounter_Float = 1;
+                else if (refreshCounter_Float == 1) refreshCounter_Float = 0;
+                WriteValue_to_CustomData(cockpit, panelInformation_Section, counter_Key, refreshCounter_Float.ToString());
+
+                RectangleF visibleArea_RectangleF = new RectangleF
+                    (
+                        (surface.TextureSize - surface.SurfaceSize) / 2f + new Vector2(0, refreshCounter_Float),
+                        surface.SurfaceSize
+                    );
+
+                float sideLength_Float = visibleArea_RectangleF.Height;
+                if (visibleArea_RectangleF.Width <= visibleArea_RectangleF.Height) sideLength_Float = visibleArea_RectangleF.Width;
+
+                RectangleF viewport_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        visibleArea_RectangleF.Center.X - sideLength_Float / 2,
+                        visibleArea_RectangleF.Center.Y - sideLength_Float / 2
+                    ),
+                    new Vector2(sideLength_Float, sideLength_Float)
+                );
+                DrawBox(ref frame, visibleArea_RectangleF, card_Background_Color_Overall);
+                DrawBox(ref frame, viewport_RectangleF, ore_Background_Color);
+
+
+                DrawCombinedRefiningScreen(ref frame, viewport_RectangleF);
+
+                frame.Dispose();
+            }
+
+        }
+
+        public void ShowCombinedRefiningOnLCD()
+        {
+            foreach (var panel in panels_Combined_Refining)
+            {
+                if (panel.BackgroundColor != card_Background_Color_Overall) panel.BackgroundColor = card_Background_Color_Overall;
+                if (panel.ContentType != ContentType.SCRIPT) panel.ContentType = ContentType.SCRIPT;
+
+                MySpriteDrawFrame frame = panel.DrawFrame();
+
+                float refreshCounter_Float = Convert.ToSingle(GetValue_from_CustomData(panel, panelInformation_Section, counter_Key));
+                if (refreshCounter_Float == 0) refreshCounter_Float = 1;
+                else if (refreshCounter_Float == 1) refreshCounter_Float = 0;
+                WriteValue_to_CustomData(panel, panelInformation_Section, counter_Key, refreshCounter_Float.ToString());
+
+                RectangleF visibleArea_RectangleF = new RectangleF
+                    (
+                        (panel.TextureSize - panel.SurfaceSize) / 2f + new Vector2(0, refreshCounter_Float),
+                        panel.SurfaceSize
+                    );
+
+                float sideLength_Float = visibleArea_RectangleF.Height;
+                if (visibleArea_RectangleF.Width <= visibleArea_RectangleF.Height) sideLength_Float = visibleArea_RectangleF.Width;
+
+                RectangleF viewport_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        visibleArea_RectangleF.Center.X - sideLength_Float / 2,
+                        visibleArea_RectangleF.Center.Y - sideLength_Float / 2
+                    ),
+                    new Vector2(sideLength_Float, sideLength_Float)
+                );
+                DrawBox(ref frame, visibleArea_RectangleF, card_Background_Color_Overall);
+                DrawBox(ref frame, viewport_RectangleF, ore_Background_Color);
+
+
+                DrawCombinedRefiningScreen(ref frame, viewport_RectangleF);
+
+                frame.Dispose();
+            }
+
+        }
+
+        public void DrawCombinedRefiningScreen(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF)
+        {
+            float
+                fontsize_ScalingFactor_Float = viewport_RectangleF.Height / 512f,
+                background_ScalingFactor_Float = 0.92f;
+            float row_Interval = viewport_RectangleF.Height;
+            float fontsize_Float = 0.75f;
+
+            int refineryID_Int = Convert.ToInt16(GetValue_from_CustomData(ore_Section, refineryID_Key)),
+                itemID_Int = Convert.ToInt16(GetValue_from_CustomData(ore_Section, itemID_Key)),
+                page_Int = Convert.ToInt16(GetValue_from_CustomData(ore_Section, page_Key)),
+                pageTotal_Int = Convert.ToInt16(Math.Ceiling(Convert.ToDecimal(ore_List.Count) / combinedRefining_ItemsInEachScreen_Int));
+
+            string
+                refineryName_String =
+                    refineryID_Int.ToString() + ". " +
+                    combinedRefiningUIList[refineryID_Int - 1].Name_String +
+                    " (" + refineryID_Int.ToString() + "/" + (refineries.Count + 1).ToString() + ")",
+                itemCounter_String = "ID " + itemID_Int.ToString() + "/" + ore_List.Count.ToString(),
+                collectionCounter_String =
+                    "No. " + combinedRefiningUIList[refineryID_Int - 1].Method_Dic.Count.ToString() + "/10",
+                pageCounter_String = "P " + page_Int.ToString() + "/" + pageTotal_Int.ToString();
+
+            //  Header
+            RectangleF
+                title_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position,
+                    new Vector2
+                    (
+                        viewport_RectangleF.Width,
+                        viewport_RectangleF.Height / 20f
+                    )
+                ),
+                title_Background_RectangleF = ScalingViewport(title_RectangleF, background_ScalingFactor_Float, 2),
+                title_Content_RectangleF = ScalingViewport(title_Background_RectangleF, background_ScalingFactor_Float, 2);
+            DrawBox(ref frame, title_Background_RectangleF, oreCard_Background_Color);
+            PanelWriteText(ref frame, refineryName_String, title_Content_RectangleF, fontsize_Float * fontsize_ScalingFactor_Float, font_Color_Overall);
+
+            //  Combined_Mode
+            RectangleF
+                combined_Mode_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position + new Vector2(title_RectangleF.Width - title_RectangleF.Height, 0),
+                    new Vector2
+                    (
+                        title_RectangleF.Height,
+                        title_RectangleF.Height
+                    )
+                ),
+                combined_Mode_Background_RectangleF = ScalingViewport(combined_Mode_RectangleF, background_ScalingFactor_Float, 2),
+                combined_Mode_Content_RectangleF = ScalingViewport(combined_Mode_Background_RectangleF, background_ScalingFactor_Float, 2);
+            if
+                (
+                combinedRefiningUIList[refineryID_Int - 1].CombinedMode_Int == 1 &&
+                combinedRefiningUIList[refineryID_Int - 1].Name_String != Me.CustomName
+                )
+                CooperativeModeSignifier(ref frame, combined_Mode_Content_RectangleF, font_Color_Overall);
+
+            //  Card
+            for (int itemIndex_Page_Int = 0; itemIndex_Page_Int < combinedRefining_ItemsInEachScreen_Int; itemIndex_Page_Int++)
+            {
+                int itemIndex_Total_Int = itemIndex_Page_Int + (page_Int - 1) * combinedRefining_ItemsInEachScreen_Int;
+
+                if (itemIndex_Total_Int <= ore_List.Count - 1)
+                {
+                    int x = (itemIndex_Page_Int + 1) % combinedRefining_ColumnNumbers_Int;
+                    if (x == 0) x = combinedRefining_ColumnNumbers_Int;
+                    int y = Convert.ToInt16(Math.Ceiling(Convert.ToDecimal(Convert.ToDouble(itemIndex_Page_Int + 1) / combinedRefining_ColumnNumbers_Int)));
+
+                    RectangleF card_Range_RectangleF = new RectangleF
+                        (
+                            viewport_RectangleF.Position + new Vector2(0, title_RectangleF.Height) +
+                            new Vector2
+                                (
+                                    viewport_RectangleF.Width / combinedRefining_ColumnNumbers_Int * Convert.ToSingle(x - 1),
+                                    (viewport_RectangleF.Height - 2f * title_RectangleF.Height) / combinedRefining_RowNumbers_Int * Convert.ToSingle(y - 1)
+                                ),
+                            new Vector2
+                                (
+                                    viewport_RectangleF.Width / combinedRefining_ColumnNumbers_Int,
+                                    (viewport_RectangleF.Height - 2f * title_RectangleF.Height) / combinedRefining_RowNumbers_Int
+                                )
+                        );
+                    DrawSingleCard_CombinedRefining
+                        (
+                        ref frame,
+                        card_Range_RectangleF,
+                        itemIndex_Total_Int,
+                        refineryID_Int,
+                        fontsize_ScalingFactor_Float
+                        );
+                }
+
+            }
+
+
+            //  Footer
+            RectangleF
+                footer_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        viewport_RectangleF.X,
+                        viewport_RectangleF.Bottom - title_RectangleF.Height
+                    ),
+                    new Vector2
+                    (
+                        viewport_RectangleF.Width,
+                        title_RectangleF.Height
+                    )
+                ),
+                footer_Background_RectangleF = ScalingViewport(footer_RectangleF, background_ScalingFactor_Float, 2),
+                footer_Content_RectangleF = ScalingViewport(footer_Background_RectangleF, background_ScalingFactor_Float, 2);
+
+            DrawBox(ref frame, footer_Background_RectangleF, oreCard_Background_Color);
+            
+            PanelWriteText(ref frame, itemCounter_String, footer_Content_RectangleF, fontsize_Float * fontsize_ScalingFactor_Float, font_Color_Overall);
+            
+            PanelWriteText(ref frame, pageCounter_String, footer_Content_RectangleF, fontsize_Float * fontsize_ScalingFactor_Float, font_Color_Overall, TextAlignment.RIGHT);
+
+
+        }
+
+        public void DrawSingleCard_CombinedRefining(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, int itemIndex_Int, int refineryID_Int, float scalingFactor_Float)
+        {
+
+            string
+                itemName_String = ore_List[itemIndex_Int],
+                combinedMode_String = GetValue_from_CustomData(ore_Section, combinedMode_Key);
+            double amount_Double = 0;
+            int itemID_Int = Convert.ToInt16(GetValue_from_CustomData(ore_Section, itemID_Key));
+
+            //  Main box
+            RectangleF card_BackGround_RectangleF = ScalingViewport(viewport_RectangleF, 0.96f, 2);
+            DrawBox(ref frame, card_BackGround_RectangleF, oreCard_Background_Color);
+
+            //  Name text
+            RectangleF text_Name_RectangleF = ScalingViewport(card_BackGround_RectangleF, 0.95f, 2);
+            if(itemName_String != combinedMode_Key)
+                PanelWriteText(ref frame, ShortName(itemName_String), text_Name_RectangleF, 0.53f * scalingFactor_Float, font_Color_Overall);
+
+            //  Picture box
+            RectangleF
+                picture_RectangleF = new RectangleF
+                (
+                    card_BackGround_RectangleF.Position + new Vector2(0, card_BackGround_RectangleF.Height * 0.12f),
+                    new Vector2(card_BackGround_RectangleF.Width, card_BackGround_RectangleF.Width)
+                );
+            if (itemName_String == combinedMode_Key) RefinerySignifier(ref frame, picture_RectangleF, font_Color_Overall, oreCard_Background_Color);
+            else DrawIcon(ref frame, itemName_String, picture_RectangleF, font_Color_Overall);
+
+            //  Amount text
+            RectangleF
+                text_Amount_RectangleF = new RectangleF
+                (
+                    picture_RectangleF.Position + new Vector2(0, picture_RectangleF.Height * 0.96f),
+                    new Vector2(card_BackGround_RectangleF.Width, card_BackGround_RectangleF.Height * 0.2f)
+                ),
+                text_Amount_Content_RectangleF = ScalingViewport(text_Amount_RectangleF, 0.93f, 2);
+
+            if (itemName_String != combinedMode_Key)
+            {
+                if (combinedRefiningUIList[refineryID_Int - 1].Method_Dic.ContainsKey(itemName_String)) 
+                    amount_Double = combinedRefiningUIList[refineryID_Int - 1].Method_Dic[itemName_String];
+
+                if (amount_Double != 0)
+                {
+                    PanelWriteText
+                    (
+                        ref frame,
+                        AmountUnitConversion(amount_Double / 1000000, false),
+                        text_Amount_Content_RectangleF,
+                        0.8f * scalingFactor_Float,
+                        font_Color_Overall,
+                        TextAlignment.RIGHT
+                    );
+                }
+            }
+            else
+            {
+                PanelWriteText
+                (
+                    ref frame,
+                    combinedMode_String,
+                    text_Amount_Content_RectangleF,
+                    0.8f * scalingFactor_Float,
+                    font_Color_Overall,
+                    TextAlignment.RIGHT
+                );
+            }
+
+            //  Pointer text
+            RectangleF
+                pointer_RectangleF = new RectangleF
+                (
+                    new Vector2
+                        (text_Amount_RectangleF.Center.X - card_BackGround_RectangleF.Height * 0.12f / 2,
+                        text_Amount_RectangleF.Y + text_Amount_RectangleF.Height
+                        ),
+                    new Vector2(card_BackGround_RectangleF.Height * 0.12f, card_BackGround_RectangleF.Height * 0.12f)
+                ),
+                pointer_Content_RectangleF = ScalingViewport(pointer_RectangleF, 0.96f);
+            if(itemID_Int == itemIndex_Int + 1)
+                DrawIcon(ref frame, "Arrow", pointer_Content_RectangleF, font_Color_Overall);
+        }
+
+        public string CombinedRefineringScreen_Title(int index_Int)
+        {
+            string title_String;
+            if (index_Int == 1) title_String = Me.CustomName;
+            else title_String = refineries[index_Int - 2].CustomName;
+
+            return index_Int.ToString() + ". " + title_String + " (" + index_Int.ToString() + "/"+ (refineries.Count + 1).ToString() + ")";
+        }
+
+        public string CombinedRefineringScreen_CombinedMode(int index_Int)
+        {
+            if (index_Int == 1) return GetValue_from_CustomData(ore_Section, combinedMode_Key);
+            else return GetValue_from_CustomData(refineries[index_Int - 2], ore_Section, combinedMode_Key);
+        }
 
         /*###############   Combined_Refining   ###############*/
         /*#####################################################*/
+
 
 
         /*##################################################*/
@@ -3681,7 +4279,7 @@ namespace IngameScript
 
             if (!function_AutoProduction_Bool)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 counter_AutoProduction_Int = 1;
                 return;
             }
@@ -3702,7 +4300,7 @@ namespace IngameScript
 
             if (counter_AutoProduction_Int >= counter_TotalCycle_Int)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 counter_AutoProduction_Int = 1;
                 return;
             }
@@ -3726,14 +4324,6 @@ namespace IngameScript
                 }
             }
 
-            foreach(var item in allitems_InAssemblers_Dic.Keys)
-            {
-                debug_StringBuilder.Append($"Item={item}");
-                debug_StringBuilder.Append("\n");
-                debug_StringBuilder.Append($"Amount={allitems_InAssemblers_Dic[item]}");
-                debug_StringBuilder.Append("\n");
-
-            }
         }
 
         public void SumItems_Old_Assemblers()
@@ -3803,7 +4393,7 @@ namespace IngameScript
         {
             if (cargoContainers.Count < 2 || !function_InventoryManagement_Bool)
             {
-                stage_Key = nextStage;
+                stage_Value = nextStage;
                 return;
             }
 
@@ -3880,7 +4470,7 @@ namespace IngameScript
                 }
             }
 
-            stage_Key = nextStage;
+            stage_Value = nextStage;
             counter_CombiningLikeTerms_Int = 1;
 
         }
@@ -4053,20 +4643,20 @@ namespace IngameScript
         /*######################################################*/
 
 
-
+        
 
 
         public void MainLogic()
         {
-            if (stage_Key == "") stage_Key = stage_ShowItems;
+            if (stage_Value == "") stage_Value = stage_ShowItems;
 
-            if (counter_Sub_Function_Interval_Int < 10 && stage_Key == stage_Assembler_Clear) stage_Key = stage_ShowItems;
+            if (counter_Sub_Function_Interval_Int < 10 && stage_Value == stage_Assembler_Clear) stage_Value = stage_ShowItems;
 
-            Echo($"{stage_Key}");
+            Echo($"{stage_Value}");
 
 
 
-            switch (stage_Key)
+            switch (stage_Value)
             {
                 case stage_ShowItems:
                     if (counter_Sub_Function_Interval_Int >= 10) counter_Sub_Function_Interval_Int = 1;
@@ -4108,7 +4698,10 @@ namespace IngameScript
                     CombiningLikeTerms(stage_ShowCargoContainerResidues);
                     break;
                 case stage_ShowCargoContainerResidues:
-                    ShowCargoContainerResidues(stage_ShowItems);
+                    ShowCargoContainerResidues(stage_ShowCombinedRefining);
+                    break;
+                case stage_ShowCombinedRefining:
+                    CombinedRefiningUI(stage_ShowItems);
                     break;
             }
 
@@ -4119,8 +4712,6 @@ namespace IngameScript
         {
             Echo("Main");
 
-            debug_StringBuilder = new StringBuilder();
-
             ProgrammableBlockScreen();
 
             OverallDisplay();
@@ -4128,6 +4719,8 @@ namespace IngameScript
             MainLogic();
 
             Argument_Handler(argument);
+
+            CockpitControl_CombinedRefining();
 
         }
     }
