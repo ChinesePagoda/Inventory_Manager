@@ -3827,7 +3827,7 @@ namespace IngameScript
                             mehtod_Temp_PB_Dic[itemName_String] += increment_Amount_Int * defaultAmount_Double * 1000000;
                             if (mehtod_Temp_PB_Dic[itemName_String] <= 0) mehtod_Temp_PB_Dic.Remove(itemName_String);
                         }
-                        else if(mehtod_Temp_PB_Dic.Count < 10)
+                        else if(mehtod_Temp_PB_Dic.Count < 10 && increment_Amount_Int > 0)
                         {
                             mehtod_Temp_PB_Dic.Add(itemName_String, defaultAmount_Double * 1000000);
                         }
@@ -3857,7 +3857,7 @@ namespace IngameScript
                             mehtod_Temp_Refinery_Dic[itemName_String] += increment_Amount_Int * defaultAmount_Double * 1000000;
                             if (mehtod_Temp_Refinery_Dic[itemName_String] <= 0) mehtod_Temp_Refinery_Dic.Remove(itemName_String);
                         }
-                        else if (mehtod_Temp_Refinery_Dic.Count < 10)
+                        else if (mehtod_Temp_Refinery_Dic.Count < 10 && increment_Amount_Int > 0)
                         {
                             mehtod_Temp_Refinery_Dic.Add(itemName_String, defaultAmount_Double * 1000000);
                         }
@@ -4041,9 +4041,8 @@ namespace IngameScript
                     refineryID_Int.ToString() + ". " +
                     combinedRefiningUIList[refineryID_Int - 1].Name_String +
                     " (" + refineryID_Int.ToString() + "/" + (refineries.Count + 1).ToString() + ")",
-                itemCounter_String = "ID " + itemID_Int.ToString() + "/" + ore_List.Count.ToString(),
-                collectionCounter_String =
-                    "No. " + combinedRefiningUIList[refineryID_Int - 1].Method_Dic.Count.ToString() + "/10",
+                listCounter_String =
+                    combinedRefiningUIList[refineryID_Int - 1].Method_Dic.Count.ToString() + "/10",
                 pageCounter_String = "P " + page_Int.ToString() + "/" + pageTotal_Int.ToString();
 
             //  Header
@@ -4140,9 +4139,45 @@ namespace IngameScript
 
             DrawBox(ref frame, footer_Background_RectangleF, oreCard_Background_Color);
             
-            PanelWriteText(ref frame, itemCounter_String, footer_Content_RectangleF, fontsize_Float * fontsize_ScalingFactor_Float, font_Color_Overall);
-            
             PanelWriteText(ref frame, pageCounter_String, footer_Content_RectangleF, fontsize_Float * fontsize_ScalingFactor_Float, font_Color_Overall, TextAlignment.RIGHT);
+
+            //  List_Counter_Signifier
+            RectangleF
+                listCounter_Signifier_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        viewport_RectangleF.X,
+                        viewport_RectangleF.Bottom - title_RectangleF.Height
+                    ),
+                    new Vector2
+                    (
+                        title_RectangleF.Height,
+                        title_RectangleF.Height
+                    )
+                ),
+                listCounter_Signifier_Background_RectangleF = ScalingViewport(listCounter_Signifier_RectangleF, background_ScalingFactor_Float, 2);
+
+            DrawIcon(ref frame, "AH_BoreSight", listCounter_Signifier_Background_RectangleF, font_Color_Overall, 270f);
+
+            //  List_Counter
+            RectangleF
+                listCounter_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        viewport_RectangleF.X + title_RectangleF.Height,
+                        viewport_RectangleF.Bottom - title_RectangleF.Height
+                    ),
+                    new Vector2
+                    (
+                        viewport_RectangleF.Width * 0.5f - title_RectangleF.Height,
+                        title_RectangleF.Height
+                    )
+                ),
+                listCounter_Background_RectangleF = ScalingViewport(listCounter_RectangleF, background_ScalingFactor_Float, 2),
+                listCounter_Content_RectangleF = ScalingViewport(listCounter_Background_RectangleF, background_ScalingFactor_Float, 2);
+            PanelWriteText(ref frame, listCounter_String, listCounter_Content_RectangleF, fontsize_Float * fontsize_ScalingFactor_Float, font_Color_Overall);
 
 
         }
@@ -4152,9 +4187,11 @@ namespace IngameScript
 
             string
                 itemName_String = ore_List[itemIndex_Int],
-                combinedMode_String = GetValue_from_CustomData(ore_Section, combinedMode_Key);
+                combinedMode_String = GetValue_from_CustomData(ore_Section, combinedMode_Key),
+                itemID_String = GetValue_from_CustomData(ore_Section, itemID_Key),
+                index_String = "(" + itemID_String + "/" + ore_List.Count.ToString() + ")";
             double amount_Double = 0;
-            int itemID_Int = Convert.ToInt16(GetValue_from_CustomData(ore_Section, itemID_Key));
+            int itemID_Int = Convert.ToInt16(itemID_String);
 
             //  Main box
             RectangleF card_BackGround_RectangleF = ScalingViewport(viewport_RectangleF, 0.96f, 2);
@@ -4175,14 +4212,23 @@ namespace IngameScript
             if (itemName_String == combinedMode_Key) RefinerySignifier(ref frame, picture_RectangleF, font_Color_Overall, oreCard_Background_Color);
             else DrawIcon(ref frame, itemName_String, picture_RectangleF, font_Color_Overall);
 
-            //  Amount text
+            //  Amount text and signifier
             RectangleF
                 text_Amount_RectangleF = new RectangleF
                 (
                     picture_RectangleF.Position + new Vector2(0, picture_RectangleF.Height * 0.96f),
                     new Vector2(card_BackGround_RectangleF.Width, card_BackGround_RectangleF.Height * 0.2f)
                 ),
-                text_Amount_Content_RectangleF = ScalingViewport(text_Amount_RectangleF, 0.93f, 2);
+                text_Amount_Content_RectangleF = ScalingViewport(text_Amount_RectangleF, 0.93f, 2),
+
+                signifier_RectangleF = new RectangleF
+                (
+                    new Vector2(card_BackGround_RectangleF.Right, card_BackGround_RectangleF.Bottom) -
+                    new Vector2(card_BackGround_RectangleF.Height * 0.12f, card_BackGround_RectangleF.Height * 0.12f),
+                    new Vector2(card_BackGround_RectangleF.Height * 0.12f, card_BackGround_RectangleF.Height * 0.12f)
+                ),
+                signifier_Content_RectangleF = ScalingViewport(signifier_RectangleF, 0.93f, 2);
+
 
             if (itemName_String != combinedMode_Key)
             {
@@ -4200,6 +4246,7 @@ namespace IngameScript
                         font_Color_Overall,
                         TextAlignment.RIGHT
                     );
+                    DrawIcon(ref frame, "AH_BoreSight", signifier_Content_RectangleF, font_Color_Overall, 270f);
                 }
             }
             else
@@ -4215,19 +4262,43 @@ namespace IngameScript
                 );
             }
 
-            //  Pointer text
-            RectangleF
-                pointer_RectangleF = new RectangleF
-                (
-                    new Vector2
-                        (text_Amount_RectangleF.Center.X - card_BackGround_RectangleF.Height * 0.12f / 2,
-                        text_Amount_RectangleF.Y + text_Amount_RectangleF.Height
-                        ),
-                    new Vector2(card_BackGround_RectangleF.Height * 0.12f, card_BackGround_RectangleF.Height * 0.12f)
-                ),
+
+            //  Pointer
+            if (itemID_Int == itemIndex_Int + 1)
+            {
+                RectangleF
+                    pointer_RectangleF = new RectangleF
+                    (
+                        new Vector2
+                            (
+                                text_Amount_RectangleF.X,
+                                text_Amount_RectangleF.Y + text_Amount_RectangleF.Height
+                            ),
+                        new Vector2(card_BackGround_RectangleF.Height * 0.13f, card_BackGround_RectangleF.Height * 0.13f)
+                    ),
                 pointer_Content_RectangleF = ScalingViewport(pointer_RectangleF, 0.96f);
-            if(itemID_Int == itemIndex_Int + 1)
                 DrawIcon(ref frame, "Arrow", pointer_Content_RectangleF, font_Color_Overall);
+
+
+                //  Pointer text
+                RectangleF
+                    Index_RectangleF = new RectangleF
+                    (
+                        new Vector2
+                            (
+                                text_Amount_RectangleF.X + card_BackGround_RectangleF.Height * 0.13f,
+                                text_Amount_RectangleF.Y + text_Amount_RectangleF.Height
+                            ),
+                        new Vector2
+                            (
+                                text_Amount_RectangleF.Width - 2f * card_BackGround_RectangleF.Height * 0.13f,
+                                card_BackGround_RectangleF.Height * 0.13f
+                            )
+                    ),
+                    Index_Content_RectangleF = ScalingViewport(Index_RectangleF, 0.96f);
+                PanelWriteText(ref frame, index_String, Index_RectangleF, 0.65f * scalingFactor_Float, font_Color_Overall, TextAlignment.CENTER);
+
+            }
         }
 
         public string CombinedRefineringScreen_Title(int index_Int)
@@ -4641,9 +4712,6 @@ namespace IngameScript
 
         /*####################   Argument   ####################*/
         /*######################################################*/
-
-
-        
 
 
         public void MainLogic()
