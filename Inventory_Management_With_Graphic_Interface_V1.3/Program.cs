@@ -3436,39 +3436,39 @@ namespace IngameScript
             sb.Append(connectors_BroadCast.Count.ToString());
             sb.Append("=");
 
-            foreach (var connector in connectors_BroadCast)
-            {
-                sb.Append("【");
-                sb.Append(connector.CustomName.ToString());
-                sb.Append("：");
-                sb.Append(connector.GetPosition().X.ToString());
-                sb.Append("：");
-                sb.Append(connector.GetPosition().Y.ToString());
-                sb.Append("：");
-                sb.Append(connector.GetPosition().Z.ToString());
-                sb.Append("：");
-                sb.Append(connector.WorldMatrix.Forward.X.ToString());
-                sb.Append("：");
-                sb.Append(connector.WorldMatrix.Forward.Y.ToString());
-                sb.Append("：");
-                sb.Append(connector.WorldMatrix.Forward.Z.ToString());
-            }
+            //foreach (var connector in connectors_BroadCast)
+            //{
+            //    sb.Append("【");
+            //    sb.Append(connector.CustomName.ToString());
+            //    sb.Append("：");
+            //    sb.Append(connector.GetPosition().X.ToString());
+            //    sb.Append("：");
+            //    sb.Append(connector.GetPosition().Y.ToString());
+            //    sb.Append("：");
+            //    sb.Append(connector.GetPosition().Z.ToString());
+            //    sb.Append("：");
+            //    sb.Append(connector.WorldMatrix.Forward.X.ToString());
+            //    sb.Append("：");
+            //    sb.Append(connector.WorldMatrix.Forward.Y.ToString());
+            //    sb.Append("：");
+            //    sb.Append(connector.WorldMatrix.Forward.Z.ToString());
+            //}
 
             string value_String = GetValue_from_CustomData(information_Section, "IGCTAG");
-            if (value_String == null || value_String == "") WriteValue_to_CustomData(information_Section, "IGCTAG", "CHANNEL1");
-            IGC.SendBroadcastMessage(value_String, sb.ToString());
+            //if (value_String == null || value_String == "") WriteValue_to_CustomData(information_Section, "IGCTAG", "CHANNEL1");
+            //IGC.SendBroadcastMessage(value_String, sb.ToString());
 
-            WriteValue_to_CustomData("Connectors_Information", "Value1", sb.ToString());
+            //WriteValue_to_CustomData("Connectors_Information", "Value1", sb.ToString());
 
 
 
-            sb.Clear();
-            sb.Append(connectors_BroadCast.Count.ToString());
-            sb.Append("=");
+            //sb.Clear();
+            //sb.Append(connectors_BroadCast.Count.ToString());
+            //sb.Append("=");
 
             foreach (var connector in connectors_BroadCast)
             {
-                sb.Append("[");
+                sb.Append("_");
                 sb.Append(connector.CustomName.ToString());
                 sb.Append(":");
                 sb.Append(connector.GetPosition().X.ToString());
