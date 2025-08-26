@@ -24,6 +24,8 @@ using VRage.Library.Compiler;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using Sandbox.Game.Entities.Cube;
+using System.Net.Configuration;
+using System.Configuration;
 
 namespace IngameScript
 {
@@ -44,6 +46,17 @@ namespace IngameScript
         List<IMyTextPanel> panels_Overall = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Combined_Refining = new List<IMyTextPanel>();
         List<IMyCockpit> cockpits_Combined_Refining = new List<IMyCockpit>();
+        List<IMyTextPanel> panels_Driectional_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_Hydrogen_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_Oxygen_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_Reactor_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_Power_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_Refinery_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_Assembler_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_Bedroom_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_Washroom_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_Canteen_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_GasGenerator_Sign = new List<IMyTextPanel>();
 
         Dictionary<string, string> translator = new Dictionary<string, string>();
 
@@ -83,6 +96,7 @@ namespace IngameScript
             counter_AutoProduction_Int = 1,
             counter_CombiningLikeTerms_Int = 1, counter_CombiningLikeTerms_CargoContainer_Int = 1,
             counter_Sub_Function_Interval_Int = 1,
+            counter_DirectionalSign_Int = 1,
             facilityAmountInEachScreen_Int = 20;
 
         const int 
@@ -114,7 +128,8 @@ namespace IngameScript
             stage_Combined_Refining = "Stage_Combined_Refining",
             stage_AutoProduction = "Stage_AutoProduction",
             stage_CombiningLikeTerms = "Stage_CombiningLikeTerms",
-            stage_ShowCombinedRefining = "Stage_ShowCombinedRefining";
+            stage_ShowCombinedRefining = "Stage_ShowCombinedRefining",
+            stage_DirectionalSign = "Stage_DirectionalSign";
         const string 
             function_ShowOverall = "ShowOverall",
             function_ShowItems = "ShowItems",
@@ -162,6 +177,18 @@ namespace IngameScript
 
         const string
             combined_Refining_Key = "Combined_Refining";
+
+        const string 
+            settings_Section = "Settings",
+            left_Right_Offset_Key = "Left_Right_Offset",
+            up_Down_Offset_Key = "Up_Down_Offset",
+            up_Section = "Up",
+            down_Section = "Down",
+            left_Section = "Left",
+            right_Section = "Right",
+            line1_Key = "Line_1",
+            line2_Key = "Line_2";
+
 
         string stage_Value = "";
 
@@ -268,6 +295,8 @@ namespace IngameScript
             BuildOreList();
 
             BuildCombinedRefiningUIList();
+
+            DirectionalSignPreparePanels();
         }
 
         public void Save()
@@ -288,6 +317,17 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(panels_Assemblers, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Assembler_Inventory_Display:"));
             GridTerminalSystem.GetBlocksOfType(panels_Combined_Refining, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Combined_Refining_Display"));
             GridTerminalSystem.GetBlocksOfType(cockpits_Combined_Refining, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("Cockpit_Combined_Refining"));
+            GridTerminalSystem.GetBlocksOfType(panels_Driectional_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Directional_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_Hydrogen_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Hydrogen_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_Oxygen_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Oxygen_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_Reactor_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Reactor_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_Power_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Power_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_Refinery_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Refinery_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_Assembler_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Assembler_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_Bedroom_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Bedroom_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_Washroom_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Washroom_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_Canteen_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Canteen_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_GasGenerator_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_GasGenerator_Sign"));
 
 
             GridTerminalSystem.GetBlocksOfType(assemblers, b => b.IsSameConstructAs(Me));
@@ -323,6 +363,17 @@ namespace IngameScript
             WriteDefaultItem(information_Section, "LCD_Assembler_Inventory_Display", "LCD_Assembler_Inventory_Display:X | X=1,2,3... | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "LCD_Combined_Refining_Display", "LCD_Combined_Refining_Display | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "Cockpit_Combined_Refining", "Cockpit_Combined_Refining | Fill In CustomName of Cockpit");
+            WriteDefaultItem(information_Section, "LCD_Directional_Sign", "LCD_Directional_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_Hydrogen_Sign", "LCD_Hydrogen_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_Oxygen_Sign", "LCD_Oxygen_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_Reactor_Sign", "LCD_Reactor_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_Power_Sign", "LCD_Power_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_Refinery_Sign", "LCD_Refinery_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_Assembler_Sign", "LCD_Assembler_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_Bedroom_Sign", "LCD_Bedroom_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_Washroom_Sign", "LCD_Washroom_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_Canteen_Sign", "LCD_Canteen_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_GasGenerator_Sign", "LCD_GasGenerator_Sign | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "Assemblers_CooperativeMode", "CO_ON or CO_OFF | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "Clear_Assembler_Queue", "CLS | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "LCD_Refresh", "LCD_REF | Fill In Argument of PB And Press Run");
@@ -369,6 +420,55 @@ namespace IngameScript
             }
 
         }
+
+        public void DirectionalSignPreparePanels()
+        {
+            foreach (var panel in panels_Driectional_Sign)
+            {
+                panel.ContentType = ContentType.SCRIPT;
+
+                WriteDefaultItem(panel, settings_Section, counter_Key, "0");
+                WriteDefaultItem(panel, settings_Section, left_Right_Offset_Key, "0");
+                WriteDefaultItem(panel, settings_Section, up_Down_Offset_Key, "0");
+
+
+                WriteDefaultItem(panel, up_Section, line1_Key, "");
+                WriteDefaultItem(panel, up_Section, line2_Key, "");
+
+                WriteDefaultItem(panel, left_Section, line1_Key, "");
+                WriteDefaultItem(panel, left_Section, line2_Key, "");
+
+                WriteDefaultItem(panel, right_Section, line1_Key, "");
+                WriteDefaultItem(panel, right_Section, line2_Key, "");
+
+                WriteDefaultItem(panel, down_Section, line1_Key, "");
+                WriteDefaultItem(panel, down_Section, line2_Key, "");
+
+            }
+
+            List<IMyTextPanel> panels_Temp = new List<IMyTextPanel>();
+
+            panels_Temp.AddRange(panels_Hydrogen_Sign);
+            panels_Temp.AddRange(panels_Oxygen_Sign);
+            panels_Temp.AddRange(panels_Reactor_Sign);
+            panels_Temp.AddRange(panels_Power_Sign);
+            panels_Temp.AddRange(panels_Refinery_Sign);
+            panels_Temp.AddRange(panels_Assembler_Sign);
+            panels_Temp.AddRange(panels_Bedroom_Sign);
+            panels_Temp.AddRange(panels_Washroom_Sign);
+            panels_Temp.AddRange(panels_Canteen_Sign);
+            panels_Temp.AddRange(panels_GasGenerator_Sign);
+
+
+            foreach (var panel in panels_Temp)
+            {
+                panel.ContentType = ContentType.SCRIPT;
+
+                WriteDefaultItem(panel, settings_Section, counter_Key, "0");
+            }
+
+        }
+
 
         public void Build_MethodDic(Dictionary<string, double> method_Dic)
         {
@@ -3436,35 +3536,7 @@ namespace IngameScript
             sb.Append(connectors_BroadCast.Count.ToString());
             sb.Append("=");
 
-            //foreach (var connector in connectors_BroadCast)
-            //{
-            //    sb.Append("【");
-            //    sb.Append(connector.CustomName.ToString());
-            //    sb.Append("：");
-            //    sb.Append(connector.GetPosition().X.ToString());
-            //    sb.Append("：");
-            //    sb.Append(connector.GetPosition().Y.ToString());
-            //    sb.Append("：");
-            //    sb.Append(connector.GetPosition().Z.ToString());
-            //    sb.Append("：");
-            //    sb.Append(connector.WorldMatrix.Forward.X.ToString());
-            //    sb.Append("：");
-            //    sb.Append(connector.WorldMatrix.Forward.Y.ToString());
-            //    sb.Append("：");
-            //    sb.Append(connector.WorldMatrix.Forward.Z.ToString());
-            //}
-
             string value_String = GetValue_from_CustomData(information_Section, "IGCTAG");
-            //if (value_String == null || value_String == "") WriteValue_to_CustomData(information_Section, "IGCTAG", "CHANNEL1");
-            //IGC.SendBroadcastMessage(value_String, sb.ToString());
-
-            //WriteValue_to_CustomData("Connectors_Information", "Value1", sb.ToString());
-
-
-
-            //sb.Clear();
-            //sb.Append(connectors_BroadCast.Count.ToString());
-            //sb.Append("=");
 
             foreach (var connector in connectors_BroadCast)
             {
@@ -4551,6 +4623,507 @@ namespace IngameScript
         /*################################################################*/
 
 
+        /*#############################################################*/
+        /*####################   DriectionalSign   ####################*/
+
+        public void DriectionalSign(string nextStage)
+        {
+
+            if(panels_Driectional_Sign.Count >= 1)
+            {
+                int counter_Cycle_Int = Convert.ToInt16(Math.Ceiling(Convert.ToDouble(panels_Driectional_Sign.Count) / 10));
+
+                Echo($"{counter_DirectionalSign_Int}/{counter_Cycle_Int}");
+
+                for (int index_int = 0; index_int < 10; index_int++)
+                {
+                    int panelIndex_Int = index_int + (counter_DirectionalSign_Int - 1);
+
+                    if (panelIndex_Int >= panels_Driectional_Sign.Count) break;
+
+                    DrawDriectionalSignPanel(panels_Driectional_Sign[panelIndex_Int]);
+                }
+
+                counter_DirectionalSign_Int++;
+                if (counter_DirectionalSign_Int > counter_Cycle_Int) counter_DirectionalSign_Int = 1;
+
+            }
+
+            foreach(var panel in panels_Hydrogen_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "IconHydrogen");
+            }
+
+            foreach(var panel in panels_Oxygen_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "IconOxygen");
+            }
+
+            foreach (var panel in panels_Reactor_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "Textures\\FactionLogo\\Others\\OtherIcon_19.dds");
+            }
+
+            foreach (var panel in panels_Power_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "IconEnergy");
+            }
+
+            foreach (var panel in panels_Refinery_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "Refinery");
+            }
+
+            foreach (var panel in panels_Assembler_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "Assembler");
+            }
+
+            foreach (var panel in panels_Bedroom_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "Bedroom");
+            }
+
+            foreach (var panel in panels_Washroom_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "Washroom");
+            }
+
+            foreach (var panel in panels_Canteen_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "Canteen");
+            }
+
+            foreach (var panel in panels_GasGenerator_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "GasGenerator");
+            }
+
+
+            stage_Value = nextStage;
+        }
+
+        public void DrawDriectionalSignPanel(IMyTextPanel panel)
+        {
+            string
+                up_Line1_String = GetValue_from_CustomData(panel, up_Section, line1_Key),
+                up_Line2_String = GetValue_from_CustomData(panel, up_Section, line2_Key),                
+                
+                left_Line1_String = GetValue_from_CustomData(panel, left_Section, line1_Key),
+                left_Line2_String = GetValue_from_CustomData(panel, left_Section, line2_Key),
+                
+                right_Line1_String = GetValue_from_CustomData(panel, right_Section, line1_Key),
+                right_Line2_String = GetValue_from_CustomData(panel, right_Section, line2_Key),
+                                
+                down_Line1_String = GetValue_from_CustomData(panel, down_Section, line1_Key),
+                down_Line2_String = GetValue_from_CustomData(panel, down_Section, line2_Key);
+
+            float 
+                left_Right_Offset_Float = Convert.ToSingle(GetValue_from_CustomData(panel, settings_Section, left_Right_Offset_Key)),
+                up_Down_Offset_Float = Convert.ToSingle(GetValue_from_CustomData(panel, settings_Section, up_Down_Offset_Key)),
+                y_Offset_Float = Convert.ToSingle(GetValue_from_CustomData(panel, settings_Section, counter_Key));
+
+            float
+                row_Height_Standard_Float = 42.5f,
+                row_Height_Float = row_Height_Standard_Float,
+                scaling_Factor_Float = 1,
+                fontSize_Float = 1.3f;
+
+
+            if (y_Offset_Float == 0) WriteValue_to_CustomData(panel, settings_Section, counter_Key, "0.01");
+            else WriteValue_to_CustomData(panel, settings_Section, counter_Key, "0");
+
+            
+            RectangleF 
+                visibleArea_RectangleF = new RectangleF
+                (
+                    (panel.TextureSize - panel.SurfaceSize) / 2f + new Vector2(0, y_Offset_Float),
+                    panel.SurfaceSize
+                ),
+                visibleArea_Offset_RectangleF = new RectangleF
+                (
+                    visibleArea_RectangleF.Position + new Vector2(left_Right_Offset_Float, up_Down_Offset_Float),
+                    visibleArea_RectangleF.Size - new Vector2(left_Right_Offset_Float * 2f, up_Down_Offset_Float * 2f)
+                );
+
+            row_Height_Float = visibleArea_Offset_RectangleF.Height / 12f;
+            scaling_Factor_Float = row_Height_Float / row_Height_Standard_Float;
+            fontSize_Float = fontSize_Float * scaling_Factor_Float;
+
+            RectangleF
+                icon_Up_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.Center.X - row_Height_Float / 2f, visibleArea_Offset_RectangleF.Y),
+                    new Vector2(row_Height_Float, row_Height_Float)
+                ),
+                text_Up_Line1_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.X, icon_Up_RectangleF.Y + row_Height_Float),
+                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                ),
+                text_Up_Line2_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.X, text_Up_Line1_RectangleF.Y + row_Height_Float),
+                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                ),
+
+                icon_Left_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.X, text_Up_Line2_RectangleF.Y + row_Height_Float),
+                    new Vector2(row_Height_Float, row_Height_Float)
+                ),
+                text_Left_Line1_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.X, icon_Left_RectangleF.Y + row_Height_Float),
+                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                ),
+                text_Left_Line2_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.X, text_Left_Line1_RectangleF.Y + row_Height_Float),
+                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                ),
+
+                icon_Right_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.Right - row_Height_Float, text_Left_Line2_RectangleF.Y + row_Height_Float),
+                    new Vector2(row_Height_Float, row_Height_Float)
+                ),
+                text_Right_Line1_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.X, icon_Right_RectangleF.Y + row_Height_Float),
+                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                ),
+                text_Right_Line2_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.X, text_Right_Line1_RectangleF.Y + row_Height_Float),
+                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                ),
+
+                icon_Down_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.Center.X - row_Height_Float / 2f, text_Right_Line2_RectangleF.Y + row_Height_Float),
+                    new Vector2(row_Height_Float, row_Height_Float)
+                ),
+                text_Down_Line1_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.X, icon_Down_RectangleF.Y + row_Height_Float),
+                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                ),
+                text_Down_Line2_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_Offset_RectangleF.X, text_Down_Line1_RectangleF.Y + row_Height_Float),
+                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                );
+
+
+
+            MySpriteDrawFrame frame = panel.DrawFrame();
+
+            DrawIcon(ref frame, "SquareSimple", visibleArea_RectangleF, card_Background_Color_Overall);
+
+            if (up_Line2_String != "" || up_Line1_String != "")
+            {
+                DrawIcon(ref frame, "Arrow", icon_Up_RectangleF, Color.Green);
+                PanelWriteText(ref frame, up_Line1_String, text_Up_Line1_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
+                PanelWriteText(ref frame, up_Line2_String, text_Up_Line2_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
+            }
+
+            if (left_Line2_String != "" || left_Line1_String != "")
+            {
+                DrawIcon(ref frame, "Arrow", icon_Left_RectangleF, Color.Green, 270f);
+                PanelWriteText(ref frame, left_Line1_String, text_Left_Line1_RectangleF, fontSize_Float, font_Color_Overall);
+                PanelWriteText(ref frame, left_Line2_String, text_Left_Line2_RectangleF, fontSize_Float, font_Color_Overall);
+            }
+
+            if (right_Line2_String != "" || right_Line1_String != "")
+            {
+                DrawIcon(ref frame, "Arrow", icon_Right_RectangleF, Color.Green, 90f);
+                PanelWriteText(ref frame, right_Line1_String, text_Right_Line1_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.RIGHT);
+                PanelWriteText(ref frame, right_Line2_String, text_Right_Line2_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.RIGHT);
+            }
+
+            if (down_Line2_String != "" || down_Line1_String != "")
+            {
+                DrawIcon(ref frame, "Arrow", icon_Down_RectangleF, Color.Green, 180f);
+                PanelWriteText(ref frame, down_Line1_String, text_Down_Line1_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
+                PanelWriteText(ref frame, down_Line2_String, text_Down_Line2_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
+            }
+
+
+            frame.Dispose();
+
+        }
+
+        public void DrawFullScreenSignPanel(IMyTextPanel panel, string icon_Name_String)
+        {
+            float y_Offset_Float = Convert.ToSingle(GetValue_from_CustomData(panel, settings_Section, counter_Key));
+
+            if (y_Offset_Float == 0) WriteValue_to_CustomData(panel, settings_Section, counter_Key, "0.01");
+            else WriteValue_to_CustomData(panel, settings_Section, counter_Key, "0");
+
+
+            float 
+                width_Icon_Float = panel.SurfaceSize.X,
+                height_Icon_Float = panel.SurfaceSize.Y;
+
+            if (width_Icon_Float < height_Icon_Float) height_Icon_Float = width_Icon_Float;
+            else width_Icon_Float = height_Icon_Float;
+
+            RectangleF
+                visibleArea_RectangleF = new RectangleF
+                (
+                    (panel.TextureSize - panel.SurfaceSize) / 2f + new Vector2(0, y_Offset_Float),
+                    panel.SurfaceSize
+                ),
+
+                drawArea_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_RectangleF.Center.X - width_Icon_Float / 2f, visibleArea_RectangleF.Center.Y - height_Icon_Float / 2f),
+                    new Vector2(width_Icon_Float, height_Icon_Float)
+                );
+                drawArea_RectangleF = ScalingViewport(drawArea_RectangleF, 0.95f);
+
+
+            MySpriteDrawFrame frame = panel.DrawFrame();
+
+            DrawIcon(ref frame, "SquareSimple", visibleArea_RectangleF, card_Background_Color_Overall);
+
+
+            if(icon_Name_String == "Refinery")
+            {
+                RefinerySignifier(ref frame, drawArea_RectangleF, font_Color_Overall, card_Background_Color_Overall);
+            }
+            else if(icon_Name_String == "Assembler")
+            {
+                AssemblerSignifier(ref frame, drawArea_RectangleF, font_Color_Overall);
+            }
+            else if(icon_Name_String == "Bedroom")
+            {
+                BedroomSignifier(ref frame, drawArea_RectangleF, font_Color_Overall);
+            }
+            else if(icon_Name_String == "Washroom")
+            {
+                WashroomSignifier(ref frame, drawArea_RectangleF, font_Color_Overall);
+            }
+            else if(icon_Name_String == "Canteen")
+            {
+                CanteenSignifier(ref frame, drawArea_RectangleF, font_Color_Overall);
+            }
+            else if(icon_Name_String == "GasGenerator")
+            {
+                GasGeneratorSignifier(ref frame, drawArea_RectangleF, font_Color_Overall);
+            }
+            else
+            {
+                DrawIcon(ref frame, icon_Name_String, drawArea_RectangleF, font_Color_Overall);
+            }
+
+
+            frame.Dispose();
+
+        }
+
+
+        public void BedroomSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color)
+        {
+            RectangleF
+                bed_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X, viewport_RectangleF.X + 2f / 3f * viewport_RectangleF.Height),
+                    new Vector2(viewport_RectangleF.Width, viewport_RectangleF.Height / 6f)
+                ),
+                headboard_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X, viewport_RectangleF.Center.Y),
+                    new Vector2(viewport_RectangleF.Width * 0.05f, viewport_RectangleF.Height * 0.5f)
+                ),
+                foot_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Right - headboard_RectangleF.Width, bed_RectangleF.Y),
+                    new Vector2(headboard_RectangleF.Width, bed_RectangleF.Height * 2f)
+                ),
+                head_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        viewport_RectangleF.X + headboard_RectangleF.Width * 2f,
+                        bed_RectangleF.Y - headboard_RectangleF.Width - viewport_RectangleF.Height * 0.2f
+                    ),
+                    new Vector2(viewport_RectangleF.Height * 0.2f, viewport_RectangleF.Height * 0.2f)
+                ),
+                body_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        head_RectangleF.X + head_RectangleF.Width + headboard_RectangleF.Width,
+                        head_RectangleF.Y
+                    ),
+                    new Vector2
+                    (
+                        viewport_RectangleF.Width - 3f * headboard_RectangleF.Width - head_RectangleF.Width,
+                        viewport_RectangleF.Height * 0.2f
+                    )
+                );
+
+            DrawBox(ref frame, bed_RectangleF, icon_Color);
+            DrawBox(ref frame, headboard_RectangleF, icon_Color);
+            DrawBox(ref frame, foot_RectangleF, icon_Color);
+            DrawIcon(ref frame, "LCD_Emote_Sleepy", head_RectangleF, icon_Color, 270f);
+            DrawIcon(ref frame, "RightTriangle", body_RectangleF, icon_Color);
+
+        }
+
+        public void WashroomSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color)
+        {
+            float scalingFactor_Float = 0.95f;
+
+            RectangleF
+                leftHead_Area_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position,
+                    new Vector2(viewport_RectangleF.Width / 3f, viewport_RectangleF.Height / 3f)
+                ),
+                leftHead_Content_RectangleF = ScalingViewport(leftHead_Area_RectangleF, scalingFactor_Float),
+
+                leftBody_Area_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position + new Vector2(0, leftHead_Area_RectangleF.Height),
+                    new Vector2(leftHead_Area_RectangleF.Width, leftHead_Area_RectangleF.Height * 2f)
+                ),
+                leftBody_Content_RectangleF = ScalingViewport(leftBody_Area_RectangleF, scalingFactor_Float),
+
+                middleBar_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Center.X, viewport_RectangleF.Y) -
+                    new Vector2(viewport_RectangleF.Width * 0.05f * 0.5f, 0),
+                    new Vector2(viewport_RectangleF.Width * 0.05f, viewport_RectangleF.Height)
+                ),
+
+                rightHead_Area_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position + new Vector2(leftHead_Area_RectangleF.Width * 2f, 0),
+                    leftHead_Area_RectangleF.Size
+                ),
+                rightHead_Content_RectangleF = ScalingViewport(rightHead_Area_RectangleF, scalingFactor_Float),
+
+                rightBody_Area_RectangleF = new RectangleF
+                (
+                    rightHead_Area_RectangleF.Position + new Vector2(0, rightHead_Area_RectangleF.Height),
+                    leftBody_Area_RectangleF.Size
+                ),
+                rightBody_Content_RectangleF = ScalingViewport(rightBody_Area_RectangleF, scalingFactor_Float),
+
+                rightBodyFoot_Content_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        rightBody_Content_RectangleF.Center.X - rightBody_Content_RectangleF.Width * 0.1f * 0.5f,
+                        rightBody_Content_RectangleF.Y
+                    ),
+                    new Vector2
+                    (
+                        rightBody_Content_RectangleF.Width * 0.1f,
+                        rightBody_Content_RectangleF.Height
+                    )
+                );
+
+            DrawIcon(ref frame, "LCD_Emote_Suspicious_Right", leftHead_Content_RectangleF, icon_Color);
+            DrawIcon(ref frame, "Triangle", leftBody_Content_RectangleF, icon_Color, 180f);
+
+            DrawBox(ref frame, middleBar_RectangleF, icon_Color);
+
+            DrawIcon(ref frame, "LCD_Emote_Suspicious_Left", rightHead_Area_RectangleF, icon_Color);
+            DrawIcon(ref frame, "Triangle", rightBody_Content_RectangleF, icon_Color);
+            DrawBox(ref frame, rightBodyFoot_Content_RectangleF, icon_Color);
+
+        }
+
+        public void CanteenSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color)
+        {
+            RectangleF
+                cup_RectangleF = new RectangleF
+                (
+                    new Vector2
+                    (
+                        viewport_RectangleF.Center.X - viewport_RectangleF.Width * 0.6f * 0.5f, 
+                        viewport_RectangleF.Y + viewport_RectangleF.Height * 0.6f * 0.2f
+                    ),
+                    new Vector2(viewport_RectangleF.Width * 0.6f, viewport_RectangleF.Height * 0.6f)
+                ),
+
+                handle_RectangleF = new RectangleF
+                (
+                    new Vector2(cup_RectangleF.Right, cup_RectangleF.Y) - new Vector2(viewport_RectangleF.Width * 0.4f * 0.5f, 0),
+                    new Vector2(viewport_RectangleF.Width * 0.4f, viewport_RectangleF.Height * 0.4f)
+                ),
+
+                plate_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X, viewport_RectangleF.Bottom) - 
+                    new Vector2(0, viewport_RectangleF.Height * 0.2f),
+                    new Vector2(viewport_RectangleF.Width, viewport_RectangleF.Height * 0.1f)
+                );
+
+            DrawIcon(ref frame, "CircleHollow", handle_RectangleF, icon_Color);
+            DrawBox(ref frame, cup_RectangleF, icon_Color);
+            DrawBox(ref frame, plate_RectangleF, icon_Color);
+
+        }
+
+        public void GasGeneratorSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color)
+        {
+            float scalingFactor_Float = 0.95f;
+
+            RectangleF
+                hydrogen_Area_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position,
+                    new Vector2(viewport_RectangleF.Width * 0.5f, viewport_RectangleF.Height * 0.5f)
+                ),
+                hydrogen_Content_RectangleF = ScalingViewport(hydrogen_Area_RectangleF, scalingFactor_Float),
+
+                oxygen_Area_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position + new Vector2(hydrogen_Area_RectangleF.Width, 0),
+                    hydrogen_Area_RectangleF.Size
+                ),
+                oxygen_Content_RectangleF = ScalingViewport(oxygen_Area_RectangleF, scalingFactor_Float),
+
+                ice_Area_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Center.X, viewport_RectangleF.Y) +
+                    new Vector2(-hydrogen_Area_RectangleF.Width * 0.5f, hydrogen_Area_RectangleF.Height),
+                    hydrogen_Area_RectangleF.Size
+                ),
+                ice_Content_RectangleF = ScalingViewport(ice_Area_RectangleF, scalingFactor_Float),
+
+                leftArrow_Area_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.X, ice_Area_RectangleF.Y),
+                    new Vector2(ice_Area_RectangleF.Width * 0.5f, ice_Area_RectangleF.Height)
+                ),
+                leftArrow_Content_RectangleF = ScalingViewport(leftArrow_Area_RectangleF, scalingFactor_Float),
+
+                rightArrow_Area_RectangleF = new RectangleF
+                (
+                    new Vector2(ice_Area_RectangleF.X + ice_Area_RectangleF.Width, ice_Area_RectangleF.Y),
+                    leftArrow_Area_RectangleF.Size
+                ),
+                rightArrow_Content_RectangleF = ScalingViewport(rightArrow_Area_RectangleF, scalingFactor_Float);
+
+
+            DrawIcon(ref frame, "IconHydrogen", hydrogen_Content_RectangleF, icon_Color);
+            DrawIcon(ref frame, "IconOxygen", oxygen_Content_RectangleF, icon_Color);
+            DrawIcon(ref frame, "MyObjectBuilder_Ore/Ice", ice_Content_RectangleF, icon_Color);
+            DrawIcon(ref frame, "AH_PullUp", leftArrow_Content_RectangleF, icon_Color);
+            DrawIcon(ref frame, "AH_PullUp", rightArrow_Content_RectangleF, icon_Color);
+
+        }
+
+
+        /*####################   DriectionalSign   ####################*/
+        /*#############################################################*/
+
 
         /*######################################################*/
         /*####################   Argument   ####################*/
@@ -4769,7 +5342,10 @@ namespace IngameScript
                     ShowCargoContainerResidues(stage_ShowCombinedRefining);
                     break;
                 case stage_ShowCombinedRefining:
-                    CombinedRefiningUI(stage_ShowItems);
+                    CombinedRefiningUI(stage_DirectionalSign);
+                    break;
+                case stage_DirectionalSign:
+                    DriectionalSign(stage_ShowItems);
                     break;
             }
 
