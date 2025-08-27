@@ -4618,7 +4618,6 @@ namespace IngameScript
 
         }
 
-
         /*####################   CombiningLikeTerms   ####################*/
         /*################################################################*/
 
@@ -4637,7 +4636,7 @@ namespace IngameScript
 
                 for (int index_int = 0; index_int < 10; index_int++)
                 {
-                    int panelIndex_Int = index_int + (counter_DirectionalSign_Int - 1);
+                    int panelIndex_Int = index_int + (counter_DirectionalSign_Int - 1) * 10;
 
                     if (panelIndex_Int >= panels_Driectional_Sign.Count) break;
 
@@ -4923,7 +4922,6 @@ namespace IngameScript
 
         }
 
-
         public void BedroomSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color)
         {
             RectangleF
@@ -5119,7 +5117,6 @@ namespace IngameScript
             DrawIcon(ref frame, "AH_PullUp", rightArrow_Content_RectangleF, icon_Color);
 
         }
-
 
         /*####################   DriectionalSign   ####################*/
         /*#############################################################*/
