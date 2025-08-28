@@ -178,7 +178,7 @@ namespace IngameScript
         const string
             combined_Refining_Key = "Combined_Refining";
 
-        const string 
+        const string
             settings_Section = "Settings",
             left_Right_Offset_Key = "Left_Right_Offset",
             up_Down_Offset_Key = "Up_Down_Offset",
@@ -187,7 +187,8 @@ namespace IngameScript
             left_Section = "Left",
             right_Section = "Right",
             line1_Key = "Line_1",
-            line2_Key = "Line_2";
+            line2_Key = "Line_2",
+            direction_Key = "Direction(-1_0_1)";
 
 
         string stage_Value = "";
@@ -434,15 +435,19 @@ namespace IngameScript
 
                 WriteDefaultItem(panel, up_Section, line1_Key, "");
                 WriteDefaultItem(panel, up_Section, line2_Key, "");
+                WriteDefaultItem(panel, up_Section, direction_Key, "0");
 
                 WriteDefaultItem(panel, left_Section, line1_Key, "");
                 WriteDefaultItem(panel, left_Section, line2_Key, "");
+                WriteDefaultItem(panel, left_Section, direction_Key, "0");
 
                 WriteDefaultItem(panel, right_Section, line1_Key, "");
                 WriteDefaultItem(panel, right_Section, line2_Key, "");
+                WriteDefaultItem(panel, right_Section, direction_Key, "0");
 
                 WriteDefaultItem(panel, down_Section, line1_Key, "");
                 WriteDefaultItem(panel, down_Section, line2_Key, "");
+                WriteDefaultItem(panel, down_Section, direction_Key, "0");
 
             }
 
@@ -4717,6 +4722,12 @@ namespace IngameScript
                 down_Line1_String = GetValue_from_CustomData(panel, down_Section, line1_Key),
                 down_Line2_String = GetValue_from_CustomData(panel, down_Section, line2_Key);
 
+            int
+                direction_Up_Int = Convert.ToInt16(GetValue_from_CustomData(panel, up_Section, direction_Key)),
+                direction_Left_Int = Convert.ToInt16(GetValue_from_CustomData(panel, left_Section, direction_Key)),
+                direction_Right_Int = Convert.ToInt16(GetValue_from_CustomData(panel, right_Section, direction_Key)),
+                direction_Down_Int = Convert.ToInt16(GetValue_from_CustomData(panel, down_Section, direction_Key));
+
             float 
                 left_Right_Offset_Float = Convert.ToSingle(GetValue_from_CustomData(panel, settings_Section, left_Right_Offset_Key)),
                 up_Down_Offset_Float = Convert.ToSingle(GetValue_from_CustomData(panel, settings_Section, up_Down_Offset_Key)),
@@ -4755,6 +4766,11 @@ namespace IngameScript
                     new Vector2(visibleArea_Offset_RectangleF.Center.X - row_Height_Float / 2f, visibleArea_Offset_RectangleF.Y),
                     new Vector2(row_Height_Float, row_Height_Float)
                 ),
+                stair_Up_RectangleF = new RectangleF
+                (
+                    icon_Up_RectangleF.Position + new Vector2(icon_Up_RectangleF.Width, 0),
+                    icon_Up_RectangleF.Size
+                ),
                 text_Up_Line1_RectangleF = new RectangleF
                 (
                     new Vector2(visibleArea_Offset_RectangleF.X, icon_Up_RectangleF.Y + row_Height_Float),
@@ -4763,7 +4779,12 @@ namespace IngameScript
                 text_Up_Line2_RectangleF = new RectangleF
                 (
                     new Vector2(visibleArea_Offset_RectangleF.X, text_Up_Line1_RectangleF.Y + row_Height_Float),
-                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                    text_Up_Line1_RectangleF.Size
+                ),
+                background_Up_RectangleF = new RectangleF
+                (
+                    new Vector2(visibleArea_RectangleF.X, visibleArea_Offset_RectangleF.Y),
+                    new Vector2(visibleArea_RectangleF.Width, row_Height_Float * 3)
                 ),
 
                 icon_Left_RectangleF = new RectangleF
@@ -4771,15 +4792,20 @@ namespace IngameScript
                     new Vector2(visibleArea_Offset_RectangleF.X, text_Up_Line2_RectangleF.Y + row_Height_Float),
                     new Vector2(row_Height_Float, row_Height_Float)
                 ),
+                stair_Left_RectangleF = new RectangleF
+                (
+                    icon_Left_RectangleF.Position + new Vector2(icon_Left_RectangleF.Width, 0),
+                    icon_Left_RectangleF.Size
+                ),
                 text_Left_Line1_RectangleF = new RectangleF
                 (
                     new Vector2(visibleArea_Offset_RectangleF.X, icon_Left_RectangleF.Y + row_Height_Float),
-                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                    text_Up_Line1_RectangleF.Size
                 ),
                 text_Left_Line2_RectangleF = new RectangleF
                 (
                     new Vector2(visibleArea_Offset_RectangleF.X, text_Left_Line1_RectangleF.Y + row_Height_Float),
-                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                    text_Up_Line1_RectangleF.Size
                 ),
 
                 icon_Right_RectangleF = new RectangleF
@@ -4787,15 +4813,25 @@ namespace IngameScript
                     new Vector2(visibleArea_Offset_RectangleF.Right - row_Height_Float, text_Left_Line2_RectangleF.Y + row_Height_Float),
                     new Vector2(row_Height_Float, row_Height_Float)
                 ),
+                stair_Right_RectangleF = new RectangleF
+                (
+                    icon_Right_RectangleF.Position - new Vector2(icon_Right_RectangleF.Width, 0),
+                    icon_Right_RectangleF.Size
+                ),
                 text_Right_Line1_RectangleF = new RectangleF
                 (
                     new Vector2(visibleArea_Offset_RectangleF.X, icon_Right_RectangleF.Y + row_Height_Float),
-                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                    text_Up_Line1_RectangleF.Size
                 ),
                 text_Right_Line2_RectangleF = new RectangleF
                 (
                     new Vector2(visibleArea_Offset_RectangleF.X, text_Right_Line1_RectangleF.Y + row_Height_Float),
-                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                    text_Up_Line1_RectangleF.Size
+                ),
+                background_Right_RectangleF = new RectangleF
+                (
+                    background_Up_RectangleF.Position + new Vector2(0, background_Up_RectangleF.Height * 2f),
+                    background_Up_RectangleF.Size
                 ),
 
                 icon_Down_RectangleF = new RectangleF
@@ -4803,15 +4839,20 @@ namespace IngameScript
                     new Vector2(visibleArea_Offset_RectangleF.Center.X - row_Height_Float / 2f, text_Right_Line2_RectangleF.Y + row_Height_Float),
                     new Vector2(row_Height_Float, row_Height_Float)
                 ),
+                stair_Down_RectangleF = new RectangleF
+                (
+                    icon_Down_RectangleF.Position + new Vector2(icon_Down_RectangleF.Width, 0),
+                    icon_Down_RectangleF.Size
+                ),
                 text_Down_Line1_RectangleF = new RectangleF
                 (
                     new Vector2(visibleArea_Offset_RectangleF.X, icon_Down_RectangleF.Y + row_Height_Float),
-                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                    text_Up_Line1_RectangleF.Size
                 ),
                 text_Down_Line2_RectangleF = new RectangleF
                 (
                     new Vector2(visibleArea_Offset_RectangleF.X, text_Down_Line1_RectangleF.Y + row_Height_Float),
-                    new Vector2(visibleArea_Offset_RectangleF.Width, row_Height_Float)
+                    text_Up_Line1_RectangleF.Size
                 );
 
 
@@ -4822,9 +4863,12 @@ namespace IngameScript
 
             if (up_Line2_String != "" || up_Line1_String != "")
             {
+                DrawBox(ref frame, background_Up_RectangleF, progressbar_Color);
                 DrawIcon(ref frame, "Arrow", icon_Up_RectangleF, Color.Green);
                 PanelWriteText(ref frame, up_Line1_String, text_Up_Line1_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
                 PanelWriteText(ref frame, up_Line2_String, text_Up_Line2_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
+
+                if (direction_Up_Int != 0) StairSignifier(ref frame, stair_Up_RectangleF, font_Color_Overall, direction_Up_Int);
             }
 
             if (left_Line2_String != "" || left_Line1_String != "")
@@ -4832,13 +4876,18 @@ namespace IngameScript
                 DrawIcon(ref frame, "Arrow", icon_Left_RectangleF, Color.Green, 270f);
                 PanelWriteText(ref frame, left_Line1_String, text_Left_Line1_RectangleF, fontSize_Float, font_Color_Overall);
                 PanelWriteText(ref frame, left_Line2_String, text_Left_Line2_RectangleF, fontSize_Float, font_Color_Overall);
+
+                if (direction_Left_Int != 0) StairSignifier(ref frame, stair_Left_RectangleF, font_Color_Overall, direction_Left_Int);
             }
 
             if (right_Line2_String != "" || right_Line1_String != "")
             {
+                DrawBox(ref frame, background_Right_RectangleF, progressbar_Color);
                 DrawIcon(ref frame, "Arrow", icon_Right_RectangleF, Color.Green, 90f);
                 PanelWriteText(ref frame, right_Line1_String, text_Right_Line1_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.RIGHT);
                 PanelWriteText(ref frame, right_Line2_String, text_Right_Line2_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.RIGHT);
+
+                if (direction_Right_Int != 0) StairSignifier(ref frame, stair_Right_RectangleF, font_Color_Overall, direction_Right_Int);
             }
 
             if (down_Line2_String != "" || down_Line1_String != "")
@@ -4846,6 +4895,8 @@ namespace IngameScript
                 DrawIcon(ref frame, "Arrow", icon_Down_RectangleF, Color.Green, 180f);
                 PanelWriteText(ref frame, down_Line1_String, text_Down_Line1_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
                 PanelWriteText(ref frame, down_Line2_String, text_Down_Line2_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
+
+                if (direction_Down_Int != 0) StairSignifier(ref frame, stair_Down_RectangleF, font_Color_Overall, direction_Down_Int);
             }
 
 
@@ -5117,6 +5168,62 @@ namespace IngameScript
             DrawIcon(ref frame, "AH_PullUp", rightArrow_Content_RectangleF, icon_Color);
 
         }
+
+        public void StairSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color, int direction_Int)
+        {
+            float scalingFactor_Float = 0.95f;
+
+            RectangleF
+                slope_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position,
+                    viewport_RectangleF.Size
+                ),
+
+                steps_1_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position,
+                    viewport_RectangleF.Size * 0.25f
+                ),
+
+                steps_2_RectangleF = new RectangleF
+                (
+                    viewport_RectangleF.Position + steps_1_RectangleF.Size,
+                    steps_1_RectangleF.Size
+                ),
+
+                steps_3_RectangleF = new RectangleF
+                (
+                    steps_2_RectangleF.Position + steps_1_RectangleF.Size,
+                    steps_1_RectangleF.Size
+                ),
+
+                steps_4_RectangleF = new RectangleF
+                (
+                    steps_3_RectangleF.Position + steps_1_RectangleF.Size,
+                    steps_1_RectangleF.Size
+                ),
+
+                Arrow_RectangleF = new RectangleF
+                (
+                    new Vector2(viewport_RectangleF.Center.X, viewport_RectangleF.Y),
+                    viewport_RectangleF.Size * 0.5f
+                );
+
+            DrawIcon(ref frame, "RightTriangle", slope_RectangleF, icon_Color);
+            DrawBox(ref frame, steps_1_RectangleF, icon_Color);
+            DrawBox(ref frame, steps_2_RectangleF, icon_Color);
+            DrawBox(ref frame, steps_3_RectangleF, icon_Color);
+            DrawBox(ref frame, steps_4_RectangleF, icon_Color);
+
+            if(direction_Int == -1)
+                DrawIcon(ref frame, "Arrow", Arrow_RectangleF, icon_Color, 135f);
+            else if(direction_Int == 1)
+                DrawIcon(ref frame, "Arrow", Arrow_RectangleF, icon_Color, 315f);
+
+        }
+
+
 
         /*####################   DriectionalSign   ####################*/
         /*#############################################################*/
