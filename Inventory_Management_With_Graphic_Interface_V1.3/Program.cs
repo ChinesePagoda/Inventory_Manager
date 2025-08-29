@@ -4864,7 +4864,7 @@ namespace IngameScript
             if (up_Line2_String != "" || up_Line1_String != "")
             {
                 DrawBox(ref frame, background_Up_RectangleF, progressbar_Color);
-                DrawIcon(ref frame, "Arrow", icon_Up_RectangleF, Color.Green);
+                DrawIcon(ref frame, "Arrow", icon_Up_RectangleF, Color.White);
                 PanelWriteText(ref frame, up_Line1_String, text_Up_Line1_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
                 PanelWriteText(ref frame, up_Line2_String, text_Up_Line2_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
 
@@ -4873,7 +4873,7 @@ namespace IngameScript
 
             if (left_Line2_String != "" || left_Line1_String != "")
             {
-                DrawIcon(ref frame, "Arrow", icon_Left_RectangleF, Color.Green, 270f);
+                DrawIcon(ref frame, "Arrow", icon_Left_RectangleF, Color.White, 270f);
                 PanelWriteText(ref frame, left_Line1_String, text_Left_Line1_RectangleF, fontSize_Float, font_Color_Overall);
                 PanelWriteText(ref frame, left_Line2_String, text_Left_Line2_RectangleF, fontSize_Float, font_Color_Overall);
 
@@ -4883,7 +4883,7 @@ namespace IngameScript
             if (right_Line2_String != "" || right_Line1_String != "")
             {
                 DrawBox(ref frame, background_Right_RectangleF, progressbar_Color);
-                DrawIcon(ref frame, "Arrow", icon_Right_RectangleF, Color.Green, 90f);
+                DrawIcon(ref frame, "Arrow", icon_Right_RectangleF, Color.White, 90f);
                 PanelWriteText(ref frame, right_Line1_String, text_Right_Line1_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.RIGHT);
                 PanelWriteText(ref frame, right_Line2_String, text_Right_Line2_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.RIGHT);
 
@@ -4892,7 +4892,7 @@ namespace IngameScript
 
             if (down_Line2_String != "" || down_Line1_String != "")
             {
-                DrawIcon(ref frame, "Arrow", icon_Down_RectangleF, Color.Green, 180f);
+                DrawIcon(ref frame, "Arrow", icon_Down_RectangleF, Color.White, 180f);
                 PanelWriteText(ref frame, down_Line1_String, text_Down_Line1_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
                 PanelWriteText(ref frame, down_Line2_String, text_Down_Line2_RectangleF, fontSize_Float, font_Color_Overall, TextAlignment.CENTER);
 
