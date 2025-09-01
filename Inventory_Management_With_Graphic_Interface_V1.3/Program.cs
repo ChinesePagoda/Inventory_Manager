@@ -57,6 +57,7 @@ namespace IngameScript
         List<IMyTextPanel> panels_Washroom_Sign = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_Canteen_Sign = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_GasGenerator_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_CargoContainer_Sign = new List<IMyTextPanel>();
 
         Dictionary<string, string> translator = new Dictionary<string, string>();
 
@@ -329,6 +330,7 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(panels_Washroom_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Washroom_Sign"));
             GridTerminalSystem.GetBlocksOfType(panels_Canteen_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Canteen_Sign"));
             GridTerminalSystem.GetBlocksOfType(panels_GasGenerator_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_GasGenerator_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_CargoContainer_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_CargoContainer_Sign"));
 
 
             GridTerminalSystem.GetBlocksOfType(assemblers, b => b.IsSameConstructAs(Me));
@@ -375,6 +377,7 @@ namespace IngameScript
             WriteDefaultItem(information_Section, "LCD_Washroom_Sign", "LCD_Washroom_Sign | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "LCD_Canteen_Sign", "LCD_Canteen_Sign | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "LCD_GasGenerator_Sign", "LCD_GasGenerator_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_CargoContainer_Sign", "LCD_CargoContainer_Sign | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "Assemblers_CooperativeMode", "CO_ON or CO_OFF | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "Clear_Assembler_Queue", "CLS | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "LCD_Refresh", "LCD_REF | Fill In Argument of PB And Press Run");
@@ -463,6 +466,7 @@ namespace IngameScript
             panels_Temp.AddRange(panels_Washroom_Sign);
             panels_Temp.AddRange(panels_Canteen_Sign);
             panels_Temp.AddRange(panels_GasGenerator_Sign);
+            panels_Temp.AddRange(panels_CargoContainer_Sign);
 
 
             foreach (var panel in panels_Temp)
@@ -2950,6 +2954,7 @@ namespace IngameScript
             {
                 //  Not enough panel
                 var panel = facilityPanels[counter_Panel_Int];
+                Echo(panel.CustomName);
 
                 if (panel.CustomData != "0") panel.CustomData = "0";
                 else panel.CustomData = "1";
@@ -2996,12 +3001,12 @@ namespace IngameScript
                 }
                 frame.Dispose();
 
-                Echo(panel.CustomName);
             }
             else
             {
                 //  Enough panel
                 var panel = facilityPanels[counter_Panel_Int];
+                Echo(panel.CustomName);
 
                 if (panel.CustomData != "0") panel.CustomData = "0";
                 else panel.CustomData = "1";
@@ -3041,12 +3046,12 @@ namespace IngameScript
                 DrawFullFacilityScreen(panel, ref frame, viewport_RectangleF, arry[1], true, facilityList, background_Color, card_Color);
                 frame.Dispose();
 
-                Echo(panel.CustomName);
             }
         }
 
         public void DrawFullFacilityScreen(IMyTextPanel panel, ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, string groupNumber, bool isEnoughScreen, Facility_Struct[] facilityList, Color background_Color, Color card_Color)
         {
+            Echo("DrawFullFacilityScreen");
             panel.WriteText("", false);
 
             float height_SingleUnit_Float = viewport_RectangleF.Height / facilityAmountInEachScreenMax_Int;
@@ -3545,7 +3550,7 @@ namespace IngameScript
 
             foreach (var connector in connectors_BroadCast)
             {
-                sb.Append("_");
+                sb.Append("_|_");
                 sb.Append(connector.CustomName.ToString());
                 sb.Append(":");
                 sb.Append(connector.GetPosition().X.ToString());
@@ -4703,6 +4708,11 @@ namespace IngameScript
                 DrawFullScreenSignPanel(panel, "GasGenerator");
             }
 
+            foreach (var panel in panels_CargoContainer_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "CargoContainer");
+            }
+
 
             stage_Value = nextStage;
         }
@@ -4963,6 +4973,10 @@ namespace IngameScript
             {
                 GasGeneratorSignifier(ref frame, drawArea_RectangleF, font_Color_Overall);
             }
+            else if(icon_Name_String == "CargoContainer")
+            {
+                InventorySignifier(ref frame, drawArea_RectangleF, font_Color_Overall, card_Background_Color_Overall);
+            }
             else
             {
                 DrawIcon(ref frame, icon_Name_String, drawArea_RectangleF, font_Color_Overall);
@@ -5171,7 +5185,6 @@ namespace IngameScript
 
         public void StairSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color, int direction_Int)
         {
-            float scalingFactor_Float = 0.95f;
 
             RectangleF
                 slope_RectangleF = new RectangleF
