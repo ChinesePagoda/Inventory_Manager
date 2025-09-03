@@ -478,7 +478,6 @@ namespace IngameScript
 
         }
 
-
         public void Build_MethodDic(Dictionary<string, double> method_Dic)
         {
             for (int index_Int = 1; index_Int <= CombinedRefining_method_Total_Int; index_Int++)
@@ -2123,6 +2122,7 @@ namespace IngameScript
         /*###############################################*/
 
 
+
         /*#################################################*/
         /*###############     ShowItems     ###############*/
 
@@ -3479,6 +3479,7 @@ namespace IngameScript
         /*####################################################*/
 
 
+
         /*###############################################*/
         /*###############     GasTank     ###############*/
         public void GasTank(List<IMyGasTank> gasTanks, ref int counter_Int, string bottleName_String, string nextStage)
@@ -3529,6 +3530,7 @@ namespace IngameScript
         /*###############################################*/
 
 
+
         /*  Broadcast Connectors GPS    */
         public void Broadcast_Connectors_GPS()
         {
@@ -3550,7 +3552,7 @@ namespace IngameScript
 
             foreach (var connector in connectors_BroadCast)
             {
-                sb.Append("_|_");
+                sb.Append("~");
                 sb.Append(connector.CustomName.ToString());
                 sb.Append(":");
                 sb.Append(connector.GetPosition().X.ToString());
@@ -3573,6 +3575,7 @@ namespace IngameScript
 
         }
         /*  Broadcast Connectors GPS    */
+
 
 
         /*#############################################################*/
@@ -3633,6 +3636,7 @@ namespace IngameScript
         }
         /*###############   ShowCargoContainerResidues  ###############*/
         /*#############################################################*/
+
 
 
         /*#####################################################*/
@@ -3989,6 +3993,7 @@ namespace IngameScript
                 BuildCombinedRefiningUIList();
                 ShowCombinedRefiningOnCockpit();
                 ShowCombinedRefiningOnLCD();
+                Build_MethodDic(method_Unified_Dic);
             }
 
         }
@@ -4632,6 +4637,7 @@ namespace IngameScript
         /*################################################################*/
 
 
+
         /*#############################################################*/
         /*####################   DriectionalSign   ####################*/
 
@@ -5242,6 +5248,7 @@ namespace IngameScript
         /*#############################################################*/
 
 
+
         /*######################################################*/
         /*####################   Argument   ####################*/
 
@@ -5402,6 +5409,7 @@ namespace IngameScript
 
         /*####################   Argument   ####################*/
         /*######################################################*/
+
 
 
         public void MainLogic()
