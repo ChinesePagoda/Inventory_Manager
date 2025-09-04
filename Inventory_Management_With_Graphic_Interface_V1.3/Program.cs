@@ -58,6 +58,7 @@ namespace IngameScript
         List<IMyTextPanel> panels_Canteen_Sign = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_GasGenerator_Sign = new List<IMyTextPanel>();
         List<IMyTextPanel> panels_CargoContainer_Sign = new List<IMyTextPanel>();
+        List<IMyTextPanel> panels_Server_Sign = new List<IMyTextPanel>();
 
         Dictionary<string, string> translator = new Dictionary<string, string>();
 
@@ -331,6 +332,7 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(panels_Canteen_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Canteen_Sign"));
             GridTerminalSystem.GetBlocksOfType(panels_GasGenerator_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_GasGenerator_Sign"));
             GridTerminalSystem.GetBlocksOfType(panels_CargoContainer_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_CargoContainer_Sign"));
+            GridTerminalSystem.GetBlocksOfType(panels_Server_Sign, b => b.IsSameConstructAs(Me) && b.CustomName.Contains("LCD_Server_Sign"));
 
 
             GridTerminalSystem.GetBlocksOfType(assemblers, b => b.IsSameConstructAs(Me));
@@ -378,6 +380,7 @@ namespace IngameScript
             WriteDefaultItem(information_Section, "LCD_Canteen_Sign", "LCD_Canteen_Sign | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "LCD_GasGenerator_Sign", "LCD_GasGenerator_Sign | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "LCD_CargoContainer_Sign", "LCD_CargoContainer_Sign | Fill In CustomName of Panel");
+            WriteDefaultItem(information_Section, "LCD_Server_Sign", "LCD_Server_Sign | Fill In CustomName of Panel");
             WriteDefaultItem(information_Section, "Assemblers_CooperativeMode", "CO_ON or CO_OFF | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "Clear_Assembler_Queue", "CLS | Fill In Argument of PB And Press Run");
             WriteDefaultItem(information_Section, "LCD_Refresh", "LCD_REF | Fill In Argument of PB And Press Run");
@@ -467,6 +470,7 @@ namespace IngameScript
             panels_Temp.AddRange(panels_Canteen_Sign);
             panels_Temp.AddRange(panels_GasGenerator_Sign);
             panels_Temp.AddRange(panels_CargoContainer_Sign);
+            panels_Temp.AddRange(panels_Server_Sign);
 
 
             foreach (var panel in panels_Temp)
@@ -4719,6 +4723,11 @@ namespace IngameScript
                 DrawFullScreenSignPanel(panel, "CargoContainer");
             }
 
+            foreach (var panel in panels_Server_Sign)
+            {
+                DrawFullScreenSignPanel(panel, "Server");
+            }
+
 
             stage_Value = nextStage;
         }
@@ -4983,6 +4992,10 @@ namespace IngameScript
             {
                 InventorySignifier(ref frame, drawArea_RectangleF, font_Color_Overall, card_Background_Color_Overall);
             }
+            else if(icon_Name_String == "Server")
+            {
+                ServerSignifier(ref frame, drawArea_RectangleF, font_Color_Overall, card_Background_Color_Overall);
+            }
             else
             {
                 DrawIcon(ref frame, icon_Name_String, drawArea_RectangleF, font_Color_Overall);
@@ -5242,7 +5255,71 @@ namespace IngameScript
 
         }
 
+        public void ServerSignifier(ref MySpriteDrawFrame frame, RectangleF viewport_RectangleF, Color icon_Color, Color background_Color)
+        {
+            for(int index_Int  = 1; index_Int <= 4; index_Int++)
+            {
+                RectangleF
+                    unit_RectangleF = new RectangleF
+                    (
+                        viewport_RectangleF.Position + new Vector2(0, viewport_RectangleF.Height * 0.25f * Convert.ToSingle(index_Int - 1)),
+                        new Vector2(viewport_RectangleF.Width, viewport_RectangleF.Height * 0.25f)
+                    ),
+                    unit_Content_RectangleF = ScalingViewport(unit_RectangleF, 0.9f, 2);
 
+                if(index_Int < 4)
+                {
+                    DrawBox(ref frame, unit_Content_RectangleF, icon_Color);
+
+                    RectangleF
+                        dot_RectangleF = new RectangleF
+                        (
+                            unit_RectangleF.Position,
+                            new Vector2(unit_Content_RectangleF.Height, unit_Content_RectangleF.Height)
+                        ),
+                        dot_Content_RectangleF = ScalingViewport(dot_RectangleF, 0.5f);
+
+                    DrawIcon(ref frame, "Circle", dot_Content_RectangleF, background_Color);
+
+                    for(int index_Bar_int = 1; index_Bar_int <= 5; index_Bar_int++)
+                    {
+                        RectangleF
+                            bar_RectangleF = new RectangleF
+                            (
+                                new Vector2(unit_Content_RectangleF.Center.X, unit_Content_RectangleF.Y) +
+                                new Vector2(0, unit_Content_RectangleF.Height * 0.2f) +
+                                new Vector2(unit_Content_RectangleF.Height * 0.2f * Convert.ToSingle(index_Bar_int - 1) * 2f, 0),
+                                new Vector2(unit_Content_RectangleF.Height * 0.2f, unit_Content_RectangleF.Height * 0.6f)
+                            );
+
+                        DrawBox(ref frame, bar_RectangleF, background_Color);
+                    }
+                }
+                else
+                {
+                    RectangleF
+                        bar_Vertical_RectangleF = new RectangleF
+                        (
+                            new Vector2(unit_Content_RectangleF.Center.X, unit_Content_RectangleF.Y) +
+                            new Vector2(-unit_Content_RectangleF.Height * 0.25f * 0.5f, 0),
+                            new Vector2(unit_Content_RectangleF.Height * 0.25f, unit_Content_RectangleF.Height)
+                        ),
+                        bar_Horizontal_RectangleF = new RectangleF
+                        (
+                            new Vector2(unit_Content_RectangleF.X, unit_Content_RectangleF.Bottom) +
+                            new Vector2(0, -unit_Content_RectangleF.Height * 0.25f),
+                            new Vector2(unit_Content_RectangleF.Width, unit_Content_RectangleF.Height * 0.25f)
+                        );
+
+
+                    DrawBox(ref frame, bar_Vertical_RectangleF, icon_Color);
+                    DrawBox(ref frame, bar_Horizontal_RectangleF, icon_Color);
+                }
+
+            }
+
+        }
+        
 
         /*####################   DriectionalSign   ####################*/
         /*#############################################################*/
